@@ -7,14 +7,12 @@ Inductive bplustree (b: nat) (X:Type) : Type :=
   . 
 
 
-  
-  
-Example test := bptLeaf 2 bool ((1, true)::(2, false)::nil).
+Example test := bptLeaf 2 bool [(1, true), (2, false)].
 
-Definition left := bptLeaf 2 nat ((4, 4)::(5, 5)::nil).
-Definition centre := bptLeaf 2 nat ((7, 7)::nil).
-Definition right := bptLeaf 2 nat ((9, 9)::nil).
-Definition root := bptNode 2 nat ((6, left)::(8, centre)::nil) right.
+Definition left := bptLeaf 2 nat [(4, 4), (5, 5)].
+Definition centre := bptLeaf 2 nat [(7, 7)].
+Definition right := bptLeaf 2 nat [(9, 9)].
+Definition root := bptNode 2 nat [(6, left), (8, centre)] right.
 
 
 Fixpoint search_leaf {X: Type} (sk: nat) (kvl: (list (nat * X))) : option X :=
