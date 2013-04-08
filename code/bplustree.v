@@ -86,6 +86,7 @@ Fixpoint search {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X)) : option X 
   end.
 
 
+
 Example search_test_find_item_left : search 4 root = Some 44.
 Proof. simpl. reflexivity. Qed.
 Example search_test_find_item_centre : search 7 root = Some 77.
@@ -199,8 +200,48 @@ Fixpoint insert {X: Type} {b: nat} (insert_key: nat) (v: X) (tree: (bplustree b 
     end
   end.
   
-  
 Eval compute in (root).
 Eval compute in (insert 1 11 left).
 Eval compute in (insert 1 88 root). 
+
+ 
+ 
+(* Deletion *)
+Fixpoint delete_from_list {X: Type} (sk: nat) (lst: list (nat * X))
+                          : list (nat * X) :=
+  match lst with
+  | nil => nil
+  | (k, v) :: xs => if beq_nat k sk 
+                    then xs 
+                    else (k,v) :: delete_from_list sk xs  
+  end.
+
+              
+Fixpoint delete {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X))
+                : bplustree b X :=
+  
+  let fix traverse_node (nptrs: list (nat * (bplustree b X)))
+                   : list (nat * (bplustree b X)) :=
+    match nptrs with
+    | nil => nil
+    | (k1,t1) :: xs => match xs with
+                       | nil => [(k1, delete sk t1)]
+                       | (k2, t2) :: xs' => if blt_nat sk k2 
+                                            then (k1, (delete sk t1)) :: (k2,t2) :: xs
+                                            else traverse_node xs
+                       end
+    end
+  
+  in
+  
+  match tree with
+  | bptLeaf kvl => bptLeaf b X (delete_from_list sk kvl)
+  | bptNode sp nil => delete sk sp
+  | bptNode sp ((k, child) :: xs) => 
+                if blt_nat k sk 
+  			    then delete sk sp
+  			    else bptNode b X sp (traverse_node ((k, child) :: xs)) 
+  end.
+  
+Eval simpl in delete 7 root.
   
