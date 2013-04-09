@@ -141,43 +141,54 @@ Fixpoint insert {X: Type} {b: nat} (sk: nat) (v: X) (tree: (bplustree b X))
     end
   end.
 *)
+
+Definition split_if_necessary {X: Type} {b: nat} (tree: (bplustree b X))
+  							: (bplustree b X * option (nat * bplustree b X)) := 
+  match tree with
+  	| bptLeaf kvl => (tree, None)
+  	| bptNode sp kpl => if ble_nat (length kpl) (mult b 2)
+      then (tree, None)
+      else let 
+        (fst, snd) := split_list b kpl
+      in match snd with
+        | nil => (tree, None)
+        | (k', sp')::snd' => (bptNode b X sp fst, Some (k', bptNode b X sp' snd'))
+      end
+  end. 
+
+Definition insert_node {X: Type} {b: nat} (key: option nat) (tree: (bplustree b X)) (input: (bplustree b X * option (nat * bplustree b X)))
+  							: (bplustree b X * option (nat * bplustree b X)) :=
+  match tree with
+  	| bptLeaf kvl => input
+  	| bptNode sp kpl =>	match key with
+      (* Replace start-pointer *)
+  	  | None => match input with
+  	    (* No new child-node, just replace start-pointer *)
+  	    | (tree, None) => (bptNode b X tree kpl, None)
+  		| (tree, Some (new_key, new)) => split_if_necessary (bptNode b X tree (insert_into_list new_key new kpl))
+  	  end
+  	  (* Replace the pointer with key = k *)
+  	  | Some k => match input with
+        | (tree, None) => (bptNode b X sp (insert_into_list k tree kpl), None)
+  		| (tree, Some (new_key, new)) => split_if_necessary (bptNode b X sp (insert_into_list k tree (insert_into_list new_key new kpl)))
+  	  end
+    end
+  end.
   
-Fixpoint insert {X: Type} {b: nat} (insert_key: nat) (v: X) (tree: (bplustree b X))
+  
+Fixpoint insert' {X: Type} {b: nat} (insert_key: nat) (v: X) (tree: (bplustree b X))
                 : (bplustree b X * option (nat * bplustree b X)) :=
 
   (* More or less copy-pasted from search *)
-  let fix split_if_necessary (key: option nat) (input: (bplustree b X * option (nat * bplustree b X)))
-  							: (bplustree b X * option (nat * bplustree b X)) :=
-  							match tree with
-  							  | bptLeaf kvl => input
-  							  | bptNode sp kpl => 
-  							
-  							match key with
-  							  (* Replace start-pointer *)
-  							  | None => match input with
-  							    (* No new child-node, just replace start-pointer *)
-  							    | (tree, None) => (bptNode b X tree kpl, None)
-  							    | (tree, Some (new_key, new)) => 
-  							      (bptNode b X tree (insert_into_list new_key new kpl), None)
-  							    end
-  							  (* Replace the pointer with key = k *)
-  							  | Some k => match input with
-  							    | (tree, None) => (bptNode b X sp (insert_into_list k tree kpl), None)
-  							    | (tree, Some (new_key, new)) => (bptNode b X sp (insert_into_list k tree (insert_into_list new_key new kpl)), None)
-  							    end
-  							end
-  							
-  							end
-  in 
   let fix insert_into_node
                       (kpl: (list (nat * bplustree b X)))
                    : (bplustree b X * option (nat * bplustree b X)) :=
     match kpl with
       | nil => (tree, None)
       | (k, p) :: kpl' => match head kpl' with
-        | None => split_if_necessary (Some k) (insert insert_key v p)
+        | None => insert_node (Some k) tree (insert' insert_key v p)
         | Some k' => if andb (ble_nat k insert_key) (blt_nat insert_key k')
-      						then split_if_necessary (Some k) (insert insert_key v p)
+      						then insert_node (Some k) tree (insert' insert_key v p)
       						else insert_into_node kpl'
        end
      end 
@@ -195,11 +206,18 @@ Fixpoint insert {X: Type} {b: nat} (insert_key: nat) (v: X) (tree: (bplustree b 
     | bptNode sp kpl => match head kpl with
       | None => (tree, None)
       | Some k => if blt_nat insert_key k
-      	then split_if_necessary None (insert insert_key v sp)
+      	then insert_node None tree (insert' insert_key v sp)
       	else insert_into_node kpl
     end
   end.
-  
+
+Definition insert {X: Type} {b: nat} (insert_key: nat) (v: X) (tree: (bplustree b X))
+                : bplustree b X :=
+  match insert' insert_key v tree with
+    | (tree, None) => tree
+    | (left, Some (key, right)) => bptNode b X left [(key, right)]
+  end.
+
 Eval compute in (root).
 Eval compute in (insert 1 11 left).
 Eval compute in (insert 1 88 root). 
