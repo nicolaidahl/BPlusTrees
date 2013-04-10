@@ -242,7 +242,40 @@ Definition insert {X: Type} {b: nat} (insert_key: nat) (v: X) (tree: (bplustree 
 Eval compute in (root).
 Eval compute in (insert 1 11 left).
 Eval compute in (insert 3 33 (insert 2 22 (insert 6 66 (insert 1 11 root)))).  
- 
+
+
+
+(* Height *)
+Fixpoint height' {X: Type} {b: nat} (h: nat) (tree: bplustree b X) : nat :=
+  let fix highest_in_list {X: Type} {b: nat} (h: nat) (tlist: list (nat * (bplustree b X))) : nat :=
+	  match tlist with
+	    | [] => h
+	    | (k, tree) :: kvl => let new_h := (height' 0 tree) in
+	                          if ble_nat new_h h
+	                          then highest_in_list h kvl
+	                          else highest_in_list new_h kvl
+	  end
+  in
+  match tree with
+    | bptLeaf kvl => h
+    | bptNode sp kvl => max_nat (height' (S h) sp) ((S h) + (highest_in_list 0 kvl))
+  end.
+
+Definition height {X: Type} {b: nat} (tree: bplustree b X) : nat :=
+  height' 0 tree.
+  
+Example height_1 : height root = 1.
+Proof. simpl. reflexivity. Qed.
+Example height_2 : height (bptNode 1 nat (bptNode 1 nat (bptLeaf 1 nat [(1, 11)]) []) []) = 2.
+Proof. simpl. reflexivity. Qed.
+Example height_3 : height (bptNode 1 nat (bptNode 1 nat (bptNode 1 nat (bptLeaf 1 nat [(1, 11)]) []) []) []) = 3.
+Proof. simpl. reflexivity. Qed. 
+Eval compute in (height (bptNode 1 nat (bptLeaf 1 nat [(4, 44)]) [((1, bptNode 1 nat (bptNode 1 nat (bptLeaf 1 nat [(1, 11)]) []) []))])).
+Example height_right_4 : height (bptNode 1 nat (bptLeaf 1 nat [(1, 11)]) [((4, bptNode 1 nat (bptNode 1 nat (bptLeaf 1 nat [(4, 11)]) []) []))]) = 3.
+Proof. compute. reflexivity. Qed.
+
+
+
 (* Deletion *)
 Fixpoint delete_from_list {X: Type} (sk: nat) (lst: list (nat * X))
                           : list (nat * X) :=
