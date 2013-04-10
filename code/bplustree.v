@@ -10,19 +10,19 @@ Inductive bplustree (b: nat) (X:Type) : Type :=
 Example test := bptLeaf 2 bool [(1, true), (2, false)].
 
 
-Definition head {X: Type} (kpl: (list (nat * X))) : option nat :=
+Definition head_key {X: Type} (kpl: (list (nat * X))) : option nat :=
   match kpl with
     | nil => None
     | (k, v) :: kvl' => Some k
   end.
   
-Definition peek {X: Type} {b: nat} (tree: (bplustree b X)) : nat :=
+Definition peek_key {X: Type} {b: nat} (tree: (bplustree b X)) : nat :=
   match tree with
     | bptLeaf kvl => match kvl with
       | nil => 0
       | (k,v) :: kvl' => k
       end
-    | bptNode sp kpl => match head kpl with
+    | bptNode sp kpl => match head_key kpl with
       | Some k => k
       | None => 0
       end
@@ -31,7 +31,7 @@ Definition peek {X: Type} {b: nat} (tree: (bplustree b X)) : nat :=
 Definition left := bptLeaf 1 nat [(5, 55)].
 Definition centre := bptLeaf 1 nat [(7, 77)].
 Definition right := bptLeaf 1 nat [(9, 99)].
-Definition root := bptNode 1 nat left [(peek centre, centre), (peek right, right)].
+Definition root := bptNode 1 nat left [(peek_key centre, centre), (peek_key right, right)].
 
 Fixpoint search_leaf {X: Type} (sk: nat) (kvl: (list (nat * X))) : option X :=
   match kvl with
@@ -43,7 +43,7 @@ Fixpoint find_child {X: Type} {b: nat} (sk: nat) (sp: (bplustree b X)) (kpl: (li
   let fix find_child' (kpl: (list (nat * bplustree b X))) : option (bplustree b X) :=
     match kpl with
       | nil => None
-      | (k, p) :: kpl' => match head kpl' with
+      | (k, p) :: kpl' => match head_key kpl' with
         | None => Some p
         | Some k' => if andb (ble_nat k sk) (blt_nat sk k')
       						then Some p
@@ -51,7 +51,7 @@ Fixpoint find_child {X: Type} {b: nat} (sk: nat) (sp: (bplustree b X)) (kpl: (li
        end
      end 
   in 
-  match head kpl with
+  match head_key kpl with
     | None => None
     | Some k => if blt_nat sk k
       then Some sp
@@ -64,7 +64,7 @@ Fixpoint search {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X)) : option X 
                    : option X :=
     match kpl with
       | nil => None
-      | (k, p) :: kpl' => match head kpl' with
+      | (k, p) :: kpl' => match head_key kpl' with
         | None => search sk p
         | Some k' => if andb (ble_nat k sk) (blt_nat sk k')
       						then search sk p
@@ -74,7 +74,7 @@ Fixpoint search {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X)) : option X 
   in 
   match tree with
     | bptLeaf kvl => search_leaf sk kvl
-    | bptNode sp kpl => match head kpl with
+    | bptNode sp kpl => match head_key kpl with
       | None => None
       | Some k => if blt_nat sk k
       	then search sk sp
@@ -206,7 +206,7 @@ Fixpoint insert' {X: Type} {b: nat} (insert_key: nat) (v: X) (tree: (bplustree b
                    : (bplustree b X * option (nat * bplustree b X)) :=
     match kpl with
       | nil => (tree, None)
-      | (k, p) :: kpl' => match head kpl' with
+      | (k, p) :: kpl' => match head_key kpl' with
         | None => insert_node (Some k) tree (insert' insert_key v p)
         | Some k' => if andb (ble_nat k insert_key) (blt_nat insert_key k')
       						then insert_node (Some k) tree (insert' insert_key v p)
@@ -219,12 +219,12 @@ Fixpoint insert' {X: Type} {b: nat} (insert_key: nat) (v: X) (tree: (bplustree b
     | bptLeaf kvl => let (fst, snd_opt) := insert_leaf b insert_key v kvl in
                      match snd_opt with
                        | None => (bptLeaf b X fst, None)
-                       | Some snd => match head snd with
+                       | Some snd => match head_key snd with
                          | None => (bptLeaf b X fst, None)
                          | Some first_key => (bptLeaf b X fst, Some (first_key, bptLeaf b X snd))
                          end
                      end 
-    | bptNode sp kpl => match head kpl with
+    | bptNode sp kpl => match head_key kpl with
       | None => (tree, None)
       | Some k => if blt_nat insert_key k
       	then insert_node None tree (insert' insert_key v sp)
@@ -269,11 +269,11 @@ Definition dist_betweentwo {X: Type} {b: nat} (t1 t2: bplustree b X)
     if blt_nat (length lst1) b
     then 
       let (part1, part2) := split_at_index lst2 (minus b (S (length lst1))) in
-      let ret_tree1 := bptNode b X sp1 ((snoc lst1 (peek sp2, sp2)) ++ part1) in
-      let ret_tree2 := bptNode b X (head part2) (tail part2) in
+      let ret_tree1 := bptNode b X sp1 ((snoc lst1 (peek_key sp2, sp2)) ++ part1) in
+      let ret_tree2 := bptNode b X (head_key part2) (tail part2) in
       (ret_tree1, ret_tree2) 
     else 
-      bptNode b X sp1 (snoc lst1 (peek sp2, sp2))
+      bptNode b X sp1 (snoc lst1 (peek_key sp2, sp2))
   | _ => (t1, t2) 
   end.
 
