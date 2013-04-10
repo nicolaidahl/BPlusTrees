@@ -16,13 +16,19 @@ Proof.
   Case "l = []". simpl. apply kvl_sorted_1.
   Case "l = a::l". simpl. destruct a. remember (ble_nat k n) as klen. destruct klen.
     SCase "k <= n". remember (beq_nat k n) as keqn. destruct keqn.
-      SSCase "k = n". symmetry in Heqkeqn. apply beq_nat_true_iff in Heqkeqn. rewrite Heqkeqn. admit.
+      SSCase "k = n". symmetry in Heqkeqn. apply beq_nat_true_iff in Heqkeqn. rewrite Heqkeqn. 
+        destruct l. apply kvl_sorted_1. destruct p. inversion H.
+        apply kvl_sorted_cons. apply H2. apply H6.
       
       SSCase "k != n". apply kvl_sorted_cons. apply H. 
                        symmetry in Heqklen. apply ble_nat_true in Heqklen. 
                        symmetry in Heqkeqn. apply beq_nat_false_iff in Heqkeqn.
                        apply blt_nat_true. omega.
     SCase "k > n". 
+      
+      inversion H. subst. compute. apply kvl_sorted_cons. apply kvl_sorted_1. 
+      apply blt_nat_true. symmetry in Heqklen. apply ble_nat_false in Heqklen. omega.
+      subst. unfold insert_into_list.
     admit.
 Admitted.
 
