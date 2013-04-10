@@ -85,6 +85,53 @@ Notation "[ x , .. , y ]" := (cons x .. (cons y []) ..).
 Notation "x ++ y" := (app x y) 
                      (at level 60, right associativity).
 
+Fixpoint snoc {X:Type} (l:list X) (v:X) : (list X) := 
+  match l with
+  | nil      => cons v nil 
+  | cons h t => cons h (snoc t v)
+  end.
+
+
+Fixpoint split_at_index' {X: Type} (l1 l2: list X) (n: nat) : (list X * list X) :=
+  match n with
+  | 0 => (l1, l2)
+  | S n => match l2 with
+           | nil => (l1, nil)
+           | x :: xs => split_at_index' (snoc l1 x) xs n       
+           end
+  end.
+  
+Definition split_at_index {X: Type} (l1: list X) (n: nat) : (list X * list X) :=
+  split_at_index' [] l1 n.
+
+Example splittest1 : split_at_index [1, 2, 3, 4] 2 = ([1, 2], [3, 4]).
+Proof. compute. reflexivity. Qed.
+
+Example splittest2 : split_at_index [1, 2, 3, 4] 0 = ([], [1, 2, 3, 4]).
+Proof. compute. reflexivity. Qed.
+
+Example splittest3 : split_at_index [1, 2, 3, 4] 5 = ([1, 2, 3, 4], []).
+Proof. compute. reflexivity. Qed.
+
+Definition head {X: Type} (l: list X) : option X :=
+  match l with
+  | nil => None
+  | x :: xs => Some x
+  end.
+  
+Definition tail {X: Type} (l: list X) : option (list X) :=
+  match l with
+  | nil => None
+  | x :: xs => Some xs
+  end. 
+  
+Fixpoint map {X Y:Type} (f:X->Y) (l:list X) 
+             : (list Y) := 
+  match l with
+  | []     => []
+  | h :: t => (f h) :: (map f t)
+  end.
+
 (** * From Props.v *)
 
 Inductive ev : nat -> Prop :=
