@@ -1,7 +1,5 @@
 Require Export SfLib.
-
-Definition blt_nat (n m : nat) : bool :=
-  ble_nat (S n) m.
+Require Export helper_proofs.
 
 Inductive bplustree (b: nat) (X:Type) : Type :=
   | bptNode : bplustree b X -> list (nat * (bplustree b X)) -> bplustree b X
@@ -117,6 +115,16 @@ Fixpoint insert_into_list {X: Type} (k: nat) (v: X) (kvl: list (nat * X)) : list
     						then if beq_nat k k' then ((k, v) :: kvl') else ((k, v) :: kvl)
     						else (k', v') :: (insert_into_list k v kvl')
   end.
+
+Inductive kvl_sorted {X: Type}: list (nat * X) -> Prop :=
+  kvl_sorted_0    : kvl_sorted []
+| kvl_sorted_1    : forall (n: nat) (x: X), 
+                      kvl_sorted [(n, x)]
+| kvl_sorted_cons : forall (n1 n2: nat) (x1 x2: X) (lst: list (nat * X)), 
+                      kvl_sorted ((n2,x2)::lst) -> blt_nat n1 n2 = true
+                       -> kvl_sorted ((n1,x1)::(n2,x2)::lst) 
+.
+
 
 Fixpoint split_list' {X: Type} (b: nat) (fst snd: list X) : (list X * list X) :=
   match b with
