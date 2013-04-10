@@ -20,6 +20,13 @@ Proof.
   intros m H. destruct m. inversion H. inversion H1. omega.
 Qed.
 
+Theorem blt_nat_n_m__blt_nat_Sn_Sm : forall n m,
+  blt_nat n m = true -> blt_nat (S n)  (S m) = true.
+Proof.
+  intros n m H.  destruct m. inversion H.
+  unfold blt_nat. unfold blt_nat in H. rewrite <- H. reflexivity.
+Qed.
+
 Theorem n_lt_m__Sn_lt_Sm : forall n m,
   n < m -> S n < S m.
 Proof.
@@ -37,6 +44,5 @@ Proof.
     reflexivity.
   Case "<-".
     induction n. intros m H. destruct m. inversion H. unfold blt_nat. simpl. reflexivity.
-    intros m H. destruct m. inversion H. apply Sn_lt_Sm__n_lt_m in H. admit.
-    
-Admitted.
+    intros m H. destruct m. inversion H. apply Sn_lt_Sm__n_lt_m in H. apply blt_nat_n_m__blt_nat_Sn_Sm.  apply IHn.  apply H.
+Qed.
