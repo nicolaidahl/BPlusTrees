@@ -250,21 +250,57 @@ Fixpoint delete_from_list {X: Type} (sk: nat) (lst: list (nat * X))
   | nil => nil
   | (k, v) :: xs => if beq_nat k sk 
                     then xs 
-                    else (k,v) :: delete_from_list sk xs  
+                    else delete_from_list sk xs
+                         
   end.
 
+Definition node_length {X: Type} {b: nat} (tree: bplustree b X): nat :=
+  match tree with
+  | bptLeaf kvl => length kvl
+  | bptNode sp nodes => length nodes
+  end.
+  
+Eval simpl in node_length root.
+
+Definition dist_betweentwo {X: Type} {b: nat} (t1 t2: bplustree b X)
+                             : (bplustree b X * bplustree b X) :=
+  match (t1, t2) with
+  | (bptNode sp1 lst1, bptNode sp2 lst2) => 
+    if blt_nat (length lst1) b
+    then 
+      let (part1, part2) := split_at_index lst2 (minus b (S (length lst1))) in
+      let ret_tree1 := bptNode b X sp1 ((snoc lst1 (peek sp2, sp2)) ++ part1) in
+      let ret_tree2 := bptNode b X (head part2) (tail part2) in
+      (ret_tree1, ret_tree2) 
+    else 
+      bptNode b X sp1 (snoc lst1 (peek sp2, sp2))
+  | _ => (t1, t2) 
+  end.
+
+Definition redist' {X: Type} {b: nat} (tree: bplustree b X)
+                            : bplustree b X :=
+  match tree with
+  | bptLeaf kvl => tree
+  | bptNode sp nodes => if blt_nat (node_length sp) b
+                        then 
+  end.
+
+Definition redist {X: Type} {b: nat} (tree_ind: bplustree b X * bool)
+                            : bplustree b X :=
+  redist' (fst tree_ind).
+  
               
 Fixpoint delete {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X))
-                : bplustree b X :=
+                : (bplustree b X * bool) :=
   
   let fix traverse_node (nptrs: list (nat * (bplustree b X)))
                    : list (nat * (bplustree b X)) :=
     match nptrs with
     | nil => nil
     | (k1,t1) :: xs => match xs with
-                       | nil => [(k1, delete sk t1)]
+                       | nil => [(k1, redist (delete sk t1))]
                        | (k2, t2) :: xs' => if blt_nat sk k2 
-                                            then (k1, (delete sk t1)) :: xs
+                                            then (k1, redist (delete sk t1)) :: xs
                                             else (k1,t1) :: traverse_node xs
                        end
     end
@@ -272,12 +308,15 @@ Fixpoint delete {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X))
   in
   
   match tree with
-  | bptLeaf kvl => bptLeaf b X (delete_from_list sk kvl)
+  | bptLeaf kvl => let deletion_lst := delete_from_list sk kvl in 
+                     if blt_nat (length deletion_lst) b 
+                     then (bptLeaf b X deletion_lst, true)
+                     else (bptLeaf b X deletion_lst, false)
   | bptNode sp nil => delete sk sp
   | bptNode sp ((k, child) :: xs) => 
                 if blt_nat sk k 
-  			    then bptNode b X (delete sk sp) ((k, child) :: xs)
-  			    else bptNode b X sp (traverse_node ((k, child) :: xs)) 
+  			    then (bptNode b X (redist (delete sk sp)) ((k, child) :: xs), false)
+  			    else (bptNode b X sp (traverse_node ((k, child) :: xs)), false) 
   end.
   
 Eval compute in root.
