@@ -30,7 +30,6 @@ Definition peek {X: Type} {b: nat} (tree: (bplustree b X)) : nat :=
       end
   end. 
 
-
 Definition left := bptLeaf 1 nat [(5, 55)].
 Definition centre := bptLeaf 1 nat [(7, 77)].
 Definition right := bptLeaf 1 nat [(9, 99)].
@@ -85,8 +84,6 @@ Fixpoint search {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X)) : option X 
     end
   end.
 
-
-
 Example search_test_find_item_left : search 4 root = None.
 Proof. simpl. reflexivity. Qed.
 Example search_test_find_item_centre : search 7 root = Some 77.
@@ -96,6 +93,22 @@ Proof. simpl. reflexivity. Qed.
 Example search_test_cant_find_missing : search 6 root = None.
 Proof. simpl. reflexivity. Qed.
 
+Fixpoint all_members {X: Type} {b: nat} (tree: (bplustree b X)) : list (nat * X) :=
+  let fix node_members (kpl: (list (nat * bplustree b X))) : list (nat * X) :=
+    match kpl with
+      | nil => []
+      | (k, p) :: kpl' => (all_members p) ++ (node_members kpl')
+    end
+  in
+  match tree with
+    | bptLeaf kpl => kpl
+    | bptNode sp kpl => (all_members sp) ++ (node_members kpl)
+  end.
+
+Example all_members_left : all_members left = [(5, 55)].
+Proof. simpl. reflexivity. Qed.
+Example all_members_root : all_members root = [(5, 55), (7, 77), (9, 99)].
+Proof. simpl. reflexivity. Qed.
 
 Fixpoint insert_into_list {X: Type} (k: nat) (v: X) (kvl: list (nat * X)) : list (nat * X) :=
   match kvl with 
@@ -220,9 +233,7 @@ Definition insert {X: Type} {b: nat} (insert_key: nat) (v: X) (tree: (bplustree 
 
 Eval compute in (root).
 Eval compute in (insert 1 11 left).
-Eval compute in (insert 1 88 root). 
-
- 
+Eval compute in (insert 3 33 (insert 2 22 (insert 6 66 (insert 1 11 root)))).  
  
 (* Deletion *)
 Fixpoint delete_from_list {X: Type} (sk: nat) (lst: list (nat * X))
