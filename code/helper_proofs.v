@@ -88,4 +88,44 @@ Example max_nat_2 : max_nat 11 3 = 11.
 Proof. simpl. reflexivity. Qed.
 Example max_nat_3 : max_nat 2 2 = 2.
 Proof. simpl. reflexivity. Qed.
+
+Theorem max_nat_works : forall (n1 n2: nat),
+  (n1 < n2 -> max_nat n1 n2 = n2) /\ (n2 < n1 -> max_nat n1 n2 = n1). 
+Proof.
+  intros n1 n2.
+  split; intros; 
+    unfold max_nat; remember (ble_nat n1 n2) as ble; destruct ble; 
+    try reflexivity.
+    symmetry in Heqble. apply ble_nat_false in Heqble. omega.
+    symmetry in Heqble. apply ble_nat_true in Heqble. omega.
+Qed.
+
+Theorem max_nat_elim_n1 : forall (n1 n2: nat),
+  n1 <= n2 <-> max_nat n1 n2 = n2.
+Proof.
+  split.
+  Case "->".
+    intros. unfold max_nat. remember (ble_nat n1 n2) as ble. destruct ble.
+    reflexivity.
+    symmetry in Heqble. apply ble_nat_false in Heqble. omega.
+  Case "<-".
+    intros. unfold max_nat in H. remember (ble_nat n1 n2) as ble. destruct ble;
+    symmetry in Heqble. apply ble_nat_true in Heqble. omega.
+    apply ble_nat_false in Heqble. omega.
+Qed.
+    
+Theorem max_nat_elim_n2 : forall (n1 n2: nat),
+  n1 >= n2 <-> max_nat n1 n2 = n1.
+Proof.
+  split.
+  Case "->".
+    intros. unfold max_nat. remember (ble_nat n1 n2) as ble. destruct ble;
+    symmetry in Heqble. apply ble_nat_true in Heqble. omega.
+    apply ble_nat_false in Heqble. omega.
+  Case "<-".
+    intros. unfold max_nat in H. remember (ble_nat n1 n2) as ble. destruct ble;
+    symmetry in Heqble. apply ble_nat_true in Heqble. omega.
+    apply ble_nat_false in Heqble. omega.
+Qed.
+  
   
