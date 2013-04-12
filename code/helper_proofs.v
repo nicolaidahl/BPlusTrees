@@ -27,6 +27,13 @@ Proof.
   unfold blt_nat. unfold blt_nat in H. rewrite <- H. reflexivity.
 Qed.
 
+Theorem blt_nat_n_m_false__blt_nat_Sn_Sm : forall n m,
+  blt_nat n m = false -> blt_nat (S n)  (S m) = false.
+Proof.
+  intros n m H.  destruct m. unfold blt_nat. simpl. reflexivity.
+  unfold blt_nat. simpl. unfold blt_nat in H. simpl in H. apply H.
+Qed.
+
 Theorem n_lt_m__Sn_lt_Sm : forall n m,
   n < m -> S n < S m.
 Proof.
@@ -47,6 +54,25 @@ Proof.
     intros m H. destruct m. inversion H. apply Sn_lt_Sm__n_lt_m in H. apply blt_nat_n_m__blt_nat_Sn_Sm.  apply IHn.  apply H.
 Qed.
 
+Theorem blt_nat_false : forall n m,
+  blt_nat n m = false <-> ~(n < m).
+Proof. 
+  split; generalize dependent m.
+  Case "->".
+    unfold not. intros. unfold blt_nat in H. apply ble_nat_false in H. omega.
+  Case "<-".
+    induction n. 
+    SCase "n = 0". 
+      intros. destruct m. unfold blt_nat. simpl. reflexivity.
+      unfold not in H. apply ex_falso_quodlibet. apply H. omega.
+    SCase "n = S n".
+      intros. destruct m. compute. reflexivity.
+      apply blt_nat_n_m_false__blt_nat_Sn_Sm.
+      apply IHn.
+      unfold not. unfold not in H.
+      intro. apply H. 
+      apply n_lt_m__Sn_lt_Sm. apply H0.
+Qed.
 
 (*
  * Proofs about max
