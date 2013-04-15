@@ -246,7 +246,7 @@ Eval compute in (insert 3 33 (insert 2 22 (insert 6 66 (insert 1 11 root)))).
 
 
 (* Height *)
-Fixpoint height' {X: Type} {b: nat} (h: nat) (tree: bplustree b X) : nat :=
+(*Fixpoint height' {X: Type} {b: nat} (h: nat) (tree: bplustree b X) : nat :=
   let fix highest_in_list {X: Type} {b: nat} (h: nat) (tlist: list (nat * (bplustree b X))) : nat :=
 	  match tlist with
 	    | [] => h
@@ -273,7 +273,7 @@ Proof. simpl. reflexivity. Qed.
 Eval compute in (height (bptNode 1 nat (bptLeaf 1 nat [(4, 44)]) [((1, bptNode 1 nat (bptNode 1 nat (bptLeaf 1 nat [(1, 11)]) []) []))])).
 Example height_right_4 : height (bptNode 1 nat (bptLeaf 1 nat [(1, 11)]) [((4, bptNode 1 nat (bptNode 1 nat (bptLeaf 1 nat [(4, 11)]) []) []))]) = 3.
 Proof. compute. reflexivity. Qed.
-
+*)
 
 
 (* Deletion *)
@@ -451,6 +451,9 @@ Fixpoint delete {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X))
   			    else (bptNode b X sp (traverse_node ((k, child) :: xs)), false) 
   end.
   
-Eval compute in root.
-Eval compute in delete 7 root.
+Definition empty2Tree := bptLeaf 1 nat [].
+Definition atree:= insert 17 117 (insert 6 106 (insert 31 131 (insert 4 104 (insert 20 120 (insert 15 115 
+                   (insert 1 101 (insert 7 107 (insert 3 103 empty2Tree)))))))).
+Eval compute in atree.
+Eval compute in delete 3 atree.
   
