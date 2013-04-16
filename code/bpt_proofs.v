@@ -124,11 +124,13 @@ Inductive valid_splits (b: nat) (X: Type) : bplustree b X -> list (nat * bplustr
 (* Prop for determining if a subtree is a valid subtree *)
 Inductive valid_sub_bplustree (b: nat) (X: Type) : bplustree b X -> Prop :=
   | valid_leaf : forall (l: list (nat * X)), 
+                     b <> 0 ->
                      b <= length(l) -> 
                      length(l) <= mult b 2 ->
                      kvl_sorted l ->  
                      valid_sub_bplustree b X (bptLeaf b X l)
-  | valid_node : forall (sp: bplustree b X) (kpl: list (nat * bplustree b X)), 
+  | valid_node : forall (sp: bplustree b X) (kpl: list (nat * bplustree b X)),
+                      b <> 0 -> 
                       b <= length(kpl) -> 
                       length(kpl) <= mult b 2 -> 
                       valid_sub_bplustree b X sp ->
@@ -141,10 +143,12 @@ Inductive valid_sub_bplustree (b: nat) (X: Type) : bplustree b X -> Prop :=
 (* Main prop that determines if an entire B+-tree is valid *)
 Inductive valid_bplustree (b: nat) (X: Type) : bplustree b X -> Prop :=
   | root_is_a_leaf : forall (l: list (nat * X)), 
+                     b <> 0 ->
                      length(l) <= mult b 2 ->
                      kvl_sorted l ->  
                      valid_bplustree b X (bptLeaf b X l)
-  | valid_root_node : forall (sp: bplustree b X) (kpl: list (nat * bplustree b X)), 
+  | valid_root_node : forall (sp: bplustree b X) (kpl: list (nat * bplustree b X)),
+                      b <> 0 -> 
                       length(kpl) <> 0 -> 
                       length(kpl) <= mult b 2 -> 
                       valid_sub_bplustree b X sp ->
@@ -156,21 +160,22 @@ Inductive valid_bplustree (b: nat) (X: Type) : bplustree b X -> Prop :=
 
 (* Some smaller examples *)
 Example valid_empty_tree : valid_bplustree 1 nat (bptLeaf 1 nat []).
-Proof. apply root_is_a_leaf. simpl. omega. apply kvl_sorted_0. Qed.
+Proof. apply root_is_a_leaf. omega. simpl. omega. apply kvl_sorted_0. Qed.
 Example valid_tiny_tree : valid_bplustree 1 nat (bptLeaf 1 nat [(1, 11), (2,22)]).
-Proof.  apply root_is_a_leaf. simpl. omega. apply kvl_sorted_cons. apply kvl_sorted_1. reflexivity. Qed.
+Proof.  apply root_is_a_leaf. omega. simpl. omega. apply kvl_sorted_cons. apply kvl_sorted_1. reflexivity. Qed.
 Example invalid_bigger_tree : ~ (valid_bplustree 1 nat (bptLeaf 1 nat [(1, 11), (2,22), (3, 33)])).
-Proof. unfold not. intro. inversion H. simpl in H1. inversion H1. inversion H4. inversion H6. Qed.
+Proof. unfold not. intro. inversion H. simpl in H2. inversion H2. inversion H5. inversion H7. Qed.
 
 (* 3 Examples all showing the same - that our demo `root` B+-tree is valid *)
 Example valid_small_tree : valid_bplustree 1 nat root.
 Proof. compute. apply valid_root_node. 
+  Case "valid b". omega.
   Case "has enough items". simpl. omega.
   Case "doesnt have too many items". simpl. omega. 
-  Case "sp". apply valid_leaf.  simpl.  omega. simpl. omega. apply kvl_sorted_1.
+  Case "sp". apply valid_leaf. omega. simpl.  omega. simpl. omega. apply kvl_sorted_1.
   Case "kvl". apply av_next. apply av_next. apply av_empty.
-    apply valid_leaf. simpl. omega.  simpl. omega. apply kvl_sorted_1.
-    apply valid_leaf. simpl. omega.  simpl. omega. apply kvl_sorted_1.
+    apply valid_leaf. omega. simpl. omega.  simpl. omega. apply kvl_sorted_1.
+    apply valid_leaf. omega. simpl. omega.  simpl. omega. apply kvl_sorted_1.
   Case "valid sorting". 
     apply kvl_sorted_cons. apply kvl_sorted_1. reflexivity.
   Case "valid splits". 
@@ -181,14 +186,63 @@ Qed.
 Example valid_small_tree' : valid_bplustree 1 nat root.
 Proof. compute.
   constructor. 
+  Case "valid b". omega.
   Case "has enough items". simpl. omega.
   Case "doesnt have too many items". simpl. omega. 
-  Case "sp". repeat constructor. 
-  Case "kvl". repeat constructor.
+  Case "sp". repeat constructor. omega. 
+  Case "kvl". repeat constructor. omega. omega.
   Case "valid sorting". repeat constructor.
   Case "valid splits". repeat constructor.
 Qed.
 Example valid_small_tree'' : valid_bplustree 1 nat root.
-Proof. compute. repeat constructor. simpl. omega. Qed.
+Proof. compute. repeat constructor; simpl; omega. Qed.
+
+Eval simpl in (split_list' 1 [1, 2] [3, 4, 5]).
+
+Theorem split_list'_preserves_list' : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
+   length l1 = b -> l1 ++ l2 = l -> split_list' b l3 l = ((rev l3) ++ l1, l2).
+Proof. 
+  induction b. 
+  Case "b = 0". intros.
+    simpl. apply length_0_impl_nil in H. subst. simpl. rewrite app_nil_r. 
+    reflexivity.
+  Case "b = S b". intros.
+    destruct l.
+    SCase "l = []".
+      apply app_length_le_l1 in H0. simpl in H0. rewrite H in H0. inversion H0.
+    SCase "l = x::l".
+      simpl. destruct l1. simpl in H. inversion H.
+      rewrite <- app_comm_cons in H0. inversion H0. rewrite H3.
+      simpl. rewrite rev_app_cons. apply IHb.
+      simpl in H. inversion H. reflexivity. apply H3.
+Qed.  
+
+Theorem split_list'_preserves_list : forall (X: Type) (b: nat) (l l1 l2: list X),
+   length l1 = b -> l1 ++ l2 = l -> split_list' b [] l = (l1, l2).
+Proof.
+  intros.
+  replace (l1) with (rev [] ++ l1) by reflexivity.
+  apply split_list'_preserves_list'; assumption.
+Qed.
+
+Theorem split_list_preserves_list : forall (X: Type) (b: nat) (l l1 l2: list X),
+   length l1 = b -> l1 ++ l2 = l -> split_list b l = (l1, l2).
+Proof.
+  intros. unfold split_list. apply split_list'_preserves_list; assumption.
+Qed.
+
+Theorem insert_preserves_valid_bplustree : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat) (v: X),
+  valid_bplustree b X t -> valid_bplustree b X (insert k v t).
+Proof.
+  intros. induction H. 
+  Case "root_is_a_leaf". admit.
+  
+    (* unfold insert. remember (insert' k v (bptLeaf b X l)) as insert'.
+    destruct insert'. inversion Heqinsert'. remember (insert_leaf b k v l) as insert_leaf.
+    destruct insert_leaf. destruct o0. remember (head_key l1) as head_key.
+    destruct head_key. inversion H3. *)
+
+  Case "valid_root_node". admit.
+Admitted.
 
     
