@@ -6,6 +6,10 @@ Inductive bplustree (b: nat) (X:Type) : Type :=
   | bptLeaf : list (nat * X) -> bplustree b X
   . 
 
+Notation "[[ b , X | x , .. , y ]]" := (bptLeaf b X (cons x .. (cons y []) ..)) (at level 100, format 
+  "'//' [[ b , X | '[v ' '//' x , .. , y ']' '//' ]]").
+Notation "{{ b , X | f , x , .. , y }}" := (bptNode b X f (cons x .. (cons y []) ..)) (at level 99, format
+  "'//' {{ b , X | '[v  ' '//' f , '//' x , .. , y ']' '//' }}").
 
 Example test := bptLeaf 2 bool [(1, true), (2, false)].
 
@@ -303,6 +307,9 @@ Example list2bplustree_1 : list2bplustree 4 nat [(1, 1)] = bptLeaf 4 nat [(1, 1)
 Proof. simpl. reflexivity. Qed.
 Example list2bplustree_4 : list2bplustree 1 nat [(4, 4), (2, 2), (3, 3), (1, 1)] = bptNode 1 nat (bptLeaf 1 nat [(1, 1), (2, 2)]) [(3, (bptLeaf 1 nat [(3, 3), (4, 4)]))].
 Proof. compute. reflexivity. Qed.
+
+Eval compute in ({{1, nat | [[1, nat | (1, 11)]], (22, [[1, nat | (2, 22)]])}}).
+Eval compute in (list2bplustree 1 nat [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6)]).
 
 
 
