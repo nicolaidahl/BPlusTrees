@@ -281,6 +281,31 @@ Proof. compute. reflexivity. Qed.
 *)
 
 
+(* List2Bplustree *)
+Fixpoint list2bplustree' {b: nat} {X: Type} (l: list (nat * X)) (tree: bplustree b X) : bplustree b X :=
+  match l with
+    | []          => tree
+    | (k, v) :: l' => list2bplustree' l' (insert k v tree)
+  end.
+
+Definition list2bplustree (b: nat) (X: Type) (l: list (nat * X)) : bplustree b X :=
+  match l with
+    | []          => bptLeaf b X []
+    | (k, v) :: l => list2bplustree' l (bptLeaf b X [(k, v)])
+  end.
+
+Eval compute in (list2bplustree 1 nat [(4, 4), (2, 2), (3, 3), (1, 1)]).
+Eval compute in (list2bplustree 1 nat [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6)]).
+  
+Example list2bplustree_empty : list2bplustree 2 nat [] = bptLeaf 2 nat [].
+Proof. simpl. reflexivity. Qed.
+Example list2bplustree_1 : list2bplustree 4 nat [(1, 1)] = bptLeaf 4 nat [(1, 1)].
+Proof. simpl. reflexivity. Qed.
+Example list2bplustree_4 : list2bplustree 1 nat [(4, 4), (2, 2), (3, 3), (1, 1)] = bptNode 1 nat (bptLeaf 1 nat [(1, 1), (2, 2)]) [(3, (bptLeaf 1 nat [(3, 3), (4, 4)]))].
+Proof. compute. reflexivity. Qed.
+
+
+
 (* Deletion *)
 Fixpoint delete_from_list {X: Type} (sk: nat) (lst: list (nat * X))
                           : list (nat * X) :=
