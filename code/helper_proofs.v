@@ -128,4 +128,30 @@ Proof.
     apply ble_nat_false in Heqble. omega.
 Qed.
   
-  
+Lemma length_0_impl_nil : forall (X: Type) (l: list X),
+  length l = 0 -> l = [].
+Proof.
+  intros. induction l.
+  reflexivity.
+  simpl in H. inversion H.
+Qed.
+
+Lemma app_length_le_l1 : forall (X: Type) (l l1 l2: list X),
+  l1 ++ l2 = l -> length l1 <= length l.
+Proof.
+  intros. generalize dependent l1.
+  induction l.
+  Case "l = []".
+    intros. apply app_eq_nil in H. inversion H. subst. simpl. omega.
+  Case "l = a::l".
+    intros. destruct l1. simpl. omega.
+    rewrite <- app_comm_cons in H.
+    inversion H. rewrite H2.
+    simpl. apply le_n_S. apply IHl. apply H2.
+Qed.
+
+Lemma rev_app_cons : forall (X: Type) (x: X) (l1 l2: list X),
+  rev l1 ++ x :: l2 = rev (x::l1) ++ l2.
+Proof.
+  intros. simpl. rewrite <- app_assoc. simpl. reflexivity.
+Qed.
