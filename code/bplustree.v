@@ -7,9 +7,9 @@ Inductive bplustree (b: nat) (X:Type) : Type :=
   . 
 
 Notation "[[ b , X | x , .. , y ]]" := (bptLeaf b X (cons x .. (cons y []) ..)) (at level 100, format 
-  "'//' [[ b , X | '[v ' '//' x , .. , y ']' '//' ]]").
+  "[[ b , X | '[v ' x , .. , y ']' ]]").
 Notation "{{ b , X | f , x , .. , y }}" := (bptNode b X f (cons x .. (cons y []) ..)) (at level 99, format
-  "'//' {{ b , X | '[v  ' '//' f , '//' x , .. , y ']' '//' }}").
+  "{{ b , X | '[v  ' '//' f , '//' x , .. , y ']' '//' }}").
 
 Example test := bptLeaf 2 bool [(1, true), (2, false)].
 
@@ -336,7 +336,7 @@ Definition merge_trees {X: Type} {b:nat} (t1 t2: bplustree b X)
                        : bplustree b X :=
   match (t1, t2) with
   | (bptNode sp1 lst1, bptNode sp2 lst2) => 
-      bptNode b X sp1 (app lst1 ((peek_key sp2, sp2) :: lst2))
+      bptNode b X sp1 (app lst1 ((peek_key_deep sp2, sp2) :: lst2))
   | (bptLeaf lst1, bptLeaf lst2) => bptLeaf b X (app lst1 lst2)
   | _ => t1
   end. 
@@ -351,7 +351,7 @@ Definition distr_betweentwo {X: Type} {b: nat} (t1 t2: bplustree b X)
       let index_to_split_list2 := minus b (S (length lst1)) in 
       let (part1, part2) := split_at_index lst2 index_to_split_list2 in
       
-      let ret_tree1 := bptNode b X sp1 ((snoc lst1 (peek_key sp2, sp2)) ++ part1) in
+      let ret_tree1 := bptNode b X sp1 ((snoc lst1 (peek_key_deep sp2, sp2)) ++ part1) in
       
       let new_list2_sp := match head part2 with
                           | None => sp2
@@ -379,7 +379,7 @@ Definition distr_betweentwo {X: Type} {b: nat} (t1 t2: bplustree b X)
                        | Some xs => xs
                        end in
                        
-      let ret_tree2 := bptNode b X new_list2_sp (app (tail_of_part2) ((peek_key sp2, sp2) :: lst2)) in
+      let ret_tree2 := bptNode b X new_list2_sp (app (tail_of_part2) ((peek_key_deep sp2, sp2) :: lst2)) in
       
       (ret_tree1, ret_tree2)
   | (bptLeaf kvl1, bptLeaf kvl2) => 
@@ -400,72 +400,74 @@ Eval compute in distr_betweentwo twoEntriesNode emptyNode.
 Fixpoint redistr_tail {X: Type} {b: nat} (nodes: list (nat * bplustree b X))
                      : (list (nat * bplustree b X) * bool) :=
   match nodes with
-  | nil => nil
-  | x1 :: x2 :: nil => if blt_nat (node_length (snd x1)) b
-                       then
-                         if beq_nat (node_length (snd x2)) b
-	                     then 
-                           let merge_res := merge_trees (snd x1) (snd x2) in
-	                       [(peek_key merge_res, merge_res)]
-	                     else 
-	                       let (a, b) := distr_betweentwo (snd x1) (snd x2) in
-	                       (peek_key a, a) :: (peek_key b, b) :: nil
-	                   else if blt_nat (node_length (snd x2)) b
-	                        then
-                              if beq_nat (node_length (snd x1)) b
-	                          then 
-                                let merge_res := merge_trees (snd x1) (snd x2) in
-	                            [(peek_key merge_res, merge_res)]
-	                          else 
-	                            let (a, b) := distr_betweentwo (snd x1) (snd x2) in
-	                            (peek_key a, a) :: (peek_key b, b) :: nil
-	                        else
-	                          x1 :: x2 :: nil
-  | x1 :: xs1 => match xs1 with
-                 | nil => [x1]
-                 | x2 :: xs2 => if blt_nat (node_length (snd x1)) b
-	                            then 
-	                              if beq_nat (node_length (snd x2)) b
-	                              then 
-	                                let merge_res := merge_trees (snd x1) (snd x2) in
-	                                (peek_key merge_res, merge_res) :: xs2
-	                              else 
-	                                let (a, b) := distr_betweentwo (snd x1) (snd x2) in
-	                                (peek_key a, a) :: (peek_key b, b) :: xs2
-	                            else
-	                              redistr_tail xs1
-	             end
+  | nil => (nil, false)
+  | x1 :: xs1 => 
+         match xs1 with
+	     | nil => ([x1], false)
+	     | x2 :: nil => if blt_nat (node_length (snd x1)) b
+	                    then
+	             		  if beq_nat (node_length (snd x2)) b
+	             		  then 
+	               			let merge_res := merge_trees (snd x1) (snd x2) in
+	               			([(peek_key_deep merge_res, merge_res)], true)
+	             		  else 
+	               			let (a, b) := distr_betweentwo (snd x1) (snd x2) in
+	               			((peek_key_deep a, a) :: (peek_key_deep b, b) :: nil, false)
+	           			else if blt_nat (node_length (snd x2)) b
+	                	then
+	                  	  if beq_nat (node_length (snd x1)) b
+	                  	  then 
+	                    	let merge_res := merge_trees (snd x1) (snd x2) in
+	                    	([(peek_key_deep merge_res, merge_res)], true)
+	                  	  else 
+	                    	let (a, b) := distr_betweentwo (snd x1) (snd x2) in
+	                    	((peek_key_deep a, a) :: (peek_key_deep b, b) :: nil, false)
+	                	else
+	                  	  (x1 :: x2 :: nil, false)
+	     | x2 :: xs2 => if blt_nat (node_length (snd x1)) b
+	                    then 
+	                      if beq_nat (node_length (snd x2)) b
+	                      then 
+	                        let merge_res := merge_trees (snd x1) (snd x2) in
+	                        ((peek_key_deep merge_res, merge_res) :: xs2, true)
+	                      else 
+	                        let (a, b) := distr_betweentwo (snd x1) (snd x2) in
+	                        ((peek_key_deep a, a) :: (peek_key_deep b, b) :: xs2, false)
+	                    else
+	                      redistr_tail xs1
+	     end
   end.
 
-Definition redistr {X: Type} {b: nat} (tree: bplustree b X)
+Definition redistribute {X: Type} {b: nat} (tree: bplustree b X)
                             : (bplustree b X * bool) :=
   match tree with
-  | bptLeaf kvl => tree
-  | bptNode sp (x :: xs) => if blt_nat (node_length sp) b
-	                        then
-	                          if beq_nat (node_length (snd x)) b
-                              then
-                                (bptNode b X (merge_trees sp (snd x)) xs, true)
-                              else 
-                                let (new_sp, first_elem) := distr_betweentwo sp (snd x) in
-                                let new_node := bptNode b X new_sp ((peek_key_deep first_elem, first_elem) :: xs) in
-                                (new_node, false)
-	                        else
-	                          bptNode b X sp (redistr_tail xs)
-  | bptNode sp nil => (tree, true)
+  | bptLeaf kvl => (tree, false)
+  | bptNode sp (x :: xs) => 
+    if blt_nat (node_length sp) b
+    then
+      if beq_nat (node_length (snd x)) b
+      then
+        (bptNode b X (merge_trees sp (snd x)) xs, true)
+      else 
+        let (new_sp, first_elem) := distr_betweentwo sp (snd x) in
+        let new_node := bptNode b X new_sp ((peek_key_deep first_elem, first_elem) :: xs) in
+        (new_node, false)
+    else
+      let (tail, should_balance) := redistr_tail xs in
+      (bptNode b X sp tail, should_balance)
+  | bptNode sp nil => (tree, false)
   end.
 
 Definition balance {X: Type} {b: nat} (tree_ind: bplustree b X * bool)
                             : bplustree b X * bool :=
   match snd tree_ind with
-  | false => fst tree_ind
-  | true  => redistr (fst tree_ind)
+  | false => (fst tree_ind, false)
+  | true  => redistribute (fst tree_ind)
   end.
   
   
 (* Returns a tree that it has deleted an entry from, a bool indicating if balancing should
-   be performed, and a bool indicating if there should be selected a new pointer value for
-   the sub-tree *)
+   be performed *)
 Fixpoint delete' {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X))
                 : (bplustree b X * bool) :=
   
@@ -498,19 +500,19 @@ Fixpoint delete' {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X))
   | bptNode sp nil => 
                 let (new_sp, should_balance) := delete' sk sp in
   			      let new_node := (bptNode b X new_sp nil) in
-  			        (balance (new_node, should_balance), false)
+  			        balance (new_node, should_balance)
   			    
   | bptNode sp ((k, child) :: xs) => 
                 if blt_nat sk k 
   			    then 
   			      let (new_sp, should_balance) := delete' sk sp in
-  			        let new_node := (bptNode b X new_sp ((k, child) :: xs)) in
-  			          (balance (new_node, should_balance), false)
-  			          
+  			      let new_node := (bptNode b X new_sp ((k, child) :: xs)) in
+  			        balance (new_node, should_balance)
+  			    
   			    else 
   			      let (new_node_list, should_balance) := traverse_node ((k, child) :: xs) in
   			      let new_node := (bptNode b X sp (new_node_list)) in
-  			        (balance (new_node, should_balance), false)
+  			        balance (new_node, should_balance)
   end.
 
 Definition delete {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X))
@@ -521,8 +523,7 @@ Definition empty2Tree := bptLeaf 1 nat [].
 Definition atree:= insert 17 117 (insert 6 106 (insert 31 131 (insert 4 104 (insert 20 120 (insert 15 115 
                    (insert 1 101 (insert 7 107 (insert 3 103 empty2Tree)))))))).
 Eval compute in atree.
-Eval compute in delete 6 (delete 3 (delete 1 atree)).
-  
+Eval compute in delete 7 atree.
   
   
   
