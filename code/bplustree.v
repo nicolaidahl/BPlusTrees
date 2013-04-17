@@ -255,7 +255,7 @@ Eval compute in (insert 3 33 (insert 2 22 (insert 6 66 (insert 1 11 root)))).
 
 
 (* Height *)
-(*Fixpoint height' {X: Type} {b: nat} (h: nat) (tree: bplustree b X) : nat :=
+Fixpoint height' {X: Type} {b: nat} (h: nat) (tree: bplustree b X) : nat :=
   let fix highest_in_list {X: Type} {b: nat} (h: nat) (tlist: list (nat * (bplustree b X))) : nat :=
 	  match tlist with
 	    | [] => h
@@ -282,7 +282,32 @@ Proof. simpl. reflexivity. Qed.
 Eval compute in (height (bptNode 1 nat (bptLeaf 1 nat [(4, 44)]) [((1, bptNode 1 nat (bptNode 1 nat (bptLeaf 1 nat [(1, 11)]) []) []))])).
 Example height_right_4 : height (bptNode 1 nat (bptLeaf 1 nat [(1, 11)]) [((4, bptNode 1 nat (bptNode 1 nat (bptLeaf 1 nat [(4, 11)]) []) []))]) = 3.
 Proof. compute. reflexivity. Qed.
-*)
+
+
+
+(* Mindepth *)
+Fixpoint mindepth' {X: Type} {b: nat} (h: nat) (tree: bplustree b X) : nat :=
+  let fix lowest_in_list {X: Type} {b: nat} (h: nat) (tlist: list (nat * (bplustree b X))) : nat :=
+    match tlist with
+      | [] => h
+      | (k, tree) :: kvl => let new_h := (mindepth' 0 tree) in 
+                            if ble_nat new_h h
+                            then lowest_in_list new_h kvl
+                            else lowest_in_list h kvl
+    end
+  in
+  match tree with
+    | bptLeaf kvl => h
+    | bptNode sp kvl => min_nat (mindepth' (S h) sp) ((S h) + (lowest_in_list (height sp) kvl))
+  end.
+  
+Definition mindepth {X: Type} {b: nat} (tree: bplustree b X) : nat :=
+  mindepth' 0 tree.
+
+Definition mindepth_tree := (bptNode 1 nat (bptLeaf 1 nat [(11, 1)]) [(22, bptNode 1 nat (bptNode 1 nat (bptLeaf 1 nat [(33, 3)]) []) [])]).
+Eval compute in (mindepth mindepth_tree).
+Eval compute in (height mindepth_tree).
+
 
 
 (* List2Bplustree *)
@@ -292,24 +317,30 @@ Fixpoint list2bplustree' {b: nat} {X: Type} (l: list (nat * X)) (tree: bplustree
     | (k, v) :: l' => list2bplustree' l' (insert k v tree)
   end.
 
-Definition list2bplustree (b: nat) (X: Type) (l: list (nat * X)) : bplustree b X :=
+Definition list2bplustree (b: nat) {X: Type} (l: list (nat * X)) : bplustree b X :=
   match l with
     | []          => bptLeaf b X []
     | (k, v) :: l => list2bplustree' l (bptLeaf b X [(k, v)])
   end.
 
-Eval compute in (list2bplustree 1 nat [(4, 4), (2, 2), (3, 3), (1, 1)]).
-Eval compute in (list2bplustree 1 nat [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6)]).
+Eval compute in (list2bplustree 1 [(4, 4), (2, 2), (3, 3), (1, 1)]).
+Eval compute in (list2bplustree 1 [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6)]).
   
-Example list2bplustree_empty : list2bplustree 2 nat [] = bptLeaf 2 nat [].
+Example list2bplustree_empty : list2bplustree 2 [] = bptLeaf 2 nat [].
 Proof. simpl. reflexivity. Qed.
-Example list2bplustree_1 : list2bplustree 4 nat [(1, 1)] = bptLeaf 4 nat [(1, 1)].
+Example list2bplustree_1 : list2bplustree 4 [(1, 1)] = bptLeaf 4 nat [(1, 1)].
 Proof. simpl. reflexivity. Qed.
-Example list2bplustree_4 : list2bplustree 1 nat [(4, 4), (2, 2), (3, 3), (1, 1)] = bptNode 1 nat (bptLeaf 1 nat [(1, 1), (2, 2)]) [(3, (bptLeaf 1 nat [(3, 3), (4, 4)]))].
+Example list2bplustree_4 : list2bplustree 1 [(4, 4), (2, 2), (3, 3), (1, 1)] = bptNode 1 nat (bptLeaf 1 nat [(1, 1), (2, 2)]) [(3, (bptLeaf 1 nat [(3, 3), (4, 4)]))].
 Proof. compute. reflexivity. Qed.
 
 Eval compute in ({{1, nat | [[1, nat | (1, 11)]], (22, [[1, nat | (2, 22)]])}}).
-Eval compute in (list2bplustree 1 nat [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6)]).
+Eval compute in (list2bplustree 1 [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6)]).
+
+Definition bigtree := list2bplustree 1 [(11, 1), (22, 2), (33, 3), (44, 4), (55, 5), (66, 6), (77, 7)].
+
+Eval compute in (bigtree).
+Eval compute in (height bigtree).
+Eval compute in (mindepth' 0 bigtree).
 
 
 

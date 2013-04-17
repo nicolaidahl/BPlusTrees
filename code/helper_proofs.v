@@ -74,6 +74,64 @@ Proof.
       apply n_lt_m__Sn_lt_Sm. apply H0.
 Qed.
 
+
+
+(*
+ * Proofs about min
+ *)
+Definition min_nat (n1 n2 : nat) : nat :=
+  if ble_nat n1 n2
+  then n1
+  else n2.
+  
+Example min_nat_1 : min_nat 1 5 = 1.
+Proof. simpl. reflexivity. Qed.
+Example min_nat_2 : min_nat 11 3 = 3.
+Proof. simpl. reflexivity. Qed.
+Example min_nat_3 : min_nat 2 2 = 2.
+Proof. simpl. reflexivity. Qed.
+
+Theorem min_nat_works : forall (n1 n2: nat),
+  (n2 < n1 -> min_nat n2 n1 = n2) /\ (n1 > n2 -> min_nat n2 n1 = n2).
+Proof.
+  intros n1 n2;
+  split; intros;
+    unfold min_nat; remember (ble_nat n2 n1) as ble; destruct ble;
+    try reflexivity.
+    symmetry in Heqble. apply ble_nat_false in Heqble. omega.
+    symmetry in Heqble. apply ble_nat_false in Heqble. omega.
+ Qed.
+  
+Theorem min_nat_elim_n1 : forall (n1 n2: nat),
+  n1 <= n2 <-> min_nat n1 n2 = n1.
+Proof.
+  split.
+  Case "->".
+    intros. unfold min_nat. remember (ble_nat n1 n2) as ble. destruct ble.
+    reflexivity.
+    symmetry in Heqble. apply ble_nat_false in Heqble. omega.
+  Case "<-".
+    intros. unfold min_nat in H. remember (ble_nat n1 n2) as ble. destruct ble;
+    symmetry in Heqble. apply ble_nat_true in Heqble. omega.
+    apply ble_nat_false in Heqble. omega.
+Qed.
+
+Theorem min_nat_elim_n2 : forall (n1 n2: nat),
+  n1 >= n2 <-> min_nat n1 n2 = n2.
+Proof.
+  split.
+  Case "->".
+    intros. unfold min_nat. remember (ble_nat n1 n2) as ble. destruct ble;
+    symmetry in Heqble. apply ble_nat_true in Heqble. omega.
+    apply ble_nat_false in Heqble. omega.
+  Case "<-".
+    intros. unfold min_nat in H. remember (ble_nat n1 n2) as ble. destruct ble;
+    symmetry in Heqble. apply ble_nat_true in Heqble. omega.
+    apply ble_nat_false in Heqble. omega.
+Qed.
+
+
+
 (*
  * Proofs about max
  *)
@@ -128,4 +186,30 @@ Proof.
     apply ble_nat_false in Heqble. omega.
 Qed.
   
-  
+Lemma length_0_impl_nil : forall (X: Type) (l: list X),
+  length l = 0 -> l = [].
+Proof.
+  intros. induction l.
+  reflexivity.
+  simpl in H. inversion H.
+Qed.
+
+Lemma app_length_le_l1 : forall (X: Type) (l l1 l2: list X),
+  l1 ++ l2 = l -> length l1 <= length l.
+Proof.
+  intros. generalize dependent l1.
+  induction l.
+  Case "l = []".
+    intros. apply app_eq_nil in H. inversion H. subst. simpl. omega.
+  Case "l = a::l".
+    intros. destruct l1. simpl. omega.
+    rewrite <- app_comm_cons in H.
+    inversion H. rewrite H2.
+    simpl. apply le_n_S. apply IHl. apply H2.
+Qed.
+
+Lemma rev_app_cons : forall (X: Type) (x: X) (l1 l2: list X),
+  rev l1 ++ x :: l2 = rev (x::l1) ++ l2.
+Proof.
+  intros. simpl. rewrite <- app_assoc. simpl. reflexivity.
+Qed.
