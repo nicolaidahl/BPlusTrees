@@ -66,7 +66,7 @@ Proof.
        apply blt_nat_true. omega.
 Qed.
 
-Theorem insert_works : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
+Theorem insert_into_list_works : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
   kvl_sorted l -> search_leaf k (insert_into_list k v l) = Some v. 
 Proof.
   intros. induction l.
