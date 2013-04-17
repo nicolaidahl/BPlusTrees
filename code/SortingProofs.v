@@ -198,9 +198,6 @@ Proof.
       apply list_tail_is_sorted in H. apply H.
 Qed.    
     
-
-Eval simpl in (split_list' 1 [1, 2] [3, 4, 5]).
-
 Theorem split_list'_preserves_list' : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
    length l1 = b -> l1 ++ l2 = l -> split_list' b l3 l = ((rev l3) ++ l1, l2).
 Proof. 
