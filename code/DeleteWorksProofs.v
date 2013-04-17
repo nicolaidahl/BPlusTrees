@@ -1,4 +1,4 @@
-Require Export valid_bplustree.
+Require Export ValidBPlusTree.
 Require Export SfLib.
 
 Definition member_of_kvlist {X: Type} (sk: nat) (lst: list (nat * X)): Prop :=
@@ -22,6 +22,7 @@ Proof.
     SCase "del_length true".
       simpl. destruct (delete_from_list sk l). simpl. reflexivity. 
       simpl.
+ Admitted.
   
 Theorem deletion_preserves_invariant: forall (b: nat) (X: Type) (k: nat) (t: bplustree b X),
   valid_bplustree b X (t) -> 

@@ -1,18 +1,9 @@
 Require Export SfLib.
+Require Export HelperFunctions.
 
 (* 
- * Proofs about less-than
+ * Proofs about blt_nat
  *)
-Definition blt_nat (n m : nat) : bool :=
-  ble_nat (S n) m.
-  
-Theorem ble_nat_refl : forall n,
-    ble_nat n n = true.
-Proof.
-  induction n. reflexivity.
-  simpl. apply IHn.
-Qed.
-  
 Theorem Sn_lt_Sm__n_lt_m : forall n m,
   S n < S m -> n < m.
 Proof.
@@ -77,20 +68,8 @@ Qed.
 
 
 (*
- * Proofs about min
+ * Proofs about min_nat
  *)
-Definition min_nat (n1 n2 : nat) : nat :=
-  if ble_nat n1 n2
-  then n1
-  else n2.
-  
-Example min_nat_1 : min_nat 1 5 = 1.
-Proof. simpl. reflexivity. Qed.
-Example min_nat_2 : min_nat 11 3 = 3.
-Proof. simpl. reflexivity. Qed.
-Example min_nat_3 : min_nat 2 2 = 2.
-Proof. simpl. reflexivity. Qed.
-
 Theorem min_nat_works : forall (n1 n2: nat),
   (n2 < n1 -> min_nat n2 n1 = n2) /\ (n1 > n2 -> min_nat n2 n1 = n2).
 Proof.
@@ -133,20 +112,8 @@ Qed.
 
 
 (*
- * Proofs about max
+ * Proofs about max_nat
  *)
-Definition max_nat (n1 n2 : nat) : nat :=
-  if ble_nat n1 n2
-  then n2
-  else n1.
-  
-Example max_nat_1 : max_nat 1 5 = 5.
-Proof. simpl. reflexivity. Qed.
-Example max_nat_2 : max_nat 11 3 = 11.
-Proof. simpl. reflexivity. Qed.
-Example max_nat_3 : max_nat 2 2 = 2.
-Proof. simpl. reflexivity. Qed.
-
 Theorem max_nat_works : forall (n1 n2: nat),
   (n1 < n2 -> max_nat n1 n2 = n2) /\ (n2 < n1 -> max_nat n1 n2 = n1). 
 Proof.
@@ -185,7 +152,12 @@ Proof.
     symmetry in Heqble. apply ble_nat_true in Heqble. omega.
     apply ble_nat_false in Heqble. omega.
 Qed.
-  
+
+
+
+(*
+ * Lenght lemmas
+ *)
 Lemma length_0_impl_nil : forall (X: Type) (l: list X),
   length l = 0 -> l = [].
 Proof.

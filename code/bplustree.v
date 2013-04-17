@@ -1,5 +1,5 @@
 Require Export SfLib.
-Require Export helper_proofs.
+Require Export HelperFunctions.
 
 Inductive bplustree (b: nat) (X:Type) : Type :=
   | bptNode : bplustree b X -> list (nat * (bplustree b X)) -> bplustree b X
