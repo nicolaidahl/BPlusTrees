@@ -42,37 +42,7 @@ Proof.
       apply H6.
 Qed.
 
-(*
-Lemma kvl_sorted_elim_cons : forall (X: Type) (l1 l2: list (nat * X)) (k: nat) (v: X),
-  kvl_sorted (l1++((k, v)::l2)) -> kvl_sorted (l1++l2).
-Proof.
-  intros. induction l2. 
-  
-  Case "l2 = []".
-  simpl. simpl in H. rewrite app_nil_r. apply list_head_is_sorted in H. apply H.
-  Case "l2 = a::l2".
-    destruct l1. simpl. simpl in H. apply list_tail_is_sorted in H. apply H. 
-    destruct l1. simpl. simpl in H.
-    inversion H. destruct a. apply kvl_sorted_cons.
-    apply list_tail_is_sorted in H2. apply H2.
-    subst. inversion H2. subst. apply blt_nat_true.
-    apply blt_nat_true in H5. apply blt_nat_true in H8. omega.
-   
-  
-  induction H. 
-  Case "kvl_sorted_0".
-  symmetry in H1. apply app_eq_nil in H1. inversion H1. inversion H2.
-  Case "kvl_sorted_1".
-  symmetry in H1. apply app_eq_unit in H1.
-  inversion H1; inversion H0. subst. simpl. simpl in H. apply list_tail_is_sorted in H. apply H.
-  inversion H3.
-  Case "kvl_sorted_cons".
-*)  
-  
-  
-  
-  
-Lemma kvl_sorted_app_elim_l1 : forall (X: Type) (l1 l2: list (nat * X)),
+Lemma kvl_sorted_app : forall (X: Type) (l1 l2: list (nat * X)),
   kvl_sorted (l1++l2) -> kvl_sorted l1 /\ kvl_sorted l2.
 Proof.
   intros.
@@ -90,43 +60,73 @@ Proof.
       apply list_tail_is_sorted in H. apply H.
       apply H6.
   Case "kvl_sorted l2".
-    induction l2.
-    SCase "l2 = []".
-      apply kvl_sorted_0.
-    SCase "l2 = a::l2".
-      admit.
-Admitted.
-      
-  (*
+    induction l1.
+      simpl in H. apply H.
+      apply IHl1.
       rewrite <- app_comm_cons in H.
-      destruct l1;  
-      destruct a. apply kvl_sorted_1.
-      destruct p. inversion H. subst.
-      apply kvl_sorted_cons. apply IHl1.
+      destruct a.
       apply list_tail_is_sorted in H. apply H.
-      apply H6.
-  
-  inversion H.
-  Case "kvl_sorted_0". 
-  symmetry in H1. apply app_eq_nil in H1. inversion H1. subst. apply kvl_sorted_0.
-  Case "kvl_sorted_1".
-  symmetry in H1. apply app_eq_unit in H1. inversion H1; inversion H0; subst.
-  apply kvl_sorted_0. apply kvl_sorted_1.
-  Case "kvl_sorted_cons".
-  
-  
-  destruct l1. apply kvl_sorted_0.
-  symmetry in H1. apply app_length_le_l1 in H1. simpl in H1. simpl in H1. inversion H1.
-  symmetry in H1. apply app_eq_unit in H1.
-  inversion H1; inversion H0; subst. apply kvl_sorted_0.
-  inversion H0. inversion H4.
-  
-  symmetry in H1. apply app_eq_nil in H1. inversion H1. subst. apply kvl_sorted_0.
-  symmetry in H1. apply app_eq_unit in H1. inversion H1; inversion H0; subst. 
-    apply kvl_sorted_0. apply kvl_sorted_1.
-  destruct l1. apply kvl_sorted_0. destruct l1. destruct p. apply kvl_sorted_1.
-  repeat rewrite <- app_comm_cons in H. inversion H. 
-*)  
+Qed.
+
+Lemma kvl_sorted_key_across_app : forall (X: Type) (l1 l2: list (nat * X)) (k1 k2: nat) (v1 v2: X),
+  kvl_sorted((k1, v1)::l1 ++ (k2, v2)::l2) -> k1 < k2.
+intros.
+  induction l1.
+  Case "l1 = []".
+    simpl in H.
+    inversion H. subst.
+    apply blt_nat_true in H6. apply H6.
+  Case "l1 = a::l1".
+    apply IHl1. destruct l1.
+    SCase "l1 = [a]".
+      simpl in H. destruct a. simpl.
+      inversion H. inversion H2. subst.
+      apply blt_nat_true in H6.
+      apply blt_nat_true in H13.
+      apply kvl_sorted_cons. apply H9.
+      apply blt_nat_true. omega.
+    SCase "l1 = p::a::l1".
+      repeat rewrite <- app_comm_cons in H.
+      destruct p.
+      rewrite <- app_comm_cons.
+      inversion H. inversion H2. subst.
+      apply blt_nat_true in H5.
+      apply blt_nat_true in H12.
+      apply kvl_sorted_cons. apply H8.
+      apply blt_nat_true.
+      omega.
+Qed.
+
+Lemma kvl_sorted_elim_list : forall (X: Type) (l1 l2 l3: list (nat * X)),
+  kvl_sorted(l1++l2++l3) -> kvl_sorted(l1++l3).
+Proof.
+  intros. 
+  induction l1.
+  Case "l1 = []".
+    simpl. simpl in H. apply kvl_sorted_app in H. inversion H.
+    apply H1.
+  Case "l1 = a::l1".
+    destruct l1.
+    SCase "l1 = [a]".
+      simpl. simpl in H. simpl in IHl1. destruct l3. destruct a. apply kvl_sorted_1.
+      destruct a. destruct p. apply kvl_sorted_cons.
+      apply IHl1. apply list_tail_is_sorted in H. apply H.
+      apply kvl_sorted_key_across_app in H.  apply blt_nat_true.  apply H. 
+    SCase "l1 = a::p::l1".
+      destruct a. destruct p. repeat rewrite <- app_comm_cons. 
+      apply kvl_sorted_cons. apply IHl1.
+      repeat rewrite <- app_comm_cons in H. apply list_tail_is_sorted in H.
+      apply H.
+      inversion H. apply H6.
+Qed. 
+
+Lemma kvl_sorted_elim_cons : forall (X: Type) (l1 l2: list (nat * X)) (k: nat) (v: X),
+  kvl_sorted (l1++((k, v)::l2)) -> kvl_sorted (l1++l2).
+Proof.
+  intros. 
+  replace ((k,v)::l2) with ([(k,v)]++l2) in H by reflexivity.
+  apply kvl_sorted_elim_list in H. apply H.
+Qed.
 
 Lemma split_preserves_sort : forall (X: Type) (l l1 l2: list (nat * X)),
   l1 ++ l2 = l -> kvl_sorted l -> kvl_sorted l1 /\ kvl_sorted l2.
