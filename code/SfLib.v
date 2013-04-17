@@ -147,6 +147,15 @@ Inductive ev : nat -> Prop :=
 
 (** * From Logic.v *)
 
+Inductive ex (X:Type) (P : X->Prop) : Prop :=
+  ex_intro : forall (witness:X), P witness -> ex X P.
+  
+Notation "'exists' x , p" := (ex _ (fun x => p))
+  (at level 200, x ident, right associativity) : type_scope.
+Notation "'exists' x : X , p" := (ex _ (fun x:X => p))
+  (at level 200, x ident, right associativity) : type_scope.
+
+
 Theorem andb_true : forall b c,
   andb b c = true -> b = true /\ c = true.
 Proof.
