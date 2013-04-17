@@ -91,6 +91,7 @@ Fixpoint snoc {X:Type} (l:list X) (v:X) : (list X) :=
   | cons h t => cons h (snoc t v)
   end.
 
+Eval compute in snoc [1, 2, 3, 4] 2.
 
 Fixpoint split_at_index' {X: Type} (l1 l2: list X) (n: nat) : (list X * list X) :=
   match n with
@@ -104,6 +105,8 @@ Fixpoint split_at_index' {X: Type} (l1 l2: list X) (n: nat) : (list X * list X) 
 Definition split_at_index {X: Type} (l: list X) (n: nat) : (list X * list X) :=
   split_at_index' [] l n.
 
+Eval compute in split_at_index [1, 2, 3, 4] 2.
+
 Fixpoint half_nat (n: nat) :=
   match n with
   | 0 => 0
@@ -115,6 +118,7 @@ Definition split_in_half {X: Type} (l: list X) : (list X * list X) :=
   let half := half_nat (length l) in
   split_at_index l half.
 
+Eval compute in split_in_half [1, 2, 3, 4, 5, 6].
 
 Definition head {X: Type} (l: list X) : option X :=
   match l with
