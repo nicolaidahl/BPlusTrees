@@ -133,19 +133,8 @@ Qed.
 Lemma split_preserves_sort : forall (X: Type) (l l1 l2: list (nat * X)),
   l1 ++ l2 = l -> kvl_sorted l -> kvl_sorted l1 /\ kvl_sorted l2.
 Proof.
-  intros. split. 
-  induction H0. 
-  apply app_eq_nil in H. inversion H. subst. apply kvl_sorted_0.
-  apply app_eq_unit in H. inversion H; inversion H0; subst. apply kvl_sorted_0. apply kvl_sorted_1.
-  destruct l1. apply kvl_sorted_0. destruct l1. destruct p. apply kvl_sorted_1.
-  repeat rewrite <- app_comm_cons in H. inversion H. rewrite H3 in H. rewrite H4 in H.
-  apply kvl_sorted_cons. rewrite <- H5 in H0.
-  admit.
-  admit.
-  admit.
+  intros.  rewrite <- H in H0. apply kvl_sorted_app in H0. apply H0.
 Qed.
- 
-  
 
 Theorem insert_preserves_sort : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
   kvl_sorted l -> kvl_sorted (insert_into_list k v l).
@@ -209,9 +198,6 @@ Proof.
       apply list_tail_is_sorted in H. apply H.
 Qed.    
     
-
-Eval simpl in (split_list' 1 [1, 2] [3, 4, 5]).
-
 Theorem split_list'_preserves_list' : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
    length l1 = b -> l1 ++ l2 = l -> split_list' b l3 l = ((rev l3) ++ l1, l2).
 Proof. 
