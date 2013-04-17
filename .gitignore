@@ -35,3 +35,5 @@
 *.glob
 *.vo
 
+# Mac OSX
+.DS_store
