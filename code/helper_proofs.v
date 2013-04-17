@@ -74,6 +74,64 @@ Proof.
       apply n_lt_m__Sn_lt_Sm. apply H0.
 Qed.
 
+
+
+(*
+ * Proofs about min
+ *)
+Definition min_nat (n1 n2 : nat) : nat :=
+  if ble_nat n1 n2
+  then n1
+  else n2.
+  
+Example min_nat_1 : min_nat 1 5 = 1.
+Proof. simpl. reflexivity. Qed.
+Example min_nat_2 : min_nat 11 3 = 3.
+Proof. simpl. reflexivity. Qed.
+Example min_nat_3 : min_nat 2 2 = 2.
+Proof. simpl. reflexivity. Qed.
+
+Theorem min_nat_works : forall (n1 n2: nat),
+  (n2 < n1 -> min_nat n2 n1 = n2) /\ (n1 > n2 -> min_nat n2 n1 = n2).
+Proof.
+  intros n1 n2;
+  split; intros;
+    unfold min_nat; remember (ble_nat n2 n1) as ble; destruct ble;
+    try reflexivity.
+    symmetry in Heqble. apply ble_nat_false in Heqble. omega.
+    symmetry in Heqble. apply ble_nat_false in Heqble. omega.
+ Qed.
+  
+Theorem min_nat_elim_n1 : forall (n1 n2: nat),
+  n1 <= n2 <-> min_nat n1 n2 = n1.
+Proof.
+  split.
+  Case "->".
+    intros. unfold min_nat. remember (ble_nat n1 n2) as ble. destruct ble.
+    reflexivity.
+    symmetry in Heqble. apply ble_nat_false in Heqble. omega.
+  Case "<-".
+    intros. unfold min_nat in H. remember (ble_nat n1 n2) as ble. destruct ble;
+    symmetry in Heqble. apply ble_nat_true in Heqble. omega.
+    apply ble_nat_false in Heqble. omega.
+Qed.
+
+Theorem min_nat_elim_n2 : forall (n1 n2: nat),
+  n1 >= n2 <-> min_nat n1 n2 = n2.
+Proof.
+  split.
+  Case "->".
+    intros. unfold min_nat. remember (ble_nat n1 n2) as ble. destruct ble;
+    symmetry in Heqble. apply ble_nat_true in Heqble. omega.
+    apply ble_nat_false in Heqble. omega.
+  Case "<-".
+    intros. unfold min_nat in H. remember (ble_nat n1 n2) as ble. destruct ble;
+    symmetry in Heqble. apply ble_nat_true in Heqble. omega.
+    apply ble_nat_false in Heqble. omega.
+Qed.
+
+
+
 (*
  * Proofs about max
  *)
