@@ -1,4 +1,4 @@
-Require Export bplustree.
+Require Export BPlusTree.
 Require Export HelperProofs.
 Require Export ValidBPlusTree.
 
