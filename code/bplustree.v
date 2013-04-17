@@ -256,7 +256,7 @@ Eval compute in (insert 3 33 (insert 2 22 (insert 6 66 (insert 1 11 root)))).
 
 (* Height *)
 Fixpoint height' {X: Type} {b: nat} (h: nat) (tree: bplustree b X) : nat :=
-  let fix highest_in_list {X: Type} {b: nat} (h: nat) (tlist: list (nat * (bplustree b X))) : nat :=
+  let fix highest_in_list (h: nat) (tlist: list (nat * (bplustree b X))) : nat :=
 	  match tlist with
 	    | [] => h
 	    | (k, tree) :: kvl => let new_h := (height' 0 tree) in
@@ -287,7 +287,7 @@ Proof. compute. reflexivity. Qed.
 
 (* Mindepth *)
 Fixpoint mindepth' {X: Type} {b: nat} (h: nat) (tree: bplustree b X) : nat :=
-  let fix lowest_in_list {X: Type} {b: nat} (h: nat) (tlist: list (nat * (bplustree b X))) : nat :=
+  let fix lowest_in_list (h: nat) (tlist: list (nat * (bplustree b X))) : nat :=
     match tlist with
       | [] => h
       | (k, tree) :: kvl => let new_h := (mindepth' 0 tree) in 
@@ -553,10 +553,10 @@ Definition atree:= insert 17 117 (insert 6 106 (insert 31 131 (insert 4 104 (ins
                    (insert 1 101 (insert 7 107 (insert 3 103 empty2Tree)))))))).
 Eval compute in atree.
 
-Definition missing_some := delete 31 (delete 20 (delete 6 (delete 3 (delete 4 atree)))).
+(*Definition missing_some := delete 31 (delete 20 (delete 6 (delete 3 (delete 4 atree)))).
 Eval compute in missing_some.
 Definition missing_17 := delete 17 missing_some.
-Eval compute in delete 15 (delete 7 (delete 1 missing_17)).
+Eval compute in delete 15 (delete 7 (delete 1 missing_17)).*)
 
   
   
