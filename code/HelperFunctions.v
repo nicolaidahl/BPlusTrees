@@ -1,5 +1,19 @@
 Require Export SfLib.
 
+(* list *)
+Fixpoint element_at_index {X: Type} (n : nat) (lst: list X): option X :=
+  match n with
+  | 0 => match lst with
+         | nil => None
+         | x :: _ => Some x
+         end
+  | S n' => match lst with
+            | nil => None
+            | _ :: xs => element_at_index n' xs
+            end
+  end.  
+
+
 (*
  * blt_nat
  *)
