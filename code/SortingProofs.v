@@ -219,26 +219,51 @@ Proof.
   apply split_preserves_sort with (l := l); assumption.
 Qed.
 
-Theorem split_list_preserves_length_b : forall (X: Type) (b: nat) (l l1 l2: list X),
-   l1 ++ l2 = l -> split_list b l = (l1, l2) -> length l1 = b.
+Lemma app_list_eq_list_list : forall (X: Type) (l1 l2: list X),
+  l1 ++ l2 = l1 -> l2 = [].
 Proof.
-  intros. induction b.
+  intros.
+  induction l1. simpl in H. apply H.
+  apply IHl1. simpl in H. SearchAbout [cons].
+  inversion H. rewrite H1. apply H1.
+Qed.
+
+(*
+Theorem split_list'_preserves_lists : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
+   split_list' b l3 l = ((rev l3)++l1, l2) -> length l1 = b -> l1 ++ l2 = l.
+Proof.
+  induction b.
+  Case "b = 0". 
+    intros.
+    simpl in H. inversion H. apply length_0_impl_nil in H0. subst. reflexivity.
+  Case "b = S b".
+    intros.
+    destruct l. 
+    SCase "l = []".
+      simpl in H. inversion H.
+      symmetry in H2. apply app_list_eq_list_list in H2.
+      rewrite H2. reflexivity.
+    SCase "l = x::l".
+      simpl in H. 
+
+
+Theorem split_list'_preserves_length_b : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
+   l1 ++ l2 = l -> split_list' b l3 l = ((rev l3)++l1, l2) -> length l1 = b.
+Proof.
+  induction b.
+  Case "b = 0". 
+    intros.
+    simpl in H0. inversion H0. subst. 
+    symmetry in H2. apply app_list_eq_list_list in H2.
+    rewrite H2. reflexivity.
+  Case "b = S 0".
+    intros.
+    
+  
   compute in H0. inversion H0. reflexivity.
+  destruct l1. admit.
   admit.
 Admitted.
-
-(*Theorem insert_preserves_valid_bplustree : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat) (v: X),
-  valid_bplustree b X t -> valid_bplustree b X (insert k v t).
-Proof.
-  intros. induction H. 
-  Case "root_is_a_leaf". admit.*)
-  
-    (* unfold insert. remember (insert' k v (bptLeaf b X l)) as insert'.
-    destruct insert'. inversion Heqinsert'. remember (insert_leaf b k v l) as insert_leaf.
-    destruct insert_leaf. destruct o0. remember (head_key l1) as head_key.
-    destruct head_key. inversion H3. *)
-
- (* Case "valid_root_node". admit.
-Admitted.*)
+*)
 
     

@@ -20,3 +20,18 @@ Proof.
       SSCase "k != n". apply IHl.
       apply list_tail_is_sorted in H. apply H.
 Qed.
+
+Theorem insert_leaf_normal : forall (X: Type) (b: nat) (k: nat) (v: X) (kvl: list (nat * X)),
+  kvl_sorted kvl -> length(kvl) < pred(mult b 2)-> 
+  insert_leaf b k v kvl = (insert_into_list k v kvl, None).
+Proof.
+  admit.
+Admitted.
+
+Theorem insert_leaf_split : forall (X: Type) (b: nat) (k: nat) (v: X) (kvl kvl1 kvl2: list (nat * X)),
+  kvl_sorted kvl -> length(kvl) = mult b 2 -> 
+  (kvl1, kvl2) = split_list b (insert_into_list k v kvl1) -> 
+  insert_leaf b k v kvl = (kvl1, Some kvl2).
+Proof.
+  admit.
+Admitted.
