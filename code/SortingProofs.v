@@ -178,25 +178,6 @@ Proof.
        apply kvl_sorted_cons. apply IHkvl_sorted.
        apply blt_nat_true. omega.
 Qed.
-
-Theorem insert_into_list_works : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
-  kvl_sorted l -> search_leaf k (insert_into_list k v l) = Some v. 
-Proof.
-  intros. induction l.
-  Case "l = []". simpl. rewrite <- beq_nat_refl. reflexivity.
-  Case "l = a::l".  simpl. destruct a. remember (ble_nat k n) as klen. 
-    destruct klen; symmetry in Heqklen; [apply ble_nat_true in Heqklen | apply ble_nat_false in Heqklen].
-    SCase "k <= n". remember (beq_nat k n) as keqn. 
-      destruct keqn; symmetry in Heqkeqn; [apply beq_nat_true_iff in Heqkeqn | apply beq_nat_false_iff in Heqkeqn].
-      SSCase "k = n". simpl. rewrite <- beq_nat_refl. reflexivity.
-      SSCase "k != n". simpl. rewrite <- beq_nat_refl. reflexivity.
-    SCase "k > n". simpl. remember (beq_nat n k) as keqn. 
-      destruct keqn; symmetry in Heqkeqn; [apply beq_nat_true_iff in Heqkeqn | apply beq_nat_false_iff in Heqkeqn].
-      SSCase "k = n".
-        subst. unfold not in Heqklen. apply ex_falso_quodlibet. apply Heqklen. omega.
-      SSCase "k != n". apply IHl.
-      apply list_tail_is_sorted in H. apply H.
-Qed.    
     
 Theorem split_list'_preserves_list' : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
    length l1 = b -> l1 ++ l2 = l -> split_list' b l3 l = ((rev l3) ++ l1, l2).
@@ -229,6 +210,22 @@ Theorem split_list_preserves_list : forall (X: Type) (b: nat) (l l1 l2: list X),
 Proof.
   intros. unfold split_list. apply split_list'_preserves_list; assumption.
 Qed.
+
+Theorem split_list_preserves_sort : forall (X: Type) (b: nat) (l l1 l2: list (nat * X)),
+  kvl_sorted l -> length l1 = b -> l1 ++ l2 = l -> split_list b l = (l1, l2)
+  -> kvl_sorted l1 /\ kvl_sorted l2.
+Proof.
+  intros.
+  apply split_preserves_sort with (l := l); assumption.
+Qed.
+
+Theorem split_list_preserves_length_b : forall (X: Type) (b: nat) (l l1 l2: list X),
+   l1 ++ l2 = l -> split_list b l = (l1, l2) -> length l1 = b.
+Proof.
+  intros. induction b.
+  compute in H0. inversion H0. reflexivity.
+  admit.
+Admitted.
 
 (*Theorem insert_preserves_valid_bplustree : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X t -> valid_bplustree b X (insert k v t).
