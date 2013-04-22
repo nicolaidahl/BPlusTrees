@@ -65,7 +65,29 @@ Proof.
       apply n_lt_m__Sn_lt_Sm. apply H0.
 Qed.
 
+Lemma n_lt_n_inversion : forall (n: nat) (P: Prop),
+  n < n -> P.
+Proof.
+  intros. apply lt_not_le in H. unfold not in H. 
+  apply ex_falso_quodlibet. apply H.
+  omega.
+Qed.
 
+Lemma ble_nat_symm : forall (n: nat),
+  ble_nat n n = true.
+Proof.
+  intros. induction n.
+  simpl. reflexivity.
+  simpl. apply IHn.
+Qed.
+
+Lemma blt_nat_symm : forall (n: nat),
+  blt_nat n n = false.
+Proof.
+  intros. induction n.
+  unfold blt_nat. simpl. reflexivity.
+  apply blt_nat_n_m_false__blt_nat_Sn_Sm. apply IHn.
+Qed.
 
 (*
  * Proofs about min_nat
