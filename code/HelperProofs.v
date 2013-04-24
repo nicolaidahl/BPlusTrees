@@ -187,6 +187,14 @@ Proof.
   reflexivity.
   simpl in H. inversion H.
 Qed.
+Lemma length_gt_0_impl_nil : forall (X: Type) (l: list X),
+  length l <= 0 -> l = [].
+Proof.
+  intros. induction l.
+  reflexivity.
+  simpl in H. inversion H.
+Qed.
+
 
 Lemma app_length_le_l1 : forall (X: Type) (l l1 l2: list X),
   l1 ++ l2 = l -> length l1 <= length l.
