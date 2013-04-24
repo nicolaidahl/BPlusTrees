@@ -142,6 +142,24 @@ Proof.
       apply ai_later. apply IHl.
 Qed.
 
+Theorem size_of_kvl: forall {X: Type} {b: nat} (leaf: list (nat * X)) (k: nat) (v: X), 
+  not (appears_in_kvl k leaf) -> length leaf = b * 2 -> 
+  ble_nat (length (insert_into_list k v leaf)) (b * 2) = false.
+Proof. Admitted.
+
+
+Theorem split_insert_right : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k kb: nat) (v vb: X),
+  b > 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index b leaf = Some (kb, vb) -> 
+  k > kb -> length leaf = mult b 2 -> 
+  insert_leaf b k v leaf = (left, Some kvl) -> appears_in_kvl k kvl.
+Proof.
+  intros X b leaf left kvl k kb v vb. intros Hb Hsort Happears Hcentral Hkkb Hlength Hinsertion.
+  induction leaf. 
+  Case "leaf = nil".
+	  simpl in Hlength. admit.
+  Case "leaf = x :: leaf". 
+     Admitted.
+    
 Theorem split_insert_left : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k k1 kb: nat) (v vb: X),
   kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index b leaf = Some (kb, vb) -> 
   k < kb -> length leaf = mult b 2 -> 
