@@ -186,12 +186,12 @@ Proof.
 Admitted.
 
 Theorem ble_nat_true : forall n m,
-  ble_nat n m = true -> n <= m.
+  ble_nat n m = true <-> n <= m.
 (* An exercise in Logic.v *)
 Admitted.
 
 Theorem ble_nat_false : forall n m,
-  ble_nat n m = false -> ~(n <= m).
+  ble_nat n m = false <-> ~(n <= m).
 (* An exercise in Logic.v *)
 Admitted.
 
