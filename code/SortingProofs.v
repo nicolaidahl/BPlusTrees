@@ -231,7 +231,17 @@ Qed.
 Theorem split_list'_preserves_lists : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
    split_list' b l3 l = ((rev l3)++l1, l2) -> l = l1 ++ l2 /\ length l1 = b.
 Proof.
-  admit.
+  intros. generalize dependent l3.
+  induction b.
+  Case "b = 0".
+    intros. simpl in H.
+    inversion H. 
+    symmetry in H1. apply app_list_eq_list_list in H1.
+    subst.
+    simpl.
+    split; reflexivity.
+  Case "b = S b".
+    admit.
 Admitted.
 
 Theorem split_list_preserves_lists : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
