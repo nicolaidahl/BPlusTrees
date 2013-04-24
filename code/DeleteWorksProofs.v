@@ -49,24 +49,7 @@ Proof.
     SCase "beq_nat n1 sk = false".
       inversion H. assert (beq_nat n2 n1 = false). apply blt_implies_not_eq in H0. 
       rewrite beq_nat_sym. apply H0. rewrite H1.
-	    
-    
-    
-    
-    
-  Case "l = nil".  
-    apply app_eq_nil in H. inversion H. inversion H1.
-  Case "l = a :: l".
-    destruct a. remember (beq_nat n sk) as beqksk. unfold delete_from_list.
-    destruct beqksk.
-    SCase "n = sk". 
-      rewrite <- Heqbeqksk. 
-      inversion Hsort. rewrite <- H3 in H. 
-      apply app_eq_unit in H. inversion H. inversion H0. inversion H5. rewrite H4. reflexivity.
-      inversion H0. inversion H5.
-      subst. 
-    
-     
+	         
   
   
 

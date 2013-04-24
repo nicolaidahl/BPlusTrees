@@ -7,9 +7,10 @@ Inductive appears_in_kvl {X:Type} (sk: nat) : list (nat * X) -> Prop :=
   | ai_here : forall v l, appears_in_kvl sk ((sk, v)::l)
   | ai_later : forall skb v l, appears_in_kvl sk l -> appears_in_kvl sk ((skb, v)::l).
   
-(*Theorem split_insert_left : forall (X: Type) (b: nat) (kvl: list (nat * X)) (k k1 kb: nat) (v vb: X) (leaf: list (nat * X)),
-  kvl_sorted kvl -> not (appears_in_kvl k kvl) -> element_at_index b kvl = Some (kb, vb) -> k < kb ->
-  (length kvl) = (mult b 2) -> insert_leaf b k v leaf = bptNode b X left [(k1, right)] /\ appears_in_kvl k left.*)
+Theorem split_insert_left : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k k1 kb: nat) (v vb: X),
+  kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index b leaf = Some (kb, vb) -> 
+  k < kb -> length leaf = mult b 2 -> 
+  insert_leaf b k v leaf = (left, Some kvl) /\ appears_in_kvl k left.
 
 Theorem insert_into_list_works : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
   kvl_sorted l -> search_leaf k (insert_into_list k v l) = Some v. 
