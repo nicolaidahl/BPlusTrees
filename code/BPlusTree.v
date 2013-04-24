@@ -2,7 +2,7 @@ Require Export SfLib.
 Require Export HelperFunctions.
 
 Inductive bplustree (b: nat) (X:Type) : Type :=
-  | bptNode : bplustree b X -> list (nat * (bplustree b X)) -> bplustree b X
+  | bptNode : list (nat * (bplustree b X)) -> bplustree b X
   | bptLeaf : list (nat * X) -> bplustree b X
   . 
 
@@ -14,81 +14,60 @@ Notation "{{ b , X | f , x , .. , y }}" := (bptNode b X f (cons x .. (cons y [])
 Example test := bptLeaf 2 bool [(1, true), (2, false)].
 
 
-Definition head_key {X: Type} (kpl: (list (nat * X))) : option nat :=
-  match kpl with
-    | nil => None
-    | (k, v) :: kvl' => Some k
+Fixpoint key_at_index {X: Type} (n: nat) (kpl: (list (nat * X))) : option nat :=
+  match n with
+    | 0 => match kpl with
+           | nil => None
+           | (k, v) :: _ => Some(k)
+           end
+    | S n' => match kpl with
+              | nil => None
+              | _ :: kvl' => key_at_index n' kvl'
+              end
+  end.
+
+Fixpoint leftmost_key {X: Type} {b: nat} (tree: bplustree b X) : nat :=
+  match tree with
+  | bptLeaf (x :: _) => fst x
+  | bptNode (_ :: x :: _) => fst x
+  | _ => 0
   end.
   
-Definition peek_key {X: Type} {b: nat} (tree: (bplustree b X)) : nat :=
+Fixpoint leftmost_key_deep {X: Type} {b: nat} (tree: bplustree b X) : nat :=
   match tree with
-    | bptLeaf nil => 0
-    | bptLeaf (x :: _) => fst x
-    | bptNode sp kpl => match head_key kpl with
-      | Some k => k
-      | None => 0
-      end
-  end. 
-  
-Fixpoint peek_key_deep {X: Type} {b: nat} (tree: bplustree b X) : nat :=
-  match tree with
-  | bptLeaf nil => 0
   | bptLeaf (x :: _) => fst x
-  | bptNode sp _ => peek_key_deep sp
+  | bptNode (x :: _) => leftmost_key_deep (snd x)
+  | _ => 0
   end.
 
 Definition left := bptLeaf 1 nat [(5, 55)].
 Definition centre := bptLeaf 1 nat [(7, 77)].
 Definition right := bptLeaf 1 nat [(9, 99)].
-Definition root := bptNode 1 nat left [(peek_key centre, centre), (peek_key right, right)].
+Definition root := bptNode 1 nat [(0, left), (leftmost_key centre, centre), (leftmost_key right, right)].
 
 Fixpoint search_leaf {X: Type} (sk: nat) (kvl: (list (nat * X))) : option X :=
   match kvl with
     | nil => None
     | (k, v) :: kvl' => if beq_nat k sk then Some v else search_leaf sk kvl'
   end.
-
-Fixpoint find_child {X: Type} {b: nat} (sk: nat) (sp: (bplustree b X)) (kpl: (list (nat * bplustree b X))) : option (bplustree b X) :=
-  let fix find_child' (kpl: (list (nat * bplustree b X))) : option (bplustree b X) :=
+  
+Fixpoint search {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X)) : option X :=  
+  let fix search_node (kpl: (list (nat * bplustree b X))): option X :=
     match kpl with
       | nil => None
-      | (k, p) :: kpl' => match head_key kpl' with
-        | None => Some p
-        | Some k' => if andb (ble_nat k sk) (blt_nat sk k')
-      						then Some p
-      						else find_child' kpl'
-       end
+      | (_, t1) :: kpl' => match kpl' with
+                            | nil => search sk t1
+                            | (k2, t2) :: _ =>
+							    if blt_nat sk k2
+							    then search sk t1
+							    else search_node kpl'
+							end
      end 
-  in 
-  match head_key kpl with
-    | None => None
-    | Some k => if blt_nat sk k
-      then Some sp
-      else find_child' kpl
-  end.
-
-Fixpoint search {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X)) : option X :=
-  let fix search_node
-                      (kpl: (list (nat * bplustree b X)))
-                   : option X :=
-    match kpl with
-      | nil => None
-      | (k, p) :: kpl' => match head_key kpl' with
-        | None => search sk p
-        | Some k' => if andb (ble_nat k sk) (blt_nat sk k')
-      						then search sk p
-      						else search_node kpl'
-       end
-     end 
-  in 
+  in
+  
   match tree with
     | bptLeaf kvl => search_leaf sk kvl
-    | bptNode sp kpl => match head_key kpl with
-      | None => None
-      | Some k => if blt_nat sk k
-      	then search sk sp
-      	else search_node kpl
-    end
+    | bptNode kpl' => search_node kpl'
   end.
 
 Example search_test_find_item_left : search 4 root = None.
@@ -96,7 +75,7 @@ Proof. simpl. reflexivity. Qed.
 Example search_test_find_item_centre : search 7 root = Some 77.
 Proof. simpl. reflexivity. Qed.
 Example search_test_find_item_right : search 9 root = Some 99.
-Proof. simpl. reflexivity. Qed.
+Proof. unfold root. unfold leftmost_key. simpl. reflexivity. Qed.
 Example search_test_cant_find_missing : search 6 root = None.
 Proof. simpl. reflexivity. Qed.
 
@@ -109,7 +88,7 @@ Fixpoint all_members {X: Type} {b: nat} (tree: (bplustree b X)) : list (nat * X)
   in
   match tree with
     | bptLeaf kpl => kpl
-    | bptNode sp kpl => (all_members sp) ++ (node_members kpl)
+    | bptNode kpl => (node_members kpl)
   end.
 
 Example all_members_left : all_members left = [(5, 55)].
@@ -121,8 +100,11 @@ Fixpoint insert_into_list {X: Type} (k: nat) (v: X) (kvl: list (nat * X)) : list
   match kvl with 
     | nil => [(k, v)]
     | (k', v') :: kvl' => if ble_nat k k'
-    						then if beq_nat k k' then ((k, v) :: kvl') else ((k, v) :: kvl)
-    						else (k', v') :: (insert_into_list k v kvl')
+    					  then 
+    						if beq_nat k k' 
+    						then ((k, v) :: kvl') 
+    						else ((k, v) :: kvl)
+    					  else (k', v') :: (insert_into_list k v kvl')
   end.
 
 Inductive kvl_sorted {X: Type}: list (nat * X) -> Prop :=
@@ -148,104 +130,77 @@ Definition split_list {X: Type} (b: nat) (lst: list X) : (list X * list X) :=
 
 Definition insert_leaf {X: Type} (b: nat) (k: nat) (v: X) (kvl: list (nat * X))
 						: (list (nat * X) * option (list (nat * X))) :=
-  let
-  	kvl' := insert_into_list k v kvl
+  let kvl' := insert_into_list k v kvl
   in
     if ble_nat (length kvl') (mult b 2)
       then (kvl', None)
       else let (fst, snd) := split_list b kvl' in (fst, Some snd) 
   .
-  
-(*  
-Fixpoint insert {X: Type} {b: nat} (sk: nat) (v: X) (tree: (bplustree b X))
-              : (bplustree b X * option (bplustree b X)) := 
-  match tree with
-    | bptLeaf kvl => let (fst, snd_opt) := insert_leaf b sk v kvl in
-                     match snd_opt with
-                       | None => (bptLeaf b X fst, None)
-                       | Some snd => (bptLeaf b X fst, Some (bptLeaf b X snd))
-                     end
-    | bptNode sp kpl => match find_child sk sp kpl with
-      | None => (tree, None)
-      | Some p => insert sk v p
-    end
-  end.
-*)
 
 Definition split_if_necessary {X: Type} {b: nat} (tree: (bplustree b X))
   							: (bplustree b X * option (nat * bplustree b X)) := 
   match tree with
   	| bptLeaf kvl => (tree, None)
-  	| bptNode sp kpl => if ble_nat (length kpl) (mult b 2)
-      then (tree, None)
-      else let 
-        (fst, snd) := split_list b kpl
-      in match snd with
-        | nil => (tree, None)
-        | (k', sp')::snd' => (bptNode b X sp fst, Some (k', bptNode b X sp' snd'))
-      end
+  	| bptNode kpl => 
+  	  if blt_nat (length kpl) (b * 2)
+        then (tree, None)
+        else 
+          let (fst, snd) := split_list b kpl in
+          let new_node := bptNode b X snd in
+          (bptNode b X fst, Some (leftmost_key new_node, new_node))
   end. 
 
-Definition insert_node {X: Type} {b: nat} (key: option nat) (tree: (bplustree b X)) (input: (bplustree b X * option (nat * bplustree b X)))
-  							: (bplustree b X * option (nat * bplustree b X)) :=
-  match tree with
+Definition insert_node {X: Type} {b: nat} (insertion_key: nat) (old_tree: (bplustree b X)) 
+                       (input: (bplustree b X * option (nat * bplustree b X)))
+  					   : (bplustree b X * option (nat * bplustree b X)) :=
+  match old_tree with
   	| bptLeaf kvl => input
-  	| bptNode sp kpl =>	match key with
-      (* Replace start-pointer *)
-  	  | None => match input with
-  	    (* No new child-node, just replace start-pointer *)
-  	    | (tree, None) => (bptNode b X tree kpl, None)
-  		| (tree, Some (new_key, new)) => split_if_necessary (bptNode b X tree (insert_into_list new_key new kpl))
+  	| bptNode kpl =>
+      (* Replace the pointer with key = insertion_index *)
+  	  match input with
+        | (t, None) => (bptNode b X (insert_into_list insertion_key t kpl), None)
+  		| (t, Some (new_key, new_tree)) => 
+  		  split_if_necessary (bptNode b X (insert_into_list insertion_key t (insert_into_list new_key new_tree kpl)))
   	  end
-  	  (* Replace the pointer with key = k *)
-  	  | Some k => match input with
-        | (tree, None) => (bptNode b X sp (insert_into_list k tree kpl), None)
-  		| (tree, Some (new_key, new)) => split_if_necessary (bptNode b X sp (insert_into_list k tree (insert_into_list new_key new kpl)))
-  	  end
-    end
   end.
   
-  
-Fixpoint insert' {X: Type} {b: nat} (insert_key: nat) (v: X) (tree: (bplustree b X))
+Fixpoint insert' {X: Type} {b: nat} (k: nat) (v: X) (tree: (bplustree b X))
                 : (bplustree b X * option (nat * bplustree b X)) :=
 
   (* More or less copy-pasted from search *)
-  let fix insert_into_node
-                      (kpl: (list (nat * bplustree b X)))
-                   : (bplustree b X * option (nat * bplustree b X)) :=
+  let fix insert_into_node (kpl: (list (nat * bplustree b X)))
+                           : (bplustree b X * option (nat * bplustree b X)) :=
     match kpl with
       | nil => (tree, None)
-      | (k, p) :: kpl' => match head_key kpl' with
-        | None => insert_node (Some k) tree (insert' insert_key v p)
-        | Some k' => if andb (ble_nat k insert_key) (blt_nat insert_key k')
-      						then insert_node (Some k) tree (insert' insert_key v p)
-      						else insert_into_node kpl'
-       end
-     end 
+      | (k1, p1) :: kpl' => match kpl' with
+                           | nil => insert_node k1 tree (insert' k v p1) 
+                           | (k2, p2) :: _ => if blt_nat k k2
+                                              then insert_node k tree (insert' k v p1)
+                                              else insert_into_node kpl' 
+                           end
+      
+    end 
      
   in 
+  
   match tree with
-    | bptLeaf kvl => let (fst, snd_opt) := insert_leaf b insert_key v kvl in
+    | bptLeaf kvl => let (fst, snd_opt) := insert_leaf b k v kvl in
                      match snd_opt with
-                       | None => (bptLeaf b X fst, None)
-                       | Some snd => match head_key snd with
+                     | None => (bptLeaf b X fst, None)
+                     | Some snd => 
+                         match key_at_index 0 snd with
                          | None => (bptLeaf b X fst, None)
                          | Some first_key => (bptLeaf b X fst, Some (first_key, bptLeaf b X snd))
                          end
                      end 
-    | bptNode sp kpl => match head_key kpl with
-      | None => (tree, None)
-      | Some k => if blt_nat insert_key k
-      	then insert_node None tree (insert' insert_key v sp)
-      	else insert_into_node kpl
-    end
+    | bptNode kpl => insert_into_node kpl
   end.
 
-Definition insert {X: Type} {b: nat} (insert_key: nat) (v: X) (tree: (bplustree b X))
+Definition insert {X: Type} {b: nat} (k: nat) (v: X) (tree: (bplustree b X))
                 : bplustree b X :=
-  match insert' insert_key v tree with
+  match insert' k v tree with
     | (tree, None) => tree
-    | (left, Some (key, right)) => bptNode b X left [(key, right)]
+    | (left, Some (key, right)) => bptNode b X [(0, left), (key, right)]
   end.
 
 Eval compute in (root).
@@ -253,7 +208,7 @@ Eval compute in (insert 1 11 left).
 Eval compute in (insert 3 33 (insert 2 22 (insert 6 66 (insert 1 11 root)))).  
 
 
-
+(*
 (* Height *)
 Fixpoint height' {X: Type} {b: nat} (h: nat) (tree: bplustree b X) : nat :=
   let fix highest_in_list (h: nat) (tlist: list (nat * (bplustree b X))) : nat :=
@@ -560,7 +515,7 @@ Eval compute in delete 15 (delete 7 (delete 1 missing_17)).*)
 
   
   
-  
+  *)
   
   
   
