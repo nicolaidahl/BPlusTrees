@@ -63,9 +63,10 @@ Proof.
 Qed.
 
 Lemma insert_leaf_cons_eq : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
-  kvl_sorted l -> k1 = k2 -> length(l) < mult b 2 -> insert_leaf (S b) k1 v1 ((k2, v2) :: l) = ((k1,v1)::l, None).
+  b <> 0 -> kvl_sorted l -> k1 = k2 -> length((k2,v2)::l) < mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::l, None).
 Proof.
-  intros. subst.
+  intros. 
+  destruct b. apply ex_falso_quodlibet. apply H. reflexivity. subst.
   unfold insert_leaf. simpl. rewrite ble_nat_symm. rewrite <- beq_nat_refl.
   remember (ble_nat (length ((k2, v1) :: l)) (S (S (b * 2)))) as too_long.
   destruct too_long.
@@ -74,13 +75,15 @@ Proof.
   apply ex_falso_quodlibet.
   apply Heqtoo_long.
   simpl.
+  simpl in H2.
   omega.
 Qed.
 
 Lemma insert_leaf_cons_lt : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
-  kvl_sorted l -> k1 < k2 -> length(l) < mult b 2 -> insert_leaf (S b) k1 v1 ((k2, v2) :: l) = ((k1,v1)::(k2,v2)::l, None).
+  b <> 0 -> kvl_sorted l -> k1 < k2 -> length((k2,v2)::l) < mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::(k2,v2)::l, None).
 Proof.
   intros.
+  destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
   unfold insert_leaf. simpl. 
   remember (ble_nat k1 k2) as k1lek2.
   destruct k1lek2; symmetry in Heqk1lek2; [apply ble_nat_true in Heqk1lek2|apply ble_nat_false in Heqk1lek2].
@@ -91,16 +94,17 @@ Proof.
       subst.
       apply n_lt_n_inversion with (n := k2). assumption.
     SCase "k1 <> k2".
-      simpl. assert (ble_nat (length l) (b * 2) = true). apply ble_nat_true. omega.
-      rewrite H2. reflexivity.
+      simpl. assert (ble_nat (length l) (b * 2) = true). apply ble_nat_true. simpl in H2. omega.
+      rewrite H3. reflexivity.
   Case "k1 > k2".
     apply ex_falso_quodlibet. apply Heqk1lek2. omega.
 Qed.
 
 Lemma insert_leaf_cons_gt : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
-  kvl_sorted l -> k1 > k2 -> length(l) < mult b 2 -> insert_leaf (S b) k1 v1 ((k2, v2) :: l) = ((k2,v2):: insert_into_list k1 v1 l, None).
+  b <> 0 -> kvl_sorted l -> k1 > k2 -> length((k2,v2)::l) < mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k2,v2):: insert_into_list k1 v1 l, None).
 Proof.
   intros.
+  destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
   unfold insert_leaf. simpl.
   remember (ble_nat k1 k2) as k1lek2.
   destruct k1lek2; symmetry in Heqk1lek2; [apply ble_nat_true in Heqk1lek2|apply ble_nat_false in Heqk1lek2].
@@ -117,8 +121,9 @@ Proof.
       apply ex_falso_quodlibet.
       apply Heqtoo_long.
       apply insert_into_list_increases_length.
-      apply H.
-      apply lt_le_weak in H1. apply H1.
+      apply H0.
+      simpl in H2.
+      omega.
 Qed.
 
 Theorem insert_into_list_appears : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
@@ -166,26 +171,28 @@ Theorem split_insert_left : forall {X: Type} {b: nat} (leaf left kvl: list (nat 
   insert_leaf b k v leaf = (left, Some kvl) /\ appears_in_kvl k left.
 
 Theorem split_insert_normal : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k: nat) (v: X),
-  b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> length leaf < mult b 2 -> 
+  b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> length leaf < mult b 2 ->
   insert_leaf b k v leaf = (left, None) -> appears_in_kvl k left.
 Proof.
-  intros. generalize dependent left.
-  destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
+  intros. 
   
-  induction leaf.
+  destruct leaf.
   Case "leaf = []".
-    intros. compute in H3. inversion H3. apply ai_here.
+    intros.
+    destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
+    compute in H3. inversion H3. apply ai_here.
   Case "leaf = a::leaf".
     intros.
-    destruct a.
+    destruct p.
     remember (beq_nat n k) as neqk.
     destruct neqk; symmetry in Heqneqk; [apply beq_nat_true_iff in Heqneqk|apply beq_nat_false_iff in Heqneqk].
     SCase "n = k".
       rewrite insert_leaf_cons_eq in H3.
-      inversion H3. apply ai_here. inversion H0. apply kvl_sorted_0. apply H6. subst. reflexivity.
+      inversion H3. apply ai_here. apply H.
+      apply list_tail_is_sorted in H0. apply H0.
+      omega.
       simpl. simpl in H2. 
-      subst.
-      apply ex_falso_quodlibet. apply H1. apply ai_here.
+      omega.
     SCase "n <> k".
       remember (ble_nat n k) as nlek.
       destruct nlek; symmetry in Heqnlek; [apply ble_nat_true in Heqnlek|apply ble_nat_false in Heqnlek].
@@ -195,24 +202,22 @@ Proof.
          rewrite insert_leaf_cons_gt in H3.
          inversion H3. apply ai_later.
          apply insert_into_list_appears.
-         apply list_tail_is_sorted in H0.  apply H0. 
+         apply H.
+         apply list_tail_is_sorted in H0.
+         apply H0.
+         omega.
+         simpl in H2. simpl.
          omega. 
-         
-         simpl in H2.
-         
-
-         admit.    
          
        SSSCase "n = k".
          apply ex_falso_quodlibet. apply Heqneqk. apply H4.
       SSCase "n > k".
         rewrite insert_leaf_cons_lt in H3.
         inversion H3. apply ai_here.
-        apply list_tail_is_sorted in H0.  apply H0.
+        apply list_tail_is_sorted in H0. apply H. 
+        apply list_tail_is_sorted in H0. apply H0.
         omega.
-        
-        
-        admit.
+        simpl in H2. simpl. omega.
 Qed.
 
 
