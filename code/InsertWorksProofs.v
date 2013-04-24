@@ -63,7 +63,7 @@ Proof.
 Qed.
 
 Lemma insert_leaf_cons_eq : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
-  b <> 0 -> kvl_sorted l -> k1 = k2 -> length((k2,v2)::l) < mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::l, None).
+  b <> 0 -> kvl_sorted ((k2, v2)::l) -> k1 = k2 -> length((k2,v2)::l) < mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::l, None).
 Proof.
   intros. 
   destruct b. apply ex_falso_quodlibet. apply H. reflexivity. subst.
@@ -80,7 +80,7 @@ Proof.
 Qed.
 
 Lemma insert_leaf_cons_lt : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
-  b <> 0 -> kvl_sorted l -> k1 < k2 -> length((k2,v2)::l) < mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::(k2,v2)::l, None).
+  b <> 0 -> kvl_sorted ((k2,v2)::l) -> k1 < k2 -> length((k2,v2)::l) < mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::(k2,v2)::l, None).
 Proof.
   intros.
   destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
@@ -101,7 +101,7 @@ Proof.
 Qed.
 
 Lemma insert_leaf_cons_gt : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
-  b <> 0 -> kvl_sorted l -> k1 > k2 -> length((k2,v2)::l) < mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k2,v2):: insert_into_list k1 v1 l, None).
+  b <> 0 -> kvl_sorted ((k2,v2)::l) -> k1 > k2 -> length((k2,v2)::l) < mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k2,v2):: insert_into_list k1 v1 l, None).
 Proof.
   intros.
   destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
@@ -121,6 +121,7 @@ Proof.
       apply ex_falso_quodlibet.
       apply Heqtoo_long.
       apply insert_into_list_increases_length.
+      apply list_tail_is_sorted in H0.
       apply H0.
       simpl in H2.
       omega.
@@ -188,11 +189,9 @@ Proof.
     destruct neqk; symmetry in Heqneqk; [apply beq_nat_true_iff in Heqneqk|apply beq_nat_false_iff in Heqneqk].
     SCase "n = k".
       rewrite insert_leaf_cons_eq in H3.
-      inversion H3. apply ai_here. apply H.
-      apply list_tail_is_sorted in H0. apply H0.
-      omega.
-      simpl. simpl in H2. 
-      omega.
+      inversion H3. apply ai_here. apply H. apply H0. 
+      rewrite Heqneqk. reflexivity.
+      simpl. simpl in H2. omega.
     SCase "n <> k".
       remember (ble_nat n k) as nlek.
       destruct nlek; symmetry in Heqnlek; [apply ble_nat_true in Heqnlek|apply ble_nat_false in Heqnlek].
@@ -203,23 +202,19 @@ Proof.
          inversion H3. apply ai_later.
          apply insert_into_list_appears.
          apply H.
-         apply list_tail_is_sorted in H0.
          apply H0.
          omega.
-         simpl in H2. simpl.
-         omega. 
-         
+         simpl in H2. simpl. omega. 
        SSSCase "n = k".
          apply ex_falso_quodlibet. apply Heqneqk. apply H4.
       SSCase "n > k".
         rewrite insert_leaf_cons_lt in H3.
         inversion H3. apply ai_here.
-        apply list_tail_is_sorted in H0. apply H. 
-        apply list_tail_is_sorted in H0. apply H0.
+        apply H.
+        apply H0.
         omega.
         simpl in H2. simpl. omega.
 Qed.
-
 
 Theorem insert_into_list_works : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
   kvl_sorted l -> search_leaf k (insert_into_list k v l) = Some v. 
@@ -302,4 +297,7 @@ Proof.
   induction H.
   Case "leaf".
     unfold insert. remember (insert' k v (bptLeaf b X l)) as insert'. destruct insert'.
+  admit.
+  admit.
+Admitted.
     
