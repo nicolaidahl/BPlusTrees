@@ -31,11 +31,73 @@ Proof.
       apply list_tail_is_sorted in H. apply H.
 Qed.
 
+Lemma insert_into_list_increases_length : forall (X: Type) (l: list (nat * X)) (k n: nat) (v: X),
+  kvl_sorted l -> length l = n -> length (insert_into_list k v l) <= S n.
+Proof.
+  intros. generalize dependent l. induction n; intros.
+  simpl.
+  Case "n = 0".
+    apply length_0_impl_nil in H0. subst. simpl. omega.
+  Case "n = S n".
+    destruct l. simpl. omega.
+    destruct p.
+    simpl. remember (ble_nat k n0) as klen.
+    destruct klen; symmetry in Heqklen; [apply ble_nat_true in Heqklen | apply ble_nat_false in Heqklen].
+    SCase "k <= n0".
+      remember (beq_nat k n0) as keqn.
+      destruct keqn; symmetry in Heqkeqn; [apply beq_nat_true_iff in Heqkeqn | apply beq_nat_false_iff in Heqkeqn];
+      simpl; simpl in H0;  rewrite H0; omega.
+    SCase "k > n0".
+      simpl. apply le_n_S. apply IHn.
+      apply list_tail_is_sorted in H. apply H.
+      simpl in H0. inversion H0. reflexivity.
+Qed.  
+
+Lemma insert_leaf_shaddow : forall (X: Type) (b: nat) (n: nat) (v x: X) (kvl: list (nat * X)),
+  length kvl <= mult b 2 -> insert_leaf (S b) n v ((n, x) :: kvl) = ((n, v) :: kvl, None).
+Proof.
+  intros.
+  unfold insert_leaf. unfold insert_into_list.
+  rewrite ble_nat_symm. rewrite <- beq_nat_refl.
+  simpl.
+  remember (ble_nat (length kvl) (S (b * 2))) as lb2.
+  destruct lb2.
+  reflexivity.
+  symmetry in Heqlb2. apply ble_nat_false in Heqlb2.
+  unfold not in Heqlb2.
+  apply ex_falso_quodlibet.
+  apply Heqlb2. apply le_S. apply H.
+Qed.    
+
+Lemma lt_S : forall (n m: nat),
+  n < m <-> S n < S m.
+Proof.
+Admitted.
+
 Theorem insert_leaf_normal : forall (X: Type) (b: nat) (k: nat) (v: X) (kvl: list (nat * X)),
-  kvl_sorted kvl -> length(kvl) < pred(mult b 2)-> 
+  b <> 0 -> kvl_sorted kvl -> S (length(kvl)) < mult b 2-> 
   insert_leaf b k v kvl = (insert_into_list k v kvl, None).
 Proof.
-  admit.
+  intros. 
+  destruct b. apply ex_falso_quodlibet. apply H. reflexivity. clear H.
+  induction kvl. 
+  Case "kvl = []".
+    unfold insert_leaf.
+    simpl. reflexivity. 
+  Case "kvl = a::kvl".
+    destruct a. simpl. remember (ble_nat k n) as klen.
+    destruct klen; symmetry in Heqklen; [apply ble_nat_true in Heqklen | apply ble_nat_false in Heqklen].
+    SCase "k <= n".
+      remember (beq_nat k n) as keqn.
+      destruct keqn; symmetry in Heqkeqn; [apply beq_nat_true_iff in Heqkeqn | apply beq_nat_false_iff in Heqkeqn].
+      SSCase "k = n". subst. 
+        apply insert_leaf_shaddow.
+        simpl in H1. apply lt_S in H1. apply lt_S in H1.
+        apply lt_le_weak in H1. apply H1.
+      SSCase "k <> n".
+        admit.  
+    SCase "k > n". 
+      admit.
 Admitted.
 
 Theorem insert_leaf_split : forall (X: Type) (b: nat) (k: nat) (v: X) (kvl kvl1 kvl2: list (nat * X)),
