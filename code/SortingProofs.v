@@ -244,7 +244,7 @@ Proof.
     admit.
 Admitted.
 
-Theorem split_list_preserves_lists : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
+Theorem split_list_preserves_lists : forall (X: Type) (b: nat) (l l1 l2: list X),
    split_list b l = (l1, l2) -> l = l1 ++ l2 /\ length l1 = b.
 Proof.
   intros.
