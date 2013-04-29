@@ -73,6 +73,15 @@ Proof.
   omega.
 Qed.
 
+Lemma Sn_le_n_inversion : forall (n: nat) (P: Prop),
+  S n <= n -> P.
+Proof.
+  intros. apply le_not_gt in H. unfold not in H.
+  apply ex_falso_quodlibet. apply H.
+  omega.
+Qed.
+
+
 Lemma ble_nat_symm : forall (n: nat),
   ble_nat n n = true.
 Proof.

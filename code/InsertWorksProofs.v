@@ -63,7 +63,7 @@ Proof.
 Qed.
 
 Lemma insert_leaf_cons_eq : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
-  b <> 0 -> kvl_sorted ((k2, v2)::l) -> k1 = k2 -> length((k2,v2)::l) < mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::l, None).
+  b <> 0 -> kvl_sorted ((k2, v2)::l) -> k1 = k2 -> length((k2,v2)::l) <= mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::l, None).
 Proof.
   intros. 
   destruct b. apply ex_falso_quodlibet. apply H. reflexivity. subst.
@@ -99,6 +99,31 @@ Proof.
   Case "k1 > k2".
     apply ex_falso_quodlibet. apply Heqk1lek2. omega.
 Qed.
+
+Lemma insert_leaf_cons_lt_overflow : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l l1 l2: list (nat * X)),
+  b <> 0 -> kvl_sorted ((k2, v2)::l) -> k1 < k2 -> length((k2,v2)::l) = mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = (let (fst, snd) := split_list b ((k1, v1) :: (k2, v2) :: l) in (fst, Some snd)).
+Proof.  
+  intros.
+  destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
+  unfold insert_leaf. simpl.
+  remember (ble_nat k1 k2) as k1lek2.
+  destruct k1lek2; symmetry in Heqk1lek2; [apply ble_nat_true in Heqk1lek2|apply ble_nat_false in Heqk1lek2].
+  Case "k1 <= k2".
+    remember (beq_nat k1 k2) as k1eqk2.
+    destruct k1eqk2; symmetry in Heqk1eqk2; [apply beq_nat_true_iff in Heqk1eqk2|apply beq_nat_false_iff in Heqk1eqk2].
+    SCase "k1 = k2".
+      subst.
+      apply n_lt_n_inversion with (n := k2). assumption.
+    SCase "k1 <> k2".
+      simpl. simpl in H2. inversion H2. rewrite H4. 
+      remember (ble_nat (S (b * 2)) (b * 2)) as too_long.
+      destruct too_long.
+      symmetry in Heqtoo_long. apply ble_nat_true in Heqtoo_long. 
+      apply Sn_le_n_inversion with (n := b*2). assumption.
+      reflexivity.
+  Case "k1 > k2".
+    apply ex_falso_quodlibet. apply Heqk1lek2. omega.
+Qed.  
 
 Lemma insert_leaf_cons_gt : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
   b <> 0 -> kvl_sorted ((k2,v2)::l) -> k1 > k2 -> length((k2,v2)::l) < mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k2,v2):: insert_into_list k1 v1 l, None).
