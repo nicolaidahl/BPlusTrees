@@ -62,6 +62,39 @@ Proof.
       simpl in H0. inversion H0; omega.
 Qed.
 
+Lemma insert_new_into_list_increases_length : forall (X: Type) (l: list (nat * X)) (k n: nat) (v: X),
+  kvl_sorted l -> ~(appears_in_kvl k l ) -> length l = n -> length (insert_into_list k v l) = S n.
+Proof.
+  intros.
+  generalize dependent l. induction n; intros.
+  Case "n = 0".
+    apply length_0_impl_nil in H1. subst. simpl. omega.
+  Case "n = S n".
+    destruct l. simpl in H1.  inversion H1.
+    destruct p.
+    simpl. remember (ble_nat k n0) as klen.
+    destruct klen; symmetry in Heqklen; [apply ble_nat_true in Heqklen | apply ble_nat_false in Heqklen].
+    SCase "k <= n0".
+      remember (beq_nat k n0) as keqn.
+      destruct keqn; symmetry in Heqkeqn; [apply beq_nat_true_iff in Heqkeqn | apply beq_nat_false_iff in Heqkeqn].
+      SSCase "k = n0".
+        subst.
+        apply ex_falso_quodlibet.
+        apply H0. apply ai_here.
+      SSCase "k < n0".
+        simpl. simpl in H1. omega.
+    SCase "k > n0".
+      simpl. apply eq_remove_S.
+      apply IHn.
+      apply list_tail_is_sorted in H.
+      apply H.
+      unfold not.
+      intros.
+      apply H0.
+      apply ai_later. apply H2.
+      simpl in H1. omega.
+Qed.
+
 Lemma insert_leaf_cons_eq : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
   b <> 0 -> kvl_sorted ((k2, v2)::l) -> k1 = k2 -> length((k2,v2)::l) <= mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::l, None).
 Proof.
@@ -150,6 +183,34 @@ Proof.
       apply H0.
       simpl in H2.
       omega.
+Qed.
+
+Lemma insert_leaf_cons_gt_overflow : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
+  b <> 0 -> kvl_sorted ((k2,v2)::l) -> k1 > k2 -> ~(appears_in_kvl k1 l) -> length((k2,v2)::l) = mult b 2 -> 
+  insert_leaf b k1 v1 ((k2, v2) :: l) = (let (fst, snd) := split_list b ((k2, v2) :: insert_into_list k1 v1 l) in (fst, Some snd)).
+Proof.
+  intros.
+  destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
+  unfold insert_leaf. simpl.
+  remember (ble_nat k1 k2) as k1lek2.
+  destruct k1lek2; symmetry in Heqk1lek2; [apply ble_nat_true in Heqk1lek2|apply ble_nat_false in Heqk1lek2].
+  Case "k1 <= k2".
+    apply ex_falso_quodlibet. omega.
+  Case "k1 > k2".
+    simpl.
+    remember (ble_nat (length (insert_into_list k1 v1 l)) (S (b * 2))) as too_long.
+    destruct too_long;
+    symmetry in Heqtoo_long; [apply ble_nat_true in Heqtoo_long|apply ble_nat_false in Heqtoo_long].
+    SCase "not too long".
+      simpl in H3.
+      inversion H3.
+      apply list_tail_is_sorted in H0.
+      apply insert_new_into_list_increases_length with (k := k1) (v := v1) (n := S (b*2)) in H0.
+      rewrite H0 in Heqtoo_long.
+      apply Sn_le_n_inversion with (n := S(b*2)). assumption.
+      apply H2. apply H5.
+    SCase "too long".
+      reflexivity.
 Qed.
 
 Theorem insert_into_list_appears : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),

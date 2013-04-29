@@ -184,7 +184,12 @@ Proof.
     apply ble_nat_false in Heqble. omega.
 Qed.
 
-
+Lemma eq_remove_S : forall (n m: nat),
+  n = m -> S n = S m.
+Proof.
+  intros.
+  omega.
+Qed.
 
 (*
  * Lenght lemmas
