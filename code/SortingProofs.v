@@ -174,11 +174,42 @@ Proof.
 Qed.
 
 Theorem insert_preserves_sort_cons : forall (X: Type) (l: list (nat * X)) (k1 k2: nat) (v1 v2: X),
-  kvl_sorted ((k1,v1)::l) -> kvl_sorted ((k1,v1)::insert_into_list k2 v2 l).
+  k1 < k2 -> kvl_sorted ((k1,v1)::l) -> kvl_sorted ((k1,v1)::insert_into_list k2 v2 l).
 Proof.
-  admit.
-Admitted.
-
+  induction l.
+  Case "l = []".
+    intros.
+    simpl.
+    apply kvl_sorted_cons. apply kvl_sorted_1. apply blt_nat_true. assumption.
+  Case "l = a::l".
+    intros.
+    destruct a.
+    simpl. remember (ble_nat k2 n) as k2len. 
+    destruct k2len; symmetry in Heqk2len; [apply ble_nat_true in Heqk2len | apply ble_nat_false in Heqk2len].
+    SCase "k2 <= n". remember (beq_nat k2 n) as k2eqn.
+      destruct k2eqn; symmetry in Heqk2eqn; [apply beq_nat_true_iff in Heqk2eqn | apply beq_nat_false_iff in Heqk2eqn].
+      SSCase "k2 = n".
+        subst.
+        apply kvl_sorted_cons.
+        inversion H0. subst.
+        apply sort_ignores_value with (v1 := x) (v2 := v2). apply H3.
+        apply blt_nat_true. omega.
+      SSCase "k2 < n".
+        apply kvl_sorted_cons.
+        apply kvl_sorted_cons.
+        apply list_tail_is_sorted in H0. apply H0.
+        apply blt_nat_true. omega.
+        apply blt_nat_true. omega.
+    SCase "k2 > n".
+      apply kvl_sorted_cons.
+      apply IHl.
+      inversion H0.
+      subst. apply blt_nat_true in H7. omega.
+      apply list_tail_is_sorted in H0.
+      apply H0.
+      apply blt_nat_true. inversion H0.
+      subst. apply blt_nat_true in H7. omega.
+Qed.
 
 Lemma split_preserves_sort : forall (X: Type) (l l1 l2: list (nat * X)),
   l1 ++ l2 = l -> kvl_sorted l -> kvl_sorted l1 /\ kvl_sorted l2.

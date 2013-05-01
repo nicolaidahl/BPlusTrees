@@ -448,10 +448,11 @@ Proof.
            symmetry in H7. apply split_preserves_sort in H7; try assumption.
            inversion H7.
            assumption.
-           apply insert_preserves_sort_cons.
+           apply insert_preserves_sort_cons;
            assumption.
-           apply insert_preserves_sort_cons.
+           apply insert_preserves_sort_cons;
            assumption.
+           apply sort_ignores_value with (v1 := x) (v2 := vb). apply H0.
            
            simpl. destruct b. apply ex_falso_quodlibet. omega.
            simpl in H4. inversion H4. clear H4.
