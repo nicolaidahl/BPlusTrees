@@ -1,6 +1,7 @@
 Require Export SfLib.
 Require Export HelperFunctions.
-Require Export SplitCutList.
+Require Import SplitCutList.
+
 
 (* 
  * Proofs about blt_nat
@@ -259,6 +260,12 @@ Proof.
   inversion H. rewrite H1. apply H1.
 Qed.
 
+Lemma cons_remove : forall (X: Type) (x: X) (l1 l2: list X),
+  x :: l1 = x :: l2 <-> l1 = l2.
+Proof.
+  intros X x. induction l1; intros; split; intros; inversion H; reflexivity.
+Qed.
+
 
 (* Replaced by functionality in SplitCutList    
 Theorem split_list'_preserves_list' : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
@@ -377,23 +384,5 @@ Proof.
     reflexivity.
 Qed.
 
-(* 
- * Proofs about appears In List 
- *)
 
-Inductive appears_in_kvl {X:Type} (sk: nat) : list (nat * X) -> Prop :=
-  | ai_here : forall v l, appears_in_kvl sk ((sk, v)::l)
-  | ai_later : forall skb v l, appears_in_kvl sk l -> appears_in_kvl sk ((skb, v)::l).
-
-Lemma element_at_index_impl_appears: forall (X: Type) (b k: nat) (v: X) (l: list (nat*X)),
-  element_at_index b l = Some (k, v) -> appears_in_kvl k l.
-Proof.
-  admit.
-Admitted.
-
-Lemma appears_in_kvl_app : forall (X: Type) (k: nat) (l: list (nat*X)),
-  appears_in_kvl k l -> exists l1, exists l2, exists v, l = l1++(k,v)::l2.
-Proof.
-  admit.
-Admitted.
 

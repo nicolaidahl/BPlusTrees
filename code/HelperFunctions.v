@@ -13,6 +13,30 @@ Fixpoint element_at_index {X: Type} (n : nat) (lst: list X): option X :=
             end
   end.  
 
+Fixpoint cut_list_left {X: Type} (b: nat) (lst: list X) : list X :=
+  match b with
+  | O => nil
+  | S b' => match lst with
+            | nil => nil
+            | x::lst' => x :: (cut_list_left b' lst')
+    end
+  end. 
+  
+Fixpoint cut_list_right {X: Type} (b: nat) (lst: list X) : list X :=
+  match b with
+  | 0 => lst
+  | S b' => match lst with
+            | nil => lst
+            | _ :: lst' => cut_list_right b' lst'
+            end
+  end.
+  
+Definition split_list {X: Type} (b: nat) (lst: list X) : (list X * list X) :=
+  (cut_list_left b lst, cut_list_right b lst).
+
+Definition alist := [0,1,2,3,4,5,6].
+Definition ab := 9.
+Eval compute in split_list ab alist.
 
 (*
  * blt_nat
