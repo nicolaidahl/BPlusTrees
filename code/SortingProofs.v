@@ -130,12 +130,6 @@ Proof.
   apply kvl_sorted_elim_list in H. apply H.
 Qed.
 
-Lemma split_preserves_sort : forall (X: Type) (l l1 l2: list (nat * X)),
-  l1 ++ l2 = l -> kvl_sorted l -> kvl_sorted l1 /\ kvl_sorted l2.
-Proof.
-  intros.  rewrite <- H in H0. apply kvl_sorted_app in H0. apply H0.
-Qed.
-
 Theorem insert_preserves_sort : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
   kvl_sorted l -> kvl_sorted (insert_into_list k v l).
 Proof.
@@ -178,37 +172,11 @@ Proof.
        apply kvl_sorted_cons. apply IHkvl_sorted.
        apply blt_nat_true. omega.
 Qed.
-    
-Theorem split_list'_preserves_list' : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
-   length l1 = b -> l1 ++ l2 = l -> split_list' b l3 l = ((rev l3) ++ l1, l2).
-Proof. 
-  induction b. 
-  Case "b = 0". intros.
-    simpl. apply length_0_impl_nil in H. subst. simpl. rewrite app_nil_r. 
-    reflexivity.
-  Case "b = S b". intros.
-    destruct l.
-    SCase "l = []".
-      apply app_length_le_l1 in H0. simpl in H0. rewrite H in H0. inversion H0.
-    SCase "l = x::l".
-      simpl. destruct l1. simpl in H. inversion H.
-      rewrite <- app_comm_cons in H0. inversion H0. rewrite H3.
-      simpl. rewrite rev_app_cons. apply IHb.
-      simpl in H. inversion H. reflexivity. apply H3.
-Qed.  
 
-Theorem split_list'_preserves_list : forall (X: Type) (b: nat) (l l1 l2: list X),
-   length l1 = b -> l1 ++ l2 = l -> split_list' b [] l = (l1, l2).
+Lemma split_preserves_sort : forall (X: Type) (l l1 l2: list (nat * X)),
+  l1 ++ l2 = l -> kvl_sorted l -> kvl_sorted l1 /\ kvl_sorted l2.
 Proof.
-  intros.
-  replace (l1) with (rev [] ++ l1) by reflexivity.
-  apply split_list'_preserves_list'; assumption.
-Qed.
-
-Theorem split_list_preserves_list : forall (X: Type) (b: nat) (l l1 l2: list X),
-   length l1 = b -> l1 ++ l2 = l -> split_list b l = (l1, l2).
-Proof.
-  intros. unfold split_list. apply split_list'_preserves_list; assumption.
+  intros.  rewrite <- H in H0. apply kvl_sorted_app in H0. apply H0.
 Qed.
 
 Theorem split_list_preserves_sort : forall (X: Type) (b: nat) (l l1 l2: list (nat * X)),
@@ -217,39 +185,6 @@ Theorem split_list_preserves_sort : forall (X: Type) (b: nat) (l l1 l2: list (na
 Proof.
   intros.
   apply split_preserves_sort with (l := l); assumption.
-Qed.
-
-Lemma app_list_eq_list_list : forall (X: Type) (l1 l2: list X),
-  l1 ++ l2 = l1 -> l2 = [].
-Proof.
-  intros.
-  induction l1. simpl in H. apply H.
-  apply IHl1. simpl in H. SearchAbout [cons].
-  inversion H. rewrite H1. apply H1.
-Qed.
-
-Theorem split_list'_preserves_lists : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
-   split_list' b l3 l = ((rev l3)++l1, l2) -> l = l1 ++ l2 /\ length l1 = b.
-Proof.
-  intros. generalize dependent l3.
-  induction b.
-  Case "b = 0".
-    intros. simpl in H.
-    inversion H. 
-    symmetry in H1. apply app_list_eq_list_list in H1.
-    subst.
-    simpl.
-    split; reflexivity.
-  Case "b = S b".
-    admit.
-Admitted.
-
-Theorem split_list_preserves_lists : forall (X: Type) (b: nat) (l l1 l2: list X),
-   split_list b l = (l1, l2) -> l = l1 ++ l2 /\ length l1 = b.
-Proof.
-  intros.
-  unfold split_list in H. replace (l1) with ((rev [])++l1) in H by reflexivity.
-  apply split_list'_preserves_lists in H. apply H.
 Qed.
 
     
