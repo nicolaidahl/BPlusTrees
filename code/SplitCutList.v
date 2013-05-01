@@ -71,9 +71,43 @@ Qed.
 Theorem split_list_preserves_lists : forall (X: Type) (b: nat) (l l1 l2: list X),
   split_list b l = (l1, l2) -> l = l1 ++ l2.
 Proof.
-  intros X b. induction b. intros. compute in H. inversion H. reflexivity.
-  intros. unfold split_list in H. destruct l. inversion H. reflexivity.
-  rewrite cut_list_right_remove_one in H. rewrite cut_list_left_add_one in H.
-  inversion H. rewrite <- app_comm_cons. apply cons_remove. apply cut_list_left_right_preserves_list.
+  intros X b. destruct b; intros. 
+  Case "b = 0".  
+    compute in H. inversion H. reflexivity.
+  Case "b = S b".
+    unfold split_list in H. destruct l. inversion H. reflexivity.
+    rewrite cut_list_right_remove_one in H. rewrite cut_list_left_add_one in H.
+    inversion H. rewrite <- app_comm_cons. apply cons_remove. apply cut_list_left_right_preserves_list.
 Qed.  
+    
+(** length **)
+Theorem cut_left_length_b: forall {X: Type} b (l: list X),
+  length l >= b -> length (cut_list_left b l) = b. 
+Proof.
+  intros X b. induction b; intros.
+  simpl. reflexivity.
+  destruct l. 
+    inversion H.
+    rewrite cut_list_left_add_one. simpl. rewrite IHb; try omega. inversion H; omega.
+Qed.
+  
+    
+Theorem split_list_left_length : forall (X: Type) (b: nat) (l l1 l2: list X),
+  length l >= b -> split_list b l = (l1, l2) -> length l1 = b.
+Proof.
+  intros X b. induction b. intros. inversion H0. reflexivity.
+  intros. unfold split_list in H0. destruct l. inversion H. 
+  simpl in H. rewrite cut_list_left_add_one in H0. inversion H0. simpl. rewrite cut_left_length_b.
+  reflexivity. omega.
+Qed.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
