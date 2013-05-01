@@ -122,16 +122,6 @@ Inductive kvl_sorted {X: Type}: list (nat * X) -> Prop :=
 .
 
 
-Fixpoint split_list' {X: Type} (b: nat) (fst snd: list X) : (list X * list X) :=
-  match b with
-    | O => (rev fst, snd)
-    | S b' => match snd with
-      | nil => (rev fst, snd)
-      | f::snd' => split_list' b' (f::fst) snd'
-    end
-  end. 
-Definition split_list {X: Type} (b: nat) (lst: list X) : (list X * list X) :=
-  split_list' b [] lst.
 
 Definition insert_leaf {X: Type} (b: nat) (k: nat) (v: X) (kvl: list (nat * X))
 						: (list (nat * X) * option (list (nat * X))) :=
