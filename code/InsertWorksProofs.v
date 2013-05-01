@@ -2,10 +2,6 @@ Require Export BPlusTree.
 Require Export HelperProofs.
 Require Export SortingProofs.
 Require Export HelperFunctions.
-
-Inductive appears_in_kvl {X:Type} (sk: nat) : list (nat * X) -> Prop :=
-  | ai_here : forall v l, appears_in_kvl sk ((sk, v)::l)
-  | ai_later : forall skb v l, appears_in_kvl sk l -> appears_in_kvl sk ((skb, v)::l).
   
 Lemma split_never_returns_empty_none : forall (X: Type) (b: nat) (leaf: list (nat * X)) (k: nat) (v: X),
   b <> 0 -> insert_leaf b k v leaf = ([], None) -> False. 
@@ -133,7 +129,7 @@ Proof.
     apply ex_falso_quodlibet. apply Heqk1lek2. omega.
 Qed.
 
-Lemma insert_leaf_cons_lt_overflow : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l l1 l2: list (nat * X)),
+Lemma insert_leaf_cons_lt_overflow : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
   b <> 0 -> kvl_sorted ((k2, v2)::l) -> k1 < k2 -> length((k2,v2)::l) = mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = (let (fst, snd) := split_list b ((k1, v1) :: (k2, v2) :: l) in (fst, Some snd)).
 Proof.  
   intros.
@@ -234,23 +230,60 @@ Proof.
       apply ai_later. apply IHl.
 Qed.
 
-Theorem size_of_kvl: forall {X: Type} {b: nat} (leaf: list (nat * X)) (k: nat) (v: X), 
-  not (appears_in_kvl k leaf) -> length leaf = b * 2 -> 
-  ble_nat (length (insert_into_list k v leaf)) (b * 2) = false.
-Proof. Admitted.
-
-
 Theorem split_insert_right : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k kb: nat) (v vb: X),
-  b > 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index b leaf = Some (kb, vb) -> 
+  b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index b leaf = Some (kb, vb) -> 
   k > kb -> length leaf = mult b 2 -> 
   insert_leaf b k v leaf = (left, Some kvl) -> appears_in_kvl k kvl.
 Proof.
-  intros X b leaf left kvl k kb v vb. intros Hb Hsort Happears Hcentral Hkkb Hlength Hinsertion.
-  induction leaf. 
-  Case "leaf = nil".
-	  simpl in Hlength. admit.
-  Case "leaf = x :: leaf". 
-     Admitted.
+  intros. 
+  
+  destruct leaf.
+  Case "leaf = []".
+    intros.
+    destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
+    inversion H4.
+  Case "leaf = a::leaf".
+    intros.
+    destruct p.
+    remember (beq_nat n k) as neqk.
+    destruct neqk; symmetry in Heqneqk; [apply beq_nat_true_iff in Heqneqk|apply beq_nat_false_iff in Heqneqk].
+    SCase "n = k".
+      subst. apply ex_falso_quodlibet. apply H1. apply ai_here.
+    SCase "n <> k".
+      remember (ble_nat n k) as nlek.
+      destruct nlek; symmetry in Heqnlek; [apply ble_nat_true in Heqnlek|apply ble_nat_false in Heqnlek].
+      SSCase "n <= k".
+       apply le_lt_or_eq_iff in Heqnlek. inversion Heqnlek.
+       SSSCase "n < k".
+         admit.
+       SSSCase "n = k".
+         apply ex_falso_quodlibet. apply Heqneqk. apply H6.
+      SSCase "n > k".
+        rewrite insert_leaf_cons_lt_overflow in H5; try assumption; try omega.
+        
+        apply element_at_index_impl_appears in H2.
+        apply appears_in_kvl_app in H2.
+        do 3 destruct H2.
+        inversion H0. subst. simpl in H4. 
+        assert (~(1 = b*2)). omega.
+        apply ex_falso_quodlibet. apply H6. apply H4.
+        
+        subst.
+        apply blt_nat_true in H10.
+        
+        rewrite H2 in H0.
+        destruct witness.
+        simpl in *.
+        assert (n > kb) by omega.
+        assert (n > k) by omega.
+        
+        inversion H2. rewrite H11 in H6. apply n_lt_n_inversion with (n := kb). apply H6.
+        rewrite <- app_comm_cons in H2.
+        inversion H2. rewrite <- H7 in H0.
+        apply kvl_sorted_key_across_app in H0.
+        apply ex_falso_quodlibet.
+        omega.
+Qed.
     
 Theorem split_insert_left : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k k1 kb: nat) (v vb: X),
   kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index b leaf = Some (kb, vb) -> 
