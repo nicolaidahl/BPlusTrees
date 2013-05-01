@@ -187,4 +187,11 @@ Proof.
   apply split_preserves_sort with (l := l); assumption.
 Qed.
 
-    
+Lemma app_list_eq_list_list : forall (X: Type) (l1 l2: list X),
+  l1 ++ l2 = l1 -> l2 = [].
+Proof.
+  intros.
+  induction l1. simpl in H. apply H.
+  apply IHl1. simpl in H. SearchAbout [cons].
+  inversion H. rewrite H1. apply H1.
+Qed.
