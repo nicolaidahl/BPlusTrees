@@ -1,6 +1,6 @@
-Require Export BPlusTree.
-Require Export HelperProofs.
-Require Export ValidBPlusTree.
+Require Import BPlusTree.
+Require Import HelperProofs.
+Require Import ValidBPlusTree.
 
 Example kvl_sorted_empty : @kvl_sorted nat [].
 Proof. apply kvl_sorted_0. Qed.
@@ -172,6 +172,13 @@ Proof.
        apply kvl_sorted_cons. apply IHkvl_sorted.
        apply blt_nat_true. omega.
 Qed.
+
+Theorem insert_preserves_sort_cons : forall (X: Type) (l: list (nat * X)) (k1 k2: nat) (v1 v2: X),
+  kvl_sorted ((k1,v1)::l) -> kvl_sorted ((k1,v1)::insert_into_list k2 v2 l).
+Proof.
+  admit.
+Admitted.
+
 
 Lemma split_preserves_sort : forall (X: Type) (l l1 l2: list (nat * X)),
   l1 ++ l2 = l -> kvl_sorted l -> kvl_sorted l1 /\ kvl_sorted l2.
