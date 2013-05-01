@@ -316,14 +316,89 @@ Proof.
 Qed.
 
 
+Lemma element_at_index_cons : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat*X)),
+  kvl_sorted ((k1, v1) :: l) ->
+  element_at_index b ((k1, v1) :: l) = Some (k2, v2) -> 
+  (b = 0 /\ k1 = k2) \/ (b <> 0 /\ k1 < k2).
+Proof.
+  intros X.
+  induction b.
+  
+  intros. left.
+  simpl in H0. inversion H0.
+  omega.
+  
+  intros. right.
+  simpl in H0.
+  destruct l.
+    apply element_at_index_impl_appears in H0. inversion H0.
+    destruct p.
+    inversion H.
+    apply blt_nat_true in H7.
+    subst.
+    apply element_at_index_impl_appears in H0.
+    apply appears_in_kvl_app in H0.
+    do 3 destruct H0.
+    rewrite H0 in H.
+    apply kvl_sorted_key_across_app in H.
+    omega.
+Qed.
+
 Lemma element_unchanged_by_inserting_greater_key : forall (X: Type) (b k1 k2 k3: nat) (v1 v2 v3: X) (l: list (nat*X)),
+  kvl_sorted ((k1, v2)::l) ->
   element_at_index b ((k1, v1) :: l) = Some (k2, v2) ->
   k3 > k2 ->
   element_at_index b ((k1, v1) :: insert_into_list k3 v3 l) = Some (k2, v2).
 Proof.
-  admit.
-Admitted.
-
+  induction b.
+  Case "b = 0".
+    intros.
+    simpl. simpl in H. inversion H0. reflexivity.
+  Case "b = S b".
+    intros.
+    simpl.
+    destruct l.
+    simpl in H0. apply element_at_index_impl_appears in H0. inversion H0.
+    destruct p.
+    assert (kvl_sorted(insert_into_list k3 v3 ((n, x) :: l))).
+      apply insert_preserves_sort. apply list_tail_is_sorted in H.
+      apply H.
+    simpl. simpl in H2.
+    remember (ble_nat k3 n) as k3len.
+    destruct k3len; symmetry in Heqk3len; [apply ble_nat_true in Heqk3len|apply ble_nat_false in Heqk3len].
+    SCase "k3 <= n".
+      remember (beq_nat k3 n) as k3eqn.
+      destruct k3eqn; symmetry in Heqk3eqn; [apply beq_nat_true_iff in Heqk3eqn|apply beq_nat_false_iff in Heqk3eqn].
+      SSCase "k3 = n".
+      simpl in H0.
+        destruct b.
+        simpl in H0. inversion H0.
+        subst.
+        apply n_lt_n_inversion with (n := k2). apply H1.
+        simpl. simpl in H0. apply H0.
+      SSCase "k3 < n".
+        simpl in H0.
+        destruct b.
+        SSSCase "b = 0".
+          simpl in H0. inversion H0. subst.
+          inversion H2.
+          apply blt_nat_true in H9.
+          apply ex_falso_quodlibet. omega.
+        SSSCase "b = S b".
+          apply element_at_index_cons in H0. destruct H0.
+          inversion H0. inversion H3.
+          inversion H0. subst.
+          apply ex_falso_quodlibet. omega.
+          apply list_tail_is_sorted in H. apply H.	
+    SCase "k3 > n".
+      simpl in H0.
+      apply IHb.
+      apply list_tail_is_sorted in H. 
+      apply sort_ignores_value with (v1 := x) (v2 := v2) in H.
+      apply H.
+      apply H0.
+      apply H1.
+Qed.
 
 Theorem split_insert_right : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k kb: nat) (v vb: X),
   b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index b leaf = Some (kb, vb) -> 
