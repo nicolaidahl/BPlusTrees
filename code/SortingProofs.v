@@ -1,6 +1,6 @@
-Require Export BPlusTree.
-Require Export HelperProofs.
-Require Export ValidBPlusTree.
+Require Import BPlusTree.
+Require Import HelperProofs.
+Require Import ValidBPlusTree.
 
 Example kvl_sorted_empty : @kvl_sorted nat [].
 Proof. apply kvl_sorted_0. Qed.

@@ -1,12 +1,14 @@
-Require Export BPlusTree.
-Require Export HelperProofs.
-Require Export SortingProofs.
+Require Import BPlusTree.
+Require Import HelperProofs.
+Require Import SortingProofs.
+Require Import ValidBPlusTree.
 
-Theorem insert_preserves_valid_bplustree : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat) (v: X),
-  valid_bplustree b X t -> valid_bplustree b X (insert k v t).
+Theorem insert_preserves_valid_bplustree : forall (b: nat) (X: Type) (tree: bplustree b X) (k: nat) (v: X),
+  valid_bplustree b X tree -> valid_bplustree b X (insert k v tree).
 Proof.
-  intros. induction H. 
-  Case "root_is_a_leaf". admit.
+  intros. induction H.
+  Case "root_is_a_leaf".
+    
   
     (* unfold insert. remember (insert' k v (bptLeaf b X l)) as insert'.
     destruct insert'. inversion Heqinsert'. remember (insert_leaf b k v l) as insert_leaf.

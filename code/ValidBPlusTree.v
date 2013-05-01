@@ -1,4 +1,4 @@
-Require Export BPlusTree.
+Require Import BPlusTree.
 
 
 (* Some props for having a prop apply to all elements in a list *)
