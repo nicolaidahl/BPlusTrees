@@ -300,7 +300,7 @@ Proof.
                
                 
            
-       SSSCase "n = k".
+      (* SSSCase "n = k".
          apply ex_falso_quodlibet. apply Heqneqk. apply H6.
       SSCase "n > k".
         rewrite insert_leaf_cons_lt_overflow in H5.
@@ -315,8 +315,8 @@ Proof.
               assumption.
               assumption.
               omega.
-              assumption.
-Qed.
+              assumption.*)
+Admitted.
 
 
 Theorem split_insert_normal : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k: nat) (v: X),
