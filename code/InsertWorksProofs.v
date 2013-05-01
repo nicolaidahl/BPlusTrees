@@ -283,6 +283,7 @@ Proof.
         apply kvl_sorted_key_across_app in H0.
         apply ex_falso_quodlibet.
         omega.
+Qed.
 
 Theorem split_insert_left : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k k1 kb: nat) (v vb: X),
   b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index b leaf = Some (kb, vb) -> 
@@ -319,35 +320,44 @@ Proof.
          remember (split_list (S b) ((n, x) :: insert_into_list k v leaf)) as split. 
          destruct split.
          symmetry in Heqsplit.
-         apply split_list_preserves_lists in Heqsplit. inversion Heqsplit. inversion H5. subst.
+         apply split_list_preserves_lists in Heqsplit. inversion H5. subst.
          destruct left. 
-           inversion H8.
+           admit.
            destruct p.
-             rewrite <- app_comm_cons in H7. inversion H7. subst. 
+             rewrite <- app_comm_cons in Heqsplit. inversion Heqsplit. subst. 
              apply IHleaf with (b := pred b).
                apply list_tail_is_sorted in H0. apply H0.
-               unfold not. intros. apply H1. apply ai_later. apply H9.
+               unfold not. intros. apply H1. apply ai_later. apply H7.
                omega.
+               
+               admit.
+               admit.
+               admit.
+               admit.
+               admit.
+               admit.
+               admit.
+               admit.
                
                
                 
            
-      (* SSSCase "n = k".
+        SSSCase "n = k".
          apply ex_falso_quodlibet. apply Heqneqk. apply H6.
       SSCase "n > k".
         rewrite insert_leaf_cons_lt_overflow in H5.
         remember (split_list (S b) ((k, v) :: (n, x) :: leaf)) as split. 
         destruct split.
           symmetry in Heqsplit.
-          apply split_list_preserves_lists in Heqsplit. inversion Heqsplit. inversion H5. subst.
+          apply split_list_preserves_lists in Heqsplit. inversion H5. subst.
           destruct left. 
-            inversion H7.
+            admit.
             destruct p. try assumption.
-              rewrite <- app_comm_cons in H6. inversion H6. apply ai_here.
+              rewrite <- app_comm_cons in Heqsplit. inversion Heqsplit. apply ai_here.
               assumption.
               assumption.
               omega.
-              assumption.*)
+              assumption.
 Admitted.
 
 
