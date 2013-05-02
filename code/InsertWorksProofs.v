@@ -247,7 +247,7 @@ Qed.
 
 Lemma key_greater_than_all_keys_does_not_appear : forall (X: Type) (k kb: nat) (l: list (nat*X)), 
   kvl_sorted l ->
-  all_keys X (below kb) l ->
+  all_keys X (below (S kb) ) l ->
   k > kb ->
 
   ~ appears_in_kvl k l.
@@ -273,8 +273,19 @@ Lemma key_smaller_than_all_keys_does_not_appear : forall (X: Type) (k kb: nat) (
 
   ~ appears_in_kvl k l.
 Proof.
-  admit.
-Admitted.
+  unfold not.
+  intros.
+  induction H0.
+  subst. inversion H2.
+  apply IHall_keys.
+  apply list_tail_is_sorted in H. apply H.
+  remember (beq_nat k n).
+  destruct b; symmetry in Heqb; [apply beq_nat_true_iff in Heqb|apply beq_nat_false_iff in Heqb].
+  subst.
+  inversion H3. apply ble_nat_true in H5. apply ex_falso_quodlibet. omega.
+  apply appears_cons in H2. assumption.
+  assumption.
+Qed.
 
 Lemma element_at_index_cons : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat*X)),
   kvl_sorted ((k1, v1) :: l) ->
@@ -305,6 +316,18 @@ Proof.
       apply kvl_sorted_key_across_app in H.
       omega.
 Qed.
+
+
+Lemma element_at_index_pred_b_implies_left_below_S_b : forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
+  b <> 0 ->
+  kvl_sorted l ->
+  l = l1 ++ l2 ->
+  length l1 = b ->
+  element_at_index (pred b) l = Some (k1, v1) ->
+  all_keys X (below (S k1)) l1. 
+Proof.
+  admit.
+Admitted.
 
 Lemma element_at_index_b_implies_left_below_b : forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
   kvl_sorted l ->
@@ -443,12 +466,8 @@ Proof.
   admit.
 Admitted.
 
-(* While this is correct, it's missing a little bit of information. There can be
- * inserted a element k > kb, that still ends in the right-hand-side
- * It should have been element_at_index (pred b) leaf = Some (kb, vb)
- *)
 Theorem split_insert_right : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k kb: nat) (v vb: X),
-  b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index b leaf = Some (kb, vb) -> 
+  b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index (pred b) leaf = Some (kb, vb) -> 
   k > kb -> length leaf = mult b 2 -> 
   insert_leaf b k v leaf = (left, Some kvl) -> appears_in_kvl k kvl.
 Proof.
@@ -484,28 +503,29 @@ Proof.
          inversion Heqsplit. clear Heqsplit. 
          SSSSCase "appears_in_kvl n left".
            (* This case is bogus, needs an inversion *)
+           simpl in H2.
            apply split_list_left_length in H5.
            apply element_unchanged_by_inserting_greater_key with (k3 := k) (v3 := v) in H2; try assumption.
-           apply element_at_index_b_implies_left_below_b with (l1 := left) (l2 := kvl) in H2; try assumption.
-           apply key_greater_than_all_keys_does_not_appear with (k:= k) in H2; try assumption.
+           simpl in H4.
+           inversion H4. clear H4.
+           apply element_at_index_pred_b_implies_left_below_S_b with (l1 := left) (l2 := kvl) in H2; try assumption.
+           apply key_greater_than_all_keys_does_not_appear with (k:=k) in H2; try assumption.
+           (* We've found our inversion - k both appears and does not appear in left *)
            apply ex_falso_quodlibet. apply H2. apply H8.
+           
+           (* Now we just need to prove all of the assumptions *)
            symmetry in H7. apply split_preserves_sort in H7; try assumption.
-           inversion H7.
-           assumption.
-           apply insert_preserves_sort_cons;
-           assumption.
-           apply insert_preserves_sort_cons;
-           assumption.
+           inversion H7. assumption.
+           
+           apply insert_preserves_sort_cons; assumption.
+           apply insert_preserves_sort_cons; assumption.
            apply sort_ignores_value with (v1 := x) (v2 := vb). apply H0.
-           
-           simpl. destruct b. apply ex_falso_quodlibet. omega.
-           simpl in H4. inversion H4. clear H4.
-           
-           apply insert_new_into_list_increases_length with (k := k) (v := v) in H10.
-           rewrite H10.
-           omega.
+           simpl in H4.
+           rewrite <- insert_new_into_list_increases_length with (k := k) (v := v) (l := leaf) in H4.
+           simpl. rewrite H4.  omega.
            apply list_tail_is_sorted in H0. assumption.
            unfold not. intro. apply H1. apply ai_later. assumption.
+           reflexivity.
          SSSSCase "appears_in_kvl n kvl".
            assumption.
          apply ai_later.
