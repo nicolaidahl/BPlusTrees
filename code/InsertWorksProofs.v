@@ -3,6 +3,7 @@ Require Export HelperProofs.
 Require Import SortingProofs.
 Require Export HelperFunctions.
 Require Import ValidBPlusTree.
+Require Import AppearsInKVL.
   
 Lemma split_never_returns_empty_none : forall (X: Type) (b: nat) (leaf: list (nat * X)) (k: nat) (v: X),
   b <> 0 -> insert_leaf b k v leaf = ([], None) -> False. 
@@ -269,18 +270,6 @@ Proof.
 Admitted.
 *)
 
-Lemma element_at_index_b_implies_left_below_b : forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
-  kvl_sorted l ->
-  l = l1 ++ l2 ->
-  length l1 = b ->
-  element_at_index b l = Some (k1, v1) ->
-  
-  all_keys X (below k1) l1. 
-Proof.
-  admit.
-Admitted.
-
-
 Lemma appears_cons : forall (X: Type) (k k1: nat) (v1: X) (l: list (nat*X)),
   appears_in_kvl k ((k1, v1) :: l) -> 
   k <> k1 -> 
@@ -342,6 +331,67 @@ Proof.
     rewrite H0 in H.
     apply kvl_sorted_key_across_app in H.
     omega.
+Qed.
+
+Lemma element_at_index_b_implies_left_below_b : forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
+  kvl_sorted l ->
+  l = l1 ++ l2 ->
+  length l1 = b ->
+  element_at_index b l = Some (k1, v1) ->
+  all_keys X (below k1) l1. 
+Proof.
+  intros.
+  generalize dependent l. generalize dependent l1.
+  induction b.
+  Case "b = 0".
+    intros.
+    apply length_0_impl_nil in H1.
+    subst.
+    apply ak_empty.
+  Case "b = S b".
+    intros.
+    destruct l.
+    SCase "l = []".
+      apply element_at_index_impl_appears in H2.
+      inversion H2.
+    SCase "l = h :: t".
+      simpl in H2.
+      destruct l1.
+      SSCase "l1 = []".
+        apply ak_empty.
+      SSCase "l1 = h :: t".
+        rewrite <- app_comm_cons in H0.
+        inversion H0.
+        rewrite <- H4.
+        destruct p.
+        apply ak_next.
+        SSSCase "rest of list below".
+          apply IHb with (l := l); try assumption.
+            simpl in H1. inversion H1. reflexivity.
+            apply list_tail_is_sorted in H. assumption.
+        SSSCase "below k1 n".
+          unfold below. rewrite blt_nat_true.
+          destruct l.
+            SSSSCase "l = []".
+              apply element_at_index_impl_appears in H2. inversion H2.
+            SSSSCase "l = h :: t".
+              destruct p.
+		      inversion H.
+		      destruct b.
+		      SSSSSCase "b = 0".
+		        simpl in H2.
+		        inversion H2.
+		        apply blt_nat_true in H11. subst.
+		        assumption.
+		      SSSSSCase "b = S b".
+		        apply element_at_index_cons in H2.
+			    inversion H2.
+			    inversion H12.
+			    inversion H13.
+			    inversion H12.
+		        apply blt_nat_true in H11. omega.
+		        apply list_tail_is_sorted in H.
+		        assumption.
 Qed.
 
 Lemma element_unchanged_by_inserting_greater_key : forall (X: Type) (b k1 k2 k3: nat) (v1 v2 v3: X) (l: list (nat*X)),
