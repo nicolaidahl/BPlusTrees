@@ -26,3 +26,23 @@ Proof.
   inversion IHappears_in_kvl. inversion H0. inversion H1.
   exists ((k0, v)::witness). exists witness0. exists witness1. simpl. rewrite cons_remove. apply H2.
 Qed.
+
+Lemma apperas_in_kvl_dist_app : forall (X: Type) (s: nat) (l l1 l2: list (nat*X)),
+  l = l1++l2 -> appears_in_kvl s l -> appears_in_kvl s l1 \/ appears_in_kvl s l2.
+Proof.
+  admit.
+Admitted.
+
+Lemma appears_cons : forall (X: Type) (k k1: nat) (v1: X) (l: list (nat*X)),
+  appears_in_kvl k ((k1, v1) :: l) -> 
+  k <> k1 -> 
+  appears_in_kvl k (l).
+Proof.
+  intros.
+  inversion H.
+  subst.
+  apply ex_falso_quodlibet. omega.
+  subst.
+  apply H2.
+Qed.
+
