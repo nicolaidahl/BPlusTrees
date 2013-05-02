@@ -390,12 +390,6 @@ Proof.
 		        assumption.
 Qed.
 
-Lemma all_keys_stronger : forall (X: Type) (k1 k2: nat) (l: list (nat*X)),
-  k2 < k1 -> all_keys X (above k2) (l) -> all_keys X (above k1) (l).
-Proof.
-  admit.
-Admitted.
-
 Lemma all_keys_elim_cons : forall (X: Type) (k1 k2: nat) (v1 v2: X) (l: list (nat*X)),
   above k1 k2 -> all_keys X (above k1) ((k1, v1) :: l) -> all_keys X (above k1) ((k1, v1) :: (k2, v2) :: l).
 Proof.
