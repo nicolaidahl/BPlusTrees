@@ -390,16 +390,83 @@ Proof.
 		        assumption.
 Qed.
 
-Lemma element_at_index_b_implies_right_above_b : forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
+Lemma all_keys_stronger : forall (X: Type) (k1 k2: nat) (l: list (nat*X)),
+  k2 < k1 -> all_keys X (above k2) (l) -> all_keys X (above k1) (l).
+Proof.
+  admit.
+Admitted.
+
+Lemma all_keys_elim_cons : forall (X: Type) (k1 k2: nat) (v1 v2: X) (l: list (nat*X)),
+  above k1 k2 -> all_keys X (above k1) ((k1, v1) :: l) -> all_keys X (above k1) ((k1, v1) :: (k2, v2) :: l).
+Proof.
+  intros.
+  inversion H0.
+  inversion H3. 
+  repeat constructor; assumption.
+  repeat constructor; assumption.
+Qed.
+
+Lemma sorted_all_keys_above_cons : forall (X: Type) (l: list (nat*X)) (k: nat) (v1: X), 
+  kvl_sorted ((k, v1)::l) -> all_keys X (above k) ((k, v1)::l).
+Proof.
+  induction l.
+  Case "l = []".
+    intros.
+    apply ak_next. apply ak_empty.
+    unfold above. apply ble_nat_symm.
+  Case "l = a::l".
+    intros.
+    destruct a.
+    inversion H. subst.
+    apply blt_nat_true in H6.
+    
+    (* Remove a from list in proof obligation *)
+    apply all_keys_elim_cons.
+    unfold above. apply ble_nat_true. omega.
+    
+    (* Now apply induction hypothesis *)
+    apply IHl.
+    replace ((k,v1)::(n,x)::l) with ([(k,v1)]++[(n,x)]++l) in H by reflexivity.
+    apply kvl_sorted_elim_list in H.
+    simpl in H. apply H.
+Qed.
+
+Lemma element_at_index_b_implies_right_above_b : forall (X: Type) (l l1 l2: list (nat*X)) (b k1: nat) (v1: X),
   kvl_sorted l ->
   l = l1 ++ l2 ->
   length l1 = b ->
   element_at_index b l = Some (k1, v1) ->
   all_keys X (above k1) l2. 
 Proof.
-  admit.
-Admitted.
-
+  induction l.
+  Case "l = []".
+    intros.
+    symmetry in H0. apply app_eq_nil in H0. inversion H0.
+    subst. simpl in *. inversion H2.
+  Case "l = a::l".
+    intros. destruct a.
+    destruct b.
+    SCase "b = 0".
+      apply length_0_impl_nil in H1. subst.
+      simpl in H0. subst.
+      simpl in H2. inversion H2. subst.
+      apply sorted_all_keys_above_cons.
+      apply H.
+    SCase "b = S b".
+      simpl in H2.
+      destruct l1.
+      SSCase "l1 = []".
+        simpl in H1. inversion H1.
+      SSCase "l1 = p::l1".
+        rewrite <- app_comm_cons in H0.
+        inversion H0.
+        simpl in H1. inversion H1.
+        eapply IHl.
+          apply list_tail_is_sorted in H. apply H.
+          apply H5.
+          apply H6.
+          apply H2.
+Qed.
 
 Lemma element_unchanged_by_inserting_greater_key : forall (X: Type) (b k1 k2 k3: nat) (v1 v2 v3: X) (l: list (nat*X)),
   kvl_sorted ((k1, v2)::l) ->
