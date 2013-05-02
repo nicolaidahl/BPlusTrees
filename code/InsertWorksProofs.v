@@ -302,25 +302,27 @@ Lemma element_at_index_cons : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: lis
 Proof.
   intros X.
   induction b.
-  
-  intros. left.
-  simpl in H0. inversion H0.
-  omega.
-  
-  intros. right.
-  simpl in H0.
-  destruct l.
-    apply element_at_index_impl_appears in H0. inversion H0.
-    destruct p.
-    inversion H.
-    apply blt_nat_true in H7.
-    subst.
-    apply element_at_index_impl_appears in H0.
-    apply appears_in_kvl_app in H0.
-    do 3 destruct H0.
-    rewrite H0 in H.
-    apply kvl_sorted_key_across_app in H.
+  Case "b = 0".
+    intros. left.
+    simpl in H0. inversion H0.
     omega.
+  Case "b = S b".
+    intros. right.
+    simpl in H0.
+    destruct l.
+    SCase "l = []".
+      apply element_at_index_impl_appears in H0. inversion H0.
+    SCase "l = p::l".
+      destruct p.
+      inversion H.
+      apply blt_nat_true in H7.
+      subst.
+      apply element_at_index_impl_appears in H0.
+      apply appears_in_kvl_app in H0.
+      do 3 destruct H0.
+      rewrite H0 in H.
+      apply kvl_sorted_key_across_app in H.
+      omega.
 Qed.
 
 Lemma element_unchanged_by_inserting_greater_key : forall (X: Type) (b k1 k2 k3: nat) (v1 v2 v3: X) (l: list (nat*X)),
