@@ -902,6 +902,55 @@ Lemma list_of_length_b_implies_element_at_b : forall (X: Type) (b: nat) (kvl: li
     \/ 
   (kvl <> [] /\ exists k, exists v, element_at_index (pred b) kvl = Some(k, v)).
 Proof.
+  intros. 
+  
+  (*
+   * We can try an induction on kvl.
+  generalize dependent b.
+  induction kvl.
+  Case "kvl = []".
+    intros.
+    left. split. reflexivity. rewrite element_at_index_empty_none. reflexivity.
+  Case "kvl = a::kvl".
+    intros.
+    destruct a.
+    destruct b.
+    SCase "b = 0".
+      right.
+      split. 
+      unfold not. intro. inversion H0.
+      simpl. exists n. exists x. reflexivity.
+    SCase "b = S b".
+      simpl.
+      * And now we have b instead of pred b *)
+      
+  (*
+   * Or we can try on b *)
+  induction b.
+  Case "b = 0".
+    intros. destruct kvl.
+    left.
+      split. reflexivity. rewrite element_at_index_empty_none. reflexivity.
+    right.
+    split.
+      unfold not. intro. inversion H0.
+      destruct p. simpl. exists n. exists x. reflexivity.
+  Case "b = S b".
+    intros. destruct kvl.
+    left.
+      split. reflexivity. rewrite element_at_index_empty_none. reflexivity.
+    simpl.
+    (* And again we have b instead of pred b *)
+    
+    destruct b.
+      SCase "b = 0".
+      right.
+      split.
+        unfold not. intro. inversion H0.
+        simpl. destruct p. exists n. exists x. reflexivity.
+      SCase "b = S b".
+        simpl. simpl in IHb.
+        (* And here we have a miss-match between p::kvl and kvl *)    
   admit.
 Admitted.
 
