@@ -890,42 +890,25 @@ Proof.
   assumption.
 Qed.
 
-Lemma list_of_length_b_implies_element_at_b : forall (X: Type) (b: nat) (kvl: list (nat* X)),
-  kvl <> [] ->
-  b <= length kvl -> exists k, exists v, element_at_index (pred b) kvl = Some(k, v).
+Lemma blargh : forall (X: Type) (x1 x2: X) (l: list X),
+  x1::l <> [] -> x1::x2::l <> [].
 Proof.
-  intros. generalize dependent b.
-  induction kvl.
-  Case "kvl = []".
-    intros.
-    destruct b.
-      simpl in H. apply ex_falso_quodlibet. apply H. reflexivity.
-      simpl in H0. apply ex_falso_quodlibet. omega.
-  Case "kvl = a::kvl".
-    intros.
-    destruct a.
-    destruct b.
-    SCase "b = 0".
-      simpl.
-      exists n. exists x.
-      reflexivity.
-    SCase "b = S b".
-      simpl.
-      simpl in H0.
-      remember (S b).
-      apply n_le_m__Sn_le_Sm in H0.
-      rewrite element_at_index_b_elem_impl_pred_b.
-      apply IHkvl.
-      
-      admit.
-      admit.
-      admit.
+  intros. unfold not. intro. inversion H0.
+Qed.
+
+Lemma list_of_length_b_implies_element_at_b : forall (X: Type) (b: nat) (kvl: list (nat* X)),
+  b <= length kvl -> 
+  (kvl = [] /\ element_at_index (pred b) kvl = None) 
+    \/ 
+  (kvl <> [] /\ exists k, exists v, element_at_index (pred b) kvl = Some(k, v)).
+Proof.
+  admit.
 Admitted.
 
 Theorem insert_leaf_works : forall {X: Type} {b: nat} (k: nat) (v: X) (leaf left right: list (nat * X)),
   b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> 
   length leaf <= mult b 2 ->
-  exists (rightOption: option (list (nat * X))), insert_leaf b k v leaf = (left, rightOption) ->
+  exists rightOption: option (list (nat * X)), insert_leaf b k v leaf = (left, rightOption) ->
   appears_in_kvl k left \/ rightOption = Some(right) /\ appears_in_kvl k right.
 Proof.
   intros.
@@ -944,7 +927,11 @@ Proof.
     assert (length leaf = b * 2) by omega.
     assert (b <= length leaf) by omega.
     apply list_of_length_b_implies_element_at_b in H4.
-    do 2 destruct H4.
+    inversion H4.
+      inversion H5. rewrite H6 in H3. simpl in H3. assert (b=0) by omega. 
+      apply ex_falso_quodlibet. omega.
+    inversion H5.
+    do 2 destruct H7. clear H4. clear H5. clear H6.
     remember (ble_nat witness k) as ble_kb_k.
     destruct ble_kb_k; symmetry in Heqble_kb_k; [apply ble_nat_true in Heqble_kb_k | apply ble_nat_false in Heqble_kb_k].
     SCase "right".
@@ -958,10 +945,10 @@ Proof.
           apply H.
           apply H0.
           apply H1.
-          apply H4.
+          apply H7.
           apply Heqble_kb_k.
           apply H3.
-          apply H5.
+          apply H4.
     SCase "split left".
       exists (Some right).
       left.
@@ -969,12 +956,10 @@ Proof.
         apply H.
         apply H0.
         apply H1.
-        apply H4.
+        apply H7.
         omega.
         apply H3.
-        apply H5.
-    assumption.
-    omega.
+        apply H4.
 Qed.
 
 Theorem insert_into_list_works : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
