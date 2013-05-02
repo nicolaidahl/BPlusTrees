@@ -3,6 +3,7 @@ Require Export HelperProofs.
 Require Import SortingProofs.
 Require Export HelperFunctions.
 Require Import ValidBPlusTree.
+Require Import AppearsInKVL.
   
 Lemma split_never_returns_empty_none : forall (X: Type) (b: nat) (leaf: list (nat * X)) (k: nat) (v: X),
   b <> 0 -> insert_leaf b k v leaf = ([], None) -> False. 
@@ -231,14 +232,6 @@ Proof.
       apply ai_later. apply IHl.
 Qed.
 
-Lemma apperas_in_kvl_dist_app : forall (X: Type) (s: nat) (l l1 l2: list (nat*X)),
-  l = l1++l2 -> appears_in_kvl s l -> appears_in_kvl s l1 \/ appears_in_kvl s l2.
-Proof.
-  admit.
-Admitted.
-
-
-
 (*
 Lemma letstrythis : forall (X: Type) (k1 k2 kb b: nat) (v1 v2 kv: X) (l l1 l2: list (nat*X)),
   (k1, v1) :: insert_into_list k2 v2 l = l1 ++ l2 ->
@@ -279,20 +272,6 @@ Lemma element_at_index_b_implies_left_below_b : forall (X: Type) (b k1: nat) (v1
 Proof.
   admit.
 Admitted.
-
-
-Lemma appears_cons : forall (X: Type) (k k1: nat) (v1: X) (l: list (nat*X)),
-  appears_in_kvl k ((k1, v1) :: l) -> 
-  k <> k1 -> 
-  appears_in_kvl k (l).
-Proof.
-  intros.
-  inversion H.
-  subst.
-  apply ex_falso_quodlibet. omega.
-  subst.
-  apply H2.
-Qed.
 
 Lemma key_greater_than_all_keys_does_not_appear : forall (X: Type) (k kb: nat) (l: list (nat*X)), 
   kvl_sorted l ->
