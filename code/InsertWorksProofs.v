@@ -317,8 +317,31 @@ Proof.
       omega.
 Qed.
 
+Lemma element_at_index_b_elem_impl_pred_b: forall (X: Type) b x l (k1: nat) (v1: X),
+  b <> 0 ->
+  element_at_index b (x :: l) = Some (k1, v1) -> 
+  element_at_index (pred b) l = Some (k1, v1).
+Proof.
+  induction b. intros. unfold not in H. destruct H. reflexivity.
+  intros. simpl. simpl in H0. assumption.
+Qed.
 
-Lemma element_at_index_pred_b_implies_left_below_S_b : forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
+
+Lemma element_at_index_empty_none : forall (X: Type) b,
+  @element_at_index X b [] = None.
+Proof.
+  intros. destruct b; reflexivity.
+Qed.
+  
+Lemma element_at_index_one : forall (X: Type) b (k k1:nat) (v v1: X),
+  element_at_index b [(k, v)] = Some (k1, v1) -> k = k1.
+Proof. 
+  intros. induction b. compute in H. inversion H. reflexivity.
+  simpl in H. rewrite element_at_index_empty_none in H. inversion H.
+Qed.
+
+Lemma element_at_index_pred_b_implies_left_below_S_b : 
+  forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
   b <> 0 ->
   kvl_sorted l ->
   l = l1 ++ l2 ->
@@ -326,8 +349,48 @@ Lemma element_at_index_pred_b_implies_left_below_S_b : forall (X: Type) (b k1: n
   element_at_index (pred b) l = Some (k1, v1) ->
   all_keys X (below (S k1)) l1. 
 Proof.
-  admit.
-Admitted.
+  induction b; intros.
+  Case "b = 0".
+    rewrite length_0_impl_nil. apply ak_empty. assumption.
+  Case "b = S b".
+    simpl in H2. destruct l. 
+    SCase "l = []".
+      apply element_at_index_impl_appears in H3. inversion H3.
+    SCase "l = p :: l".
+      destruct l1.
+      SSCase "l1 = []". 
+        apply ak_empty.
+      SSCase "l1 = p0 :: l1".
+        simpl in H1. simpl in H2. inversion H2. inversion H1. rewrite <- H6. destruct p. 
+        apply ak_next. apply IHb with (v1:=v1)(l:=l)(l2:=l2); try assumption.
+        admit.
+        apply list_tail_is_sorted in H0. assumption.
+        eapply element_at_index_b_elem_impl_pred_b. admit.
+        apply H3.
+        SSSCase "S k1 > n".
+          unfold below. apply blt_nat_true. simpl in H3. apply element_at_index_impl_appears in H3.
+          apply appears_in_kvl_app in H3. do 3 destruct H3. destruct witness. inversion H3. omega.
+          inversion H3. rewrite H3 in H0. rewrite <- H8 in H0. 
+          apply kvl_sorted_key_across_app in H0. omega.
+Qed.
+
+(* a try with induction on kvl_sorted 
+  
+  intros. generalize dependent l1. generalize dependent l2.
+  induction H0; intros. 
+  Case "kvl_sorted_0".
+    apply element_at_index_impl_appears in H3. inversion H3.
+  Case "kvl_sorted_1".
+    destruct l1. apply ak_empty. 
+    inversion H1. symmetry in H5. apply app_eq_nil in H5. destruct H5. rewrite H0.
+    apply ak_next. apply ak_empty. unfold below. apply blt_nat_true.
+    destruct b. unfold not in H. destruct H. reflexivity.
+    simpl in H3. apply element_at_index_one in H3. omega.
+  Case "kvl_sorted_cons".
+    destruct l1. apply ak_empty.
+    
+    *)
+        
 
 Lemma element_at_index_b_implies_left_below_b : forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
   kvl_sorted l ->
