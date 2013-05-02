@@ -103,6 +103,13 @@ Proof.
   simpl. apply IHn.
 Qed.
 
+Theorem n_le_m__Sn_le_Sm : forall n m,
+  n <= m -> S n <= S m.
+Proof.
+  intros. induction H; omega.
+Qed.
+
+
 (* 
  * Proofs about beq_nat and = 
  *)
