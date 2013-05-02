@@ -232,44 +232,6 @@ Proof.
       apply ai_later. apply IHl.
 Qed.
 
-Lemma apperas_in_kvl_dist_app : forall (X: Type) (s: nat) (l l1 l2: list (nat*X)),
-  l = l1++l2 -> appears_in_kvl s l -> appears_in_kvl s l1 \/ appears_in_kvl s l2.
-Proof.
-  admit.
-Admitted.
-
-
-
-(*
-Lemma letstrythis : forall (X: Type) (k1 k2 kb b: nat) (v1 v2 kv: X) (l l1 l2: list (nat*X)),
-  (k1, v1) :: insert_into_list k2 v2 l = l1 ++ l2 ->
-  kvl_sorted l -> 
-  ~ appears_in_kvl k2 ((k1, v1) :: l) -> 
-  k2 > kb -> 
-  length (l1) = b ->
-  element_at_index b ((k1,v1)::l) = Some(kb, kv) ->
-  
-  exists l', l2 = insert_into_list k2 v2 l'.
-Proof.
-  intros.
-  induction b.
-  
-  apply length_0_impl_nil in H3. subst.
-  simpl in *.
-  inversion H4. subst.
-  exists [(kb, kv)].
-  simpl.
-  remember (ble_nat k2 kb) as k1lekb.
-  destruct k1lekb; symmetry in Heqk1lekb;[ rewrite ble_nat_true in Heqk1lekb|].
-  
-  rewrite ble_nat_symm. rewrite <- beq_nat_refl.
-  destruc
-  
-  simpl in *. exists [(k1, v1)]. simpl.
-  admit.
-Admitted.
-*)
-
 Lemma appears_cons : forall (X: Type) (k k1: nat) (v1: X) (l: list (nat*X)),
   appears_in_kvl k ((k1, v1) :: l) -> 
   k <> k1 -> 
@@ -304,7 +266,6 @@ Proof.
   assumption.
 Qed.
 
-
 Lemma element_at_index_cons : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat*X)),
   kvl_sorted ((k1, v1) :: l) ->
   element_at_index b ((k1, v1) :: l) = Some (k2, v2) -> 
@@ -312,25 +273,27 @@ Lemma element_at_index_cons : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: lis
 Proof.
   intros X.
   induction b.
-  
-  intros. left.
-  simpl in H0. inversion H0.
-  omega.
-  
-  intros. right.
-  simpl in H0.
-  destruct l.
-    apply element_at_index_impl_appears in H0. inversion H0.
-    destruct p.
-    inversion H.
-    apply blt_nat_true in H7.
-    subst.
-    apply element_at_index_impl_appears in H0.
-    apply appears_in_kvl_app in H0.
-    do 3 destruct H0.
-    rewrite H0 in H.
-    apply kvl_sorted_key_across_app in H.
+  Case "b = 0".
+    intros. left.
+    simpl in H0. inversion H0.
     omega.
+  Case "b = S b".
+    intros. right.
+    simpl in H0.
+    destruct l.
+    SCase "l = []".
+      apply element_at_index_impl_appears in H0. inversion H0.
+    SCase "l = p::l".
+      destruct p.
+      inversion H.
+      apply blt_nat_true in H7.
+      subst.
+      apply element_at_index_impl_appears in H0.
+      apply appears_in_kvl_app in H0.
+      do 3 destruct H0.
+      rewrite H0 in H.
+      apply kvl_sorted_key_across_app in H.
+      omega.
 Qed.
 
 Lemma element_at_index_b_implies_left_below_b : forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
