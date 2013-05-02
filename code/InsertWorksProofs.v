@@ -499,7 +499,7 @@ Proof.
          apply split_list_preserves_lists in Heqsplit.
          assert ((n, x) :: insert_into_list k v leaf = left ++ kvl) by assumption.
          
-         apply apperas_in_kvl_dist_app with (s := k) in Heqsplit.
+         apply appears_in_kvl_dist_app with (s := k) in Heqsplit.
          inversion Heqsplit. clear Heqsplit. 
          SSSSCase "appears_in_kvl n left".
            (* This case is bogus, needs an inversion *)
