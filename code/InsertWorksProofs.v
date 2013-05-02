@@ -266,6 +266,16 @@ Proof.
   assumption.
 Qed.
 
+Lemma key_smaller_than_all_keys_does_not_appear : forall (X: Type) (k kb: nat) (l: list (nat*X)), 
+  kvl_sorted l ->
+  all_keys X (above kb) l ->
+  k < kb ->
+
+  ~ appears_in_kvl k l.
+Proof.
+  admit.
+Admitted.
+
 Lemma element_at_index_cons : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat*X)),
   kvl_sorted ((k1, v1) :: l) ->
   element_at_index b ((k1, v1) :: l) = Some (k2, v2) -> 
@@ -357,6 +367,17 @@ Proof.
 		        assumption.
 Qed.
 
+Lemma element_at_index_b_implies_right_above_b : forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
+  kvl_sorted l ->
+  l = l1 ++ l2 ->
+  length l1 = b ->
+  element_at_index b l = Some (k1, v1) ->
+  all_keys X (above k1) l2. 
+Proof.
+  admit.
+Admitted.
+
+
 Lemma element_unchanged_by_inserting_greater_key : forall (X: Type) (b k1 k2 k3: nat) (v1 v2 v3: X) (l: list (nat*X)),
   kvl_sorted ((k1, v2)::l) ->
   element_at_index b ((k1, v1) :: l) = Some (k2, v2) ->
@@ -413,6 +434,19 @@ Proof.
       apply H1.
 Qed.
 
+Lemma element_changed_by_inserting_smaller_key : forall (X: Type) (b k1 k2 k3: nat) (v1 v2 v3: X) (l: list (nat*X)),
+  kvl_sorted ((k1, v2)::l) ->
+  element_at_index (pred b) ((k1, v1) :: l) = Some (k2, v2) ->
+  k3 < k2 ->
+  element_at_index b ((k1, v1) :: insert_into_list k3 v3 l) = Some (k2, v2).
+Proof.
+  admit.
+Admitted.
+
+(* While this is correct, it's missing a little bit of information. There can be
+ * inserted a element k > kb, that still ends in the right-hand-side
+ * It should have been element_at_index (pred b) leaf = Some (kb, vb)
+ *)
 Theorem split_insert_right : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k kb: nat) (v vb: X),
   b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index b leaf = Some (kb, vb) -> 
   k > kb -> length leaf = mult b 2 -> 
@@ -449,10 +483,7 @@ Proof.
          apply apperas_in_kvl_dist_app with (s := k) in Heqsplit.
          inversion Heqsplit. clear Heqsplit. 
          SSSSCase "appears_in_kvl n left".
-           
-          
            (* This case is bogus, needs an inversion *)
-           
            apply split_list_left_length in H5.
            apply element_unchanged_by_inserting_greater_key with (k3 := k) (v3 := v) in H2; try assumption.
            apply element_at_index_b_implies_left_below_b with (l1 := left) (l2 := kvl) in H2; try assumption.
@@ -469,6 +500,7 @@ Proof.
            
            simpl. destruct b. apply ex_falso_quodlibet. omega.
            simpl in H4. inversion H4. clear H4.
+           
            apply insert_new_into_list_increases_length with (k := k) (v := v) in H10.
            rewrite H10.
            omega.
@@ -509,20 +541,19 @@ Proof.
 Qed.
 
 Theorem split_insert_left : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k k1 kb: nat) (v vb: X),
-  b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index b leaf = Some (kb, vb) -> 
+  b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index (pred b) leaf = Some (kb, vb) -> 
   k < kb -> length leaf = mult b 2 ->
   insert_leaf b k v leaf = (left, Some kvl) -> appears_in_kvl k left.
 Proof.
   intros.
-  destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
-  generalize dependent b.
-  induction leaf.
+  destruct leaf.
   Case "leaf = []".
     intros.
-    compute in H5. inversion H5.
+    destruct b. apply ex_falso_quodlibet. apply H. reflexivity. 
+    simpl in H4. inversion H4.
   Case "leaf = a::leaf".
     intros.
-    destruct a.
+    destruct p.
     remember (beq_nat n k) as neqk.
     destruct neqk; symmetry in Heqneqk; [apply beq_nat_true_iff in Heqneqk|apply beq_nat_false_iff in Heqneqk].
     
@@ -539,49 +570,90 @@ Proof.
       SSCase "n <= k".
        apply le_lt_or_eq_iff in Heqnlek. inversion Heqnlek.
        SSSCase "n < k".
-         rewrite insert_leaf_cons_gt_overflow in H5.
-         remember (split_list (S b) ((n, x) :: insert_into_list k v leaf)) as split. 
+         rewrite insert_leaf_cons_gt_overflow in H5; try assumption.
+         remember (split_list b ((n, x) :: insert_into_list k v leaf)) as split. 
          destruct split.
+         assert ((l, l0) = split_list b ((n, x) :: insert_into_list k v leaf)) by assumption.
          symmetry in Heqsplit.
          apply split_list_preserves_lists in Heqsplit. inversion H5. subst.
          destruct left. 
-           admit.
+         SSSSCase "left = []".
+           symmetry in H7.
+           apply split_list_left_length in H7.
+           simpl in H7. rewrite <- H7 in H.
+           apply ex_falso_quodlibet. omega.
+           simpl in H4.
+           rewrite <- insert_new_into_list_increases_length with (k:=k) (v:=v) (l := leaf) in H4.
+           simpl.
+           rewrite H4. omega.
+           apply list_tail_is_sorted in H0. apply H0. 
+           unfold not. intro. apply H1.
+           apply ai_later. apply H8.
+           reflexivity.
+         SSSSCase "left = p::left". 
            destruct p.
-             rewrite <- app_comm_cons in Heqsplit. inversion Heqsplit. subst. 
-             apply IHleaf with (b := pred b).
-               apply list_tail_is_sorted in H0. apply H0.
-               unfold not. intros. apply H1. apply ai_later. apply H7.
-               omega.
-               
-               admit.
-               admit.
-               admit.
-               admit.
-               admit.
-               admit.
-               admit.
-               admit.
-               
-               
-                
-           
+           rewrite <- app_comm_cons in Heqsplit. inversion Heqsplit.
+           apply apperas_in_kvl_dist_app with (s := k) in H11.
+           destruct H11.
+           SSSSSCase "appears in left".
+             apply ai_later. apply H8.
+           SSSSSCase "appears in right".
+             (* This case is bogus *)
+             symmetry in H7. apply split_list_left_length in H7. 
+             rewrite <- H9 in H7. rewrite <- H10 in H7.
+
+             apply element_changed_by_inserting_smaller_key with (k3:=k) (v3:= v) in H2.
+             apply element_at_index_b_implies_right_above_b with (l1 := ((n0,x0)::left)) (l2 := kvl) in H2.
+             apply key_smaller_than_all_keys_does_not_appear with (k:= k) in H2.
+             
+             apply ex_falso_quodlibet. apply H2. assumption.
+             symmetry in Heqsplit. 
+             assert (kvl_sorted ((n, x) :: insert_into_list k v leaf)).
+               apply insert_preserves_sort_cons.
+               omega. apply H0.
+             apply split_preserves_sort with (l1 := ((n0,x0)::left)) (l2 := kvl) in H11.
+             inversion H11. assumption.
+             assumption. omega.
+             
+             apply insert_preserves_sort_cons.
+             omega. apply H0.
+             assumption.
+             simpl in H7. simpl. omega.
+             
+             apply sort_ignores_value with (v1:=x)(v2:=vb) in H0. apply H0.
+             omega.
+             
+             simpl in H4.
+             rewrite <- insert_new_into_list_increases_length with (k:=k) (v:=v) (l := leaf) in H4.
+             simpl. rewrite H4. omega.
+             apply list_tail_is_sorted in H0. assumption.
+             unfold not. intro. apply H1. apply ai_later. assumption.
+             reflexivity.
+           apply insert_into_list_appears.
+           unfold not. intro. apply H1. apply ai_later. assumption.           
         SSSCase "n = k".
          apply ex_falso_quodlibet. apply Heqneqk. apply H6.
       SSCase "n > k".
-        rewrite insert_leaf_cons_lt_overflow in H5.
-        remember (split_list (S b) ((k, v) :: (n, x) :: leaf)) as split. 
+        rewrite insert_leaf_cons_lt_overflow in H5; try assumption.
+        remember (split_list b ((k, v) :: (n, x) :: leaf)) as split. 
         destruct split.
           symmetry in Heqsplit.
-          apply split_list_preserves_lists in Heqsplit. inversion H5. subst.
-          destruct left.  
-            admit.
-            destruct p. try assumption.
-              rewrite <- app_comm_cons in Heqsplit. inversion Heqsplit. apply ai_here.
-              assumption.
-              assumption.
+          assert (split_list b ((k, v) :: (n, x) :: leaf) = (l, l0)) by assumption.
+          apply split_list_preserves_lists in Heqsplit; try assumption. inversion H5. subst.
+          destruct left. 
+            SSSCase "left = []".
+              apply split_list_left_length in H6.
+              simpl in H6. rewrite <- H6 in H.
+              apply ex_falso_quodlibet. omega.
+              simpl in H4.
+              simpl.
+              rewrite H4.
               omega.
-              assumption.
-Admitted.
+            SSSCase "left = p::left".
+              destruct p.
+              rewrite <- app_comm_cons in Heqsplit. inversion Heqsplit. apply ai_here.
+              omega.
+Qed.
 
 
 Theorem split_insert_normal : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k: nat) (v: X),
