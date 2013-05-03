@@ -345,7 +345,7 @@ Proof.
   simpl in H. rewrite element_at_index_empty_none in H. inversion H.
 Qed.
 
-(*Lemma element_at_index_pred_b_implies_left_below_S_b : 
+Lemma element_at_index_pred_b_implies_left_below_S_b : 
   forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
   b <> 0 ->
   kvl_sorted l ->
@@ -370,14 +370,13 @@ Proof.
         apply ak_next. apply IHb with (v1:=v1)(l:=l)(l2:=l2); try assumption.
         admit.
         apply list_tail_is_sorted in H0. assumption.
-        eapply element_at_index_b_elem_impl_pred_b. admit.
-        apply H3.
+        admit.
         SSSCase "S k1 > n".
           unfold below. apply blt_nat_true. simpl in H3. apply element_at_index_impl_appears in H3.
           apply appears_in_kvl_app in H3. do 3 destruct H3. destruct witness. inversion H3. omega.
           inversion H3. rewrite H3 in H0. rewrite <- H8 in H0. 
           apply kvl_sorted_key_across_app in H0. omega.
-Qed.*)
+Qed.
 
 (* a try with induction on kvl_sorted 
   
@@ -586,6 +585,64 @@ Proof.
       apply H1.
 Qed.
 
+Lemma element_changed_by_inserting_equal_key : forall (X: Type) (b k1 k2 k3: nat) (v1 v2 v3: X) (l: list (nat*X)),
+  kvl_sorted ((k1, v2)::l) ->
+  element_at_index b ((k1, v1) :: l) = Some (k2, v2) ->
+  k3 = k2 ->
+  exists v4, element_at_index b ((k1, v1) :: insert_into_list k3 v3 l) = Some (k2, v4).
+Proof.
+  induction b.
+  Case "b = 0".
+    intros.
+    simpl. simpl in H0. exists v2. apply H0.
+  Case "b = S b".
+    intros.
+    simpl. simpl in H0.
+    destruct l.
+    simpl in H0. apply element_at_index_impl_appears in H0. inversion H0.
+    destruct p.
+    assert (kvl_sorted(insert_into_list k3 v3 ((n, x) :: l))).
+      apply insert_preserves_sort. apply list_tail_is_sorted in H.
+      apply H.
+    simpl. simpl in H2.
+    remember (ble_nat k3 n) as k3len.
+    destruct k3len; symmetry in Heqk3len; [apply ble_nat_true in Heqk3len|apply ble_nat_false in Heqk3len].
+    SCase "k3 <= n".
+      remember (beq_nat k3 n) as k3eqn.
+      destruct k3eqn; symmetry in Heqk3eqn; [apply beq_nat_true_iff in Heqk3eqn|apply beq_nat_false_iff in Heqk3eqn].
+      SSCase "k3 = n".
+        simpl in H0.
+        destruct b.
+        SSSCase "b = 0".
+          simpl in H0. inversion H0.
+          subst.
+          simpl.
+          exists v3. reflexivity.
+        SSSCase "b = S b".
+          simpl. simpl in H0. rewrite <- H1 in H0.
+          exists v2. rewrite <- H1. apply H0.
+      SSCase "k3 < n".
+        destruct b.
+        SSSCase "b = 0".
+          simpl. exists v3. rewrite H1. reflexivity.
+        SSSCase "b = S b".
+          simpl.
+          rewrite <- H1 in H0.
+          apply element_at_index_cons in H0. destruct H0.
+          inversion H0. inversion H3.
+          inversion H0. 
+          inversion H2. apply blt_nat_true in H11.
+          apply ex_falso_quodlibet. omega. 
+          apply list_tail_is_sorted in H2. apply H2. 
+    SCase "k3 > n".
+      eapply IHb.
+      apply list_tail_is_sorted in H. 
+      apply sort_ignores_value with (v1 := x) (v2:= v2) in H.
+      apply H.
+      apply H0.
+      apply H1.
+Qed. 
+
 Lemma element_changed_by_inserting_smaller_key : forall (X: Type) (b k1 k2 k3: nat) (v1 v2 v3: X) (l: list (nat*X)),
   kvl_sorted ((k1, v2)::l) ->
   element_at_index (pred b) ((k1, v1) :: l) = Some (k2, v2) ->
@@ -597,7 +654,7 @@ Admitted.
 
 Theorem split_insert_right : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k kb: nat) (v vb: X),
   b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index (pred b) leaf = Some (kb, vb) -> 
-  kb <= k -> length leaf = mult b 2 -> 
+  kb < k -> length leaf = mult b 2 -> 
   insert_leaf b k v leaf = (left, Some kvl) -> appears_in_kvl k kvl.
 Proof.
   intros. 
@@ -632,30 +689,28 @@ Proof.
          inversion Heqsplit. clear Heqsplit. 
          SSSSCase "appears_in_kvl n left".
            (* This case is bogus, needs an inversion *)
-           (*simpl in H2.
            apply split_list_left_length in H5.
            apply element_unchanged_by_inserting_greater_key with (k3 := k) (v3 := v) in H2; try assumption.
            simpl in H4.
            inversion H4. clear H4.
            apply element_at_index_pred_b_implies_left_below_S_b with (l1 := left) (l2 := kvl) in H2; try assumption.
            apply key_greater_than_all_keys_does_not_appear with (k:=k) in H2; try assumption.
-           We've found our inversion - k both appears and does not appear in left
+           (* We've found our inversion - k both appears and does not appear in left *)
            apply ex_falso_quodlibet. apply H2. apply H8.
-           
-           (Now we just need to prove all of the assumptions
+            
+           (* Now we just need to prove all of the assumptions *)
            symmetry in H7. apply split_preserves_sort in H7; try assumption.
            inversion H7. assumption.
            
            apply insert_preserves_sort_cons; assumption. 
            apply insert_preserves_sort_cons; assumption.
-           apply sort_ignores_value with (v1 := x) (v2 := vb). apply H0.
+           apply sort_ignores_value with (v1 := x) (v2 := vb); assumption.
            simpl in H4.
            rewrite <- insert_new_into_list_increases_length with (k := k) (v := v) (l := leaf) in H4.
            simpl. rewrite H4.  omega.
            apply list_tail_is_sorted in H0. assumption.
            unfold not. intro. apply H1. apply ai_later. assumption.
-           reflexivity.*)
-           admit.
+           reflexivity.
          SSSSCase "appears_in_kvl n kvl".
            assumption.
          apply ai_later.
@@ -890,12 +945,6 @@ Proof.
   assumption.
 Qed.
 
-Lemma blargh : forall (X: Type) (x1 x2: X) (l: list X),
-  x1::l <> [] -> x1::x2::l <> [].
-Proof.
-  intros. unfold not. intro. inversion H0.
-Qed.
-
 Lemma list_of_length_b_implies_element_at_b : forall (X: Type) (b: nat) (kvl: list (nat* X)),
   b <= length kvl -> 
   (kvl = [] /\ element_at_index (pred b) kvl = None) 
@@ -983,6 +1032,8 @@ Proof.
     do 2 destruct H7. clear H4. clear H5. clear H6.
     remember (ble_nat witness k) as ble_kb_k.
     destruct ble_kb_k; symmetry in Heqble_kb_k; [apply ble_nat_true in Heqble_kb_k | apply ble_nat_false in Heqble_kb_k].
+    apply le_lt_or_eq_iff in Heqble_kb_k.
+    inversion Heqble_kb_k.
     SCase "right".
       exists (Some right).
       right.
@@ -995,9 +1046,13 @@ Proof.
           apply H0.
           apply H1.
           apply H7.
-          apply Heqble_kb_k.
-          apply H3.
           apply H4.
+          apply H3.
+          apply H5.
+    SCase "equals".
+      rewrite H4 in H7.
+      apply element_at_index_impl_appears in H7.
+      apply ex_falso_quodlibet. apply H1. apply H7.
     SCase "split left".
       exists (Some right).
       left.
