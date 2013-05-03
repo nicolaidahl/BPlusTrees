@@ -946,62 +946,25 @@ Proof.
 Qed.
 
 Lemma list_of_length_b_implies_element_at_b : forall (X: Type) (b: nat) (kvl: list (nat* X)),
-  b <= length kvl -> 
-  (kvl = [] /\ element_at_index (pred b) kvl = None) 
-    \/ 
-  (kvl <> [] /\ exists k, exists v, element_at_index (pred b) kvl = Some(k, v)).
+  kvl <> [] -> b < length kvl -> 
+  exists k, exists v, element_at_index b kvl = Some(k, v).
 Proof.
   intros. 
-  
-  (*
-   * We can try an induction on kvl.
   generalize dependent b.
   induction kvl.
-  Case "kvl = []".
+  Case "kvl = 0". 
+    apply ex_falso_quodlibet. apply H. reflexivity. 
     intros.
-    left. split. reflexivity. rewrite element_at_index_empty_none. reflexivity.
-  Case "kvl = a::kvl".
-    intros.
-    destruct a.
     destruct b.
-    SCase "b = 0".
-      right.
-      split. 
-      unfold not. intro. inversion H0.
-      simpl. exists n. exists x. reflexivity.
-    SCase "b = S b".
-      simpl.
-      * And now we have b instead of pred b *)
-      
-  (*
-   * Or we can try on b *)
-  induction b.
-  Case "b = 0".
-    intros. destruct kvl.
-    left.
-      split. reflexivity. rewrite element_at_index_empty_none. reflexivity.
-    right.
-    split.
-      unfold not. intro. inversion H0.
-      destruct p. simpl. exists n. exists x. reflexivity.
-  Case "b = S b".
-    intros. destruct kvl.
-    left.
-      split. reflexivity. rewrite element_at_index_empty_none. reflexivity.
-    simpl.
-    (* And again we have b instead of pred b *)
-    
-    destruct b.
-      SCase "b = 0".
-      right.
-      split.
-        unfold not. intro. inversion H0.
-        simpl. destruct p. exists n. exists x. reflexivity.
-      SCase "b = S b".
-        simpl. simpl in IHb.
-        (* And here we have a miss-match between p::kvl and kvl *)    
-  admit.
-Admitted.
+      simpl. destruct a. exists n. exists x. reflexivity.
+      simpl. simpl in H0. 
+      assert (kvl <> []).
+        destruct kvl. simpl in H0. inversion H0. inversion H2.
+        unfold not. intro. inversion H1.
+      apply IHkvl.
+        apply H1.
+        omega.
+Qed.
 
 Theorem insert_leaf_works : forall {X: Type} {b: nat} (k: nat) (v: X) (leaf left right: list (nat * X)),
   b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> 
@@ -1024,12 +987,11 @@ Proof.
   Case "equal".
     assert (length leaf = b * 2) by omega.
     assert (b <= length leaf) by omega.
-    apply list_of_length_b_implies_element_at_b in H4.
-    inversion H4.
-      inversion H5. rewrite H6 in H3. simpl in H3. assert (b=0) by omega. 
-      apply ex_falso_quodlibet. omega.
-    inversion H5.
-    do 2 destruct H7. clear H4. clear H5. clear H6.
+    remember (pred b).
+    assert (n < length leaf) by omega.
+    apply list_of_length_b_implies_element_at_b with (b := n) in H5.
+    rewrite Heqn in H5. clear Heqn. clear n.
+    do 2 destruct H5. 
     remember (ble_nat witness k) as ble_kb_k.
     destruct ble_kb_k; symmetry in Heqble_kb_k; [apply ble_nat_true in Heqble_kb_k | apply ble_nat_false in Heqble_kb_k].
     apply le_lt_or_eq_iff in Heqble_kb_k.
@@ -1045,14 +1007,14 @@ Proof.
           apply H.
           apply H0.
           apply H1.
-          apply H7.
-          apply H4.
-          apply H3.
           apply H5.
+          apply H6.
+          apply H3.
+          apply H7.
     SCase "equals".
-      rewrite H4 in H7.
-      apply element_at_index_impl_appears in H7.
-      apply ex_falso_quodlibet. apply H1. apply H7.
+      rewrite H6 in H5.
+      apply element_at_index_impl_appears in H5.
+      apply ex_falso_quodlibet. apply H1. apply H5.
     SCase "split left".
       exists (Some right).
       left.
@@ -1060,10 +1022,12 @@ Proof.
         apply H.
         apply H0.
         apply H1.
-        apply H7.
+        apply H5.
         omega.
         apply H3.
-        apply H4.
+        apply H6.
+    destruct leaf. simpl in H5. inversion H5.
+    unfold not. intro. inversion H6.
 Qed.
 
 Theorem insert_into_list_works : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
@@ -1086,47 +1050,45 @@ Proof.
 Qed.
 
 Lemma insert_leaf_shaddow : forall (X: Type) (b: nat) (n: nat) (v x: X) (kvl: list (nat * X)),
-  length kvl <= mult b 2 -> insert_leaf (S b) n v ((n, x) :: kvl) = ((n, v) :: kvl, None).
+  b <> 0 -> length ((n,x) :: kvl) <= mult b 2 -> insert_leaf b n v ((n, x) :: kvl) = ((n, v) :: kvl, None).
 Proof.
   intros.
+  
   unfold insert_leaf. unfold insert_into_list.
   rewrite ble_nat_symm. rewrite <- beq_nat_refl.
-  simpl.
-  remember (ble_nat (length kvl) (S (b * 2))) as lb2.
+  remember (ble_nat (length ((n,v) :: kvl)) (b * 2)) as lb2.
   destruct lb2.
   reflexivity.
   symmetry in Heqlb2. apply ble_nat_false in Heqlb2.
   unfold not in Heqlb2.
   apply ex_falso_quodlibet.
-  apply Heqlb2. apply le_S. apply H.
+  apply Heqlb2. simpl in H0. simpl. apply H0.
 Qed.    
-
-Lemma lt_S : forall (n m: nat),
-  n < m <-> S n < S m.
-Proof.
-Admitted.
 
 Theorem insert_leaf_normal : forall (X: Type) (b: nat) (k: nat) (v: X) (kvl: list (nat * X)),
   b <> 0 -> kvl_sorted kvl -> S (length(kvl)) < mult b 2-> 
   insert_leaf b k v kvl = (insert_into_list k v kvl, None).
 Proof.
   intros. 
-  destruct b. apply ex_falso_quodlibet. apply H. reflexivity. clear H.
+  generalize dependent b.
   induction kvl. 
   Case "kvl = []".
+    intros.
+    destruct b. apply ex_falso_quodlibet. apply H. reflexivity. clear H.
     unfold insert_leaf.
     simpl. reflexivity. 
   Case "kvl = a::kvl".
+    intros.
     destruct a. simpl. remember (ble_nat k n) as klen.
     destruct klen; symmetry in Heqklen; [apply ble_nat_true in Heqklen | apply ble_nat_false in Heqklen].
     SCase "k <= n".
       remember (beq_nat k n) as keqn.
       destruct keqn; symmetry in Heqkeqn; [apply beq_nat_true_iff in Heqkeqn | apply beq_nat_false_iff in Heqkeqn].
       SSCase "k = n". subst. 
-        apply insert_leaf_shaddow.
-        simpl in H1. apply lt_S in H1. apply lt_S in H1.
-        apply lt_le_weak in H1. apply H1.
+        apply insert_leaf_shaddow; try assumption.
+        simpl in H1. simpl. omega.
       SSCase "k <> n".
+        
         admit.  
     SCase "k > n". 
       admit.
