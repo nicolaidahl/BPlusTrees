@@ -3,11 +3,22 @@ Require Import HelperProofs.
 Require Import SortingProofs.
 Require Import ValidBPlusTree.
 
+Lemma insert_into_node_impl_leaf_false: forall {X: Type} b k v l l' o,
+  insert' k v (bptNode b X l) = (bptLeaf b X l', o) -> False.
+Proof. Admitted.
 
 Lemma insert_leaf_preserves_min_fan_out : forall {X: Type} b k v o l l', 
-  (bptLeaf b X l', o) = insert' k v (bptLeaf b X l) ->
+  valid_sub_bplustree b X (bptLeaf b X l) ->
+  insert' k v (bptLeaf b X l) = (bptLeaf b X l', o) ->
   length l' >= b.
-Proof. Admitted.
+Proof.
+  intros. induction H.
+  Case "tree is leaf".
+    admit.
+  Case "tree is node".
+    apply insert_into_node_impl_leaf_false in H0. inversion H0.
+Qed.
+  
 
 Lemma insert_leaf_preserves_max_fan_out : forall {X: Type} b k v o l l', 
   (bptLeaf b X l', o) = insert' k v (bptLeaf b X l) ->
@@ -68,7 +79,8 @@ Proof.
         SSSCase "is the non-option tree valid".
           induction b0.
           SSSSCase "valid sub leaf".
-            apply valid_leaf; try assumption. eapply insert_leaf_preserves_min_fan_out. apply Heqinsert'.
+            apply valid_leaf; try assumption. eapply insert_leaf_preserves_min_fan_out.
+            apply valid_leaf; try assumption. apply Heqinsert'.
             eapply insert_leaf_preserves_max_fan_out. apply Heqinsert'.
             eapply insert_leaf_preserves_sort. apply H1. apply Heqinsert'.
           SSSSCase "valid sub node".

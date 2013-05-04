@@ -14,6 +14,8 @@ Inductive all_keys (X : Type) (P : nat -> Prop) : list (nat * X) -> Prop :=
 (* Some helper functions for checking if a number is above or below a given number *)
 Definition below (n: nat) : nat -> Prop :=
   fun o => blt_nat o n = true. 
+Definition below_equal (n: nat) : nat -> Prop :=
+  fun o => ble_nat o n = true.
 Definition between (n m: nat) : nat -> Prop :=
   fun o => andb (ble_nat n o) (blt_nat o m) = true.
 Definition above (m: nat) : nat -> Prop :=

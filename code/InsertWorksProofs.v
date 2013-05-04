@@ -247,7 +247,7 @@ Qed.
 
 Lemma key_greater_than_all_keys_does_not_appear : forall (X: Type) (k kb: nat) (l: list (nat*X)), 
   kvl_sorted l ->
-  all_keys X (below (S kb) ) l ->
+  all_keys X (below kb) l ->
   k > kb ->
 
   ~ appears_in_kvl k l.
@@ -262,6 +262,27 @@ Proof.
   destruct b; symmetry in Heqb; [apply beq_nat_true_iff in Heqb|apply beq_nat_false_iff in Heqb].
   subst. 
   inversion H3. apply blt_nat_true in H5. apply ex_falso_quodlibet. omega.
+  apply appears_cons in H2. assumption.
+  assumption.
+Qed.
+
+Lemma key_greater_than_all_keys_does_not_appear_ble : forall (X: Type) (k kb: nat) (l: list (nat*X)), 
+  kvl_sorted l ->
+  all_keys X (below_equal kb) l ->
+  k > kb ->
+
+  ~ appears_in_kvl k l.
+Proof.
+  unfold not.
+  intros.
+  induction H0.
+  inversion H2.
+  apply IHall_keys.
+  apply list_tail_is_sorted in H. apply H.
+  remember (beq_nat k n).
+  destruct b; symmetry in Heqb; [apply beq_nat_true_iff in Heqb|apply beq_nat_false_iff in Heqb].
+  subst. 
+  inversion H3. apply ble_nat_true in H5. apply ex_falso_quodlibet. omega.
   apply appears_cons in H2. assumption.
   assumption.
 Qed.
@@ -345,6 +366,8 @@ Proof.
   simpl in H. rewrite element_at_index_empty_none in H. inversion H.
 Qed.
 
+  
+
 Lemma element_at_index_pred_b_implies_left_below_S_b : 
   forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
   b <> 0 ->
@@ -352,48 +375,37 @@ Lemma element_at_index_pred_b_implies_left_below_S_b :
   l = l1 ++ l2 ->
   length l1 = b ->
   element_at_index (pred b) l = Some (k1, v1) ->
-  all_keys X (below (S k1)) l1. 
+  all_keys X (below_equal k1) l1. 
 Proof.
-  induction b; intros.
-  Case "b = 0".
-    rewrite length_0_impl_nil. apply ak_empty. assumption.
-  Case "b = S b".
-    simpl in H2. destruct l. 
-    SCase "l = []".
-      apply element_at_index_impl_appears in H3. inversion H3.
-    SCase "l = p :: l".
-      destruct l1.
-      SSCase "l1 = []". 
-        apply ak_empty.
-      SSCase "l1 = p0 :: l1".
-        simpl in H1. simpl in H2. inversion H2. inversion H1. rewrite <- H6. destruct p. 
-        apply ak_next. apply IHb with (v1:=v1)(l:=l)(l2:=l2); try assumption.
-        admit.
-        apply list_tail_is_sorted in H0. assumption.
-        admit.
-        SSSCase "S k1 > n".
-          unfold below. apply blt_nat_true. simpl in H3. apply element_at_index_impl_appears in H3.
-          apply appears_in_kvl_app in H3. do 3 destruct H3. destruct witness. inversion H3. omega.
-          inversion H3. rewrite H3 in H0. rewrite <- H8 in H0. 
-          apply kvl_sorted_key_across_app in H0. omega.
+  intros. generalize dependent l1. generalize dependent b.
+  induction H0; intros.
+  Case "kvl_sorted_0".
+    apply element_at_index_impl_appears in H3. inversion H3. 
+  Case "kvl_sorted_1".
+    apply element_at_index_impl_appears in H3. destruct l1. apply ak_empty.
+    assert (l2 = []). destruct l1. inversion H1. reflexivity. inversion H1. inversion H3. inversion H1. 
+    apply ak_next. symmetry in H9. apply app_eq_nil in H9. destruct H9. rewrite H4. apply ak_empty.
+    unfold below_equal. apply ble_nat_symm. inversion H5.
+  Case "kvl_sorted_cons". 
+    destruct l1. apply ak_empty. destruct l1. destruct p. rewrite <- H4 in H3. subst. simpl in H3.
+    apply ak_next. apply ak_empty. inversion H3. inversion H2. rewrite <- H7. rewrite H5. unfold below_equal. apply ble_nat_symm.
+    subst. destruct p. apply ak_next.  
+     
+    apply IHkvl_sorted with (l1:=p0::l1)(b:=length(p0::l1)). 
+    simpl. simpl in H3. omega. simpl in H3. simpl. assumption. 
+    inversion H2. simpl. reflexivity. reflexivity.
+    
+    unfold below_equal. assert (k1 >= n1). simpl in H3. destruct (length l1). 
+    simpl in H3. inversion H3. apply blt_nat_true in H. omega.
+    apply element_at_index_impl_appears in H3. 
+    apply appears_in_kvl_app in H3. do 3 destruct H3. destruct witness. inversion H3. apply blt_nat_true in H. omega.
+    rewrite H3 in H0. destruct p. inversion H3. subst. apply kvl_sorted_key_across_app in H0. apply blt_nat_true in H. omega.
+    apply ble_nat_true. inversion H2. omega.    
 Qed.
 
-(* a try with induction on kvl_sorted 
-  
-  intros. generalize dependent l1. generalize dependent l2.
-  induction H0; intros. 
-  Case "kvl_sorted_0".
-    apply element_at_index_impl_appears in H3. inversion H3.
-  Case "kvl_sorted_1".
-    destruct l1. apply ak_empty. 
-    inversion H1. symmetry in H5. apply app_eq_nil in H5. destruct H5. rewrite H0.
-    apply ak_next. apply ak_empty. unfold below. apply blt_nat_true.
-    destruct b. unfold not in H. destruct H. reflexivity.
-    simpl in H3. apply element_at_index_one in H3. omega.
-  Case "kvl_sorted_cons".
-    destruct l1. apply ak_empty.
-    
-    *)
+
+
+
         
 
 Lemma element_at_index_b_implies_left_below_b : forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
@@ -652,6 +664,27 @@ Proof.
   admit.
 Admitted.
 
+Lemma list_of_length_b_implies_element_at_b : forall (X: Type) (b: nat) (kvl: list (nat* X)),
+  kvl <> [] -> b < length kvl -> 
+  exists k, exists v, element_at_index b kvl = Some(k, v).
+Proof.
+  intros. 
+  generalize dependent b.
+  induction kvl.
+  Case "kvl = 0". 
+    apply ex_falso_quodlibet. apply H. reflexivity. 
+    intros.
+    destruct b.
+      simpl. destruct a. exists n. exists x. reflexivity.
+      simpl. simpl in H0. 
+      assert (kvl <> []).
+        destruct kvl. simpl in H0. inversion H0. inversion H2.
+        unfold not. intro. inversion H1.
+      apply IHkvl.
+        apply H1.
+        omega.
+Qed.
+
 Theorem split_insert_right : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k kb: nat) (v vb: X),
   b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index (pred b) leaf = Some (kb, vb) -> 
   kb < k -> length leaf = mult b 2 -> 
@@ -690,15 +723,17 @@ Proof.
          SSSSCase "appears_in_kvl n left".
            (* This case is bogus, needs an inversion *)
            apply split_list_left_length in H5.
+           simpl in H4. 
+                      
            apply element_unchanged_by_inserting_greater_key with (k3 := k) (v3 := v) in H2; try assumption.
-           simpl in H4.
-           inversion H4. clear H4.
+           
            apply element_at_index_pred_b_implies_left_below_S_b with (l1 := left) (l2 := kvl) in H2; try assumption.
-           apply key_greater_than_all_keys_does_not_appear with (k:=k) in H2; try assumption.
+           apply key_greater_than_all_keys_does_not_appear_ble with (k:=k) in H2; try assumption.
            (* We've found our inversion - k both appears and does not appear in left *)
-           apply ex_falso_quodlibet. apply H2. apply H8.
+           apply ex_falso_quodlibet. apply H2. assumption.
+           
             
-           (* Now we just need to prove all of the assumptions *)
+           (* Now we just need to prove all of the assumptions *)            
            symmetry in H7. apply split_preserves_sort in H7; try assumption.
            inversion H7. assumption.
            
@@ -744,6 +779,8 @@ Proof.
         apply ex_falso_quodlibet.
         omega.
 Qed.
+
+
 
 Theorem split_insert_left : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k kb: nat) (v vb: X),
   b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index (pred b) leaf = Some (kb, vb) -> 
@@ -945,26 +982,7 @@ Proof.
   assumption.
 Qed.
 
-Lemma list_of_length_b_implies_element_at_b : forall (X: Type) (b: nat) (kvl: list (nat* X)),
-  kvl <> [] -> b < length kvl -> 
-  exists k, exists v, element_at_index b kvl = Some(k, v).
-Proof.
-  intros. 
-  generalize dependent b.
-  induction kvl.
-  Case "kvl = 0". 
-    apply ex_falso_quodlibet. apply H. reflexivity. 
-    intros.
-    destruct b.
-      simpl. destruct a. exists n. exists x. reflexivity.
-      simpl. simpl in H0. 
-      assert (kvl <> []).
-        destruct kvl. simpl in H0. inversion H0. inversion H2.
-        unfold not. intro. inversion H1.
-      apply IHkvl.
-        apply H1.
-        omega.
-Qed.
+
 
 Theorem insert_leaf_works : forall {X: Type} {b: nat} (k: nat) (v: X) (leaf left right: list (nat * X)),
   b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> 
