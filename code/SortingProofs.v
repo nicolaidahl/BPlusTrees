@@ -233,3 +233,28 @@ Proof.
   apply IHl1. simpl in H. SearchAbout [cons].
   inversion H. rewrite H1. apply H1.
 Qed.
+
+Lemma sorted_all_keys_above_cons : forall (X: Type) (l: list (nat*X)) (k: nat) (v1: X), 
+  kvl_sorted ((k, v1)::l) -> all_keys X (above k) ((k, v1)::l).
+Proof.
+  induction l.
+  Case "l = []".
+    intros.
+    apply ak_next. apply ak_empty.
+    unfold above. apply ble_nat_symm.
+  Case "l = a::l".
+    intros.
+    destruct a.
+    inversion H. subst.
+    apply blt_nat_true in H6.
+    
+    (* Remove a from list in proof obligation *)
+    apply all_keys_elim_cons.
+    unfold above. apply ble_nat_true. omega.
+    
+    (* Now apply induction hypothesis *)
+    apply IHl.
+    replace ((k,v1)::(n,x)::l) with ([(k,v1)]++[(n,x)]++l) in H by reflexivity.
+    apply kvl_sorted_elim_list in H.
+    simpl in H. apply H.
+Qed.

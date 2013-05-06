@@ -1,6 +1,7 @@
 Require Export SfLib.
 Require Export HelperFunctions.
 Require Import SplitCutList.
+Require Import ValidBPlusTree.
 
 
 (* 
@@ -332,64 +333,17 @@ Proof.
 Qed.
 *)
 
-(* 
- * Proofs about Element at Index 
- *)
 
-Lemma element_at_index_split : forall (X: Type) (b k: nat) (v: X) (l l1 l2: list (nat * X)),
-  b = length l1 -> l = l1 ++ (k, v)::l2 -> element_at_index b l = Some (k, v).
+Lemma all_keys_elim_cons : forall (X: Type) (k1 k2: nat) (v1 v2: X) (l: list (nat*X)),
+  above k1 k2 -> all_keys X (above k1) ((k1, v1) :: l) -> all_keys X (above k1) ((k1, v1) :: (k2, v2) :: l).
 Proof.
-  intros X b k v.
-  induction b.
-  Case "b = 0".
-    intros.
-    symmetry in H. apply length_0_impl_nil in H. subst. simpl.
-    reflexivity.
-  Case "b = S b".
-    intros.
-    destruct l1. simpl in H. inversion H.
-    destruct l; rewrite <- app_comm_cons in H0; inversion H0.
-    simpl.
-    simpl in H. inversion H.
-    rewrite <- H3. rewrite <- H4.
-    apply IHb with (l1 := l1) (l2 := l2); assumption.
+  intros.
+  inversion H0.
+  inversion H3. 
+  repeat constructor; assumption.
+  repeat constructor; assumption.
 Qed.
 
-Lemma element_at_index_app : forall (X: Type) (b k: nat) (v: X) (l1 l2: list (nat * X)),
-  b = length l1 -> element_at_index b (l1++(k,v)::l2) = Some (k, v).
-Proof.
-  intros X b k v.
-  induction b.
-  Case "b = 0".
-    intros.
-    symmetry in H. apply length_0_impl_nil in H.
-    rewrite H. simpl.
-    reflexivity.
-  Case "b = S b".
-    intros.
-    destruct l1; simpl in H; inversion H.
-    simpl. rewrite <- H1. apply IHb; assumption.
-Qed.
-
-Lemma element_at_index_const : forall (X: Type) (b k: nat) (v: X) (l l1 l2: list (nat * X)),
-  b = length l1 -> element_at_index b l = Some (k, v) -> 
-  split_list b l = (l1, (k,v)::l2) -> 
-  l = l1 ++ (k, v)::l2.
-Proof.
-  intros X b k v.
-  destruct b.
-  Case "b = 0".
-    intros.
-    apply split_list_preserves_lists in H1. inversion H1.
-    symmetry in H. apply length_0_impl_nil in H.
-    rewrite H. rewrite H in H2. simpl. simpl in H2.
-    reflexivity.
-  Case "b = S b".
-    intros.
-    apply split_list_preserves_lists in H1. inversion H1.
-    destruct l1; simpl in H; inversion H.
-    reflexivity.
-Qed.
 
 
 

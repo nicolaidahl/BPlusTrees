@@ -58,7 +58,6 @@ Proof.
     apply H1. apply IHappears_in_kvl. apply H3.
 Qed.
 
-
 Lemma appears_cons : forall (X: Type) (k k1: nat) (v1: X) (l: list (nat*X)),
   appears_in_kvl k ((k1, v1) :: l) -> 
   k <> k1 -> 
