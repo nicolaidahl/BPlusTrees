@@ -484,8 +484,14 @@ Proof.
              (* This case is bogus *)
              symmetry in H7. apply split_list_left_length in H7. 
              rewrite <- H9 in H7. rewrite <- H10 in H7.
-
-             apply element_changed_by_inserting_smaller_key with (k3:=k) (v3:= v) in H2.
+             
+             apply element_changed_by_inserting_smaller_key with (k3:=k) (v3:= v) (b:= pred b) in H2.
+             replace (S (pred b)) with (b) in H2 by omega.
+             simpl in H2.
+             remember (ble_nat k n) as klen'.
+             destruct klen'; symmetry in Heqklen'; [apply ble_nat_true in Heqklen'|apply ble_nat_false in Heqklen'].
+             apply ex_falso_quodlibet. omega.              
+             
              apply element_at_index_b_implies_right_above_b with (l1 := ((n0,x0)::left)) (l2 := kvl) in H2.
              apply key_smaller_than_all_keys_does_not_appear with (k:= k) in H2.
              
@@ -503,7 +509,7 @@ Proof.
              assumption.
              simpl in H7. simpl. omega.
              
-             apply sort_ignores_value with (v1:=x)(v2:=vb) in H0. apply H0.
+             apply sort_ignores_value with (v1:=x)(v2:=vb) in H0. apply H1. apply H0.
              omega.
              
              simpl in H4.

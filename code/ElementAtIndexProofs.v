@@ -96,21 +96,6 @@ Proof.
       omega.
 Qed.
 
-Lemma element_at_index_b_elem_impl_pred_b: forall (X: Type) b (x: (nat * X)) l,
-  b <> 0 ->
-  element_at_index b (x :: l) = element_at_index (pred b) l.
-Proof.
-  induction b. 
-    intros. admit. admit. (*split.
-    unfold not in H. destruct H. reflexivity.
-    intros. apply ex_falso_quodlibet. omega. 
-    intros. split. intro.
-    simpl. simpl in H0. assumption.
-    intro. simpl in H0. assumption.*)
-Admitted.
-
-
-
 Lemma element_at_index_empty_none : forall (X: Type) b,
   @element_at_index X b [] = None.
 Proof.
@@ -123,8 +108,6 @@ Proof.
   intros. induction b. compute in H. inversion H. reflexivity.
   simpl in H. rewrite element_at_index_empty_none in H. inversion H.
 Qed.
-
-  
 
 Lemma element_at_index_pred_b_implies_left_below_S_b : 
   forall (X: Type) (b k1: nat) (v1: X) (l l1 l2: list (nat*X)),
@@ -378,11 +361,38 @@ Proof.
       apply H1.
 Qed. 
 
-Lemma element_changed_by_inserting_smaller_key : forall (X: Type) (b k1 k2 k3: nat) (v1 v2 v3: X) (l: list (nat*X)),
-  kvl_sorted ((k1, v2)::l) ->
-  element_at_index (pred b) ((k1, v1) :: l) = Some (k2, v2) ->
+Lemma element_changed_by_inserting_smaller_key : forall (X: Type) (l: list (nat*X)) (b k2 k3: nat) (v2 v3: X),
+  ~ appears_in_kvl k3 l -> 
+  kvl_sorted (l) ->
+  element_at_index b (l) = Some (k2, v2) ->
   k3 < k2 ->
-  element_at_index b ((k1, v1) :: insert_into_list k3 v3 l) = Some (k2, v2).
+  element_at_index (S b) (insert_into_list k3 v3 l) = Some (k2, v2).
 Proof.
-  admit.
-Admitted.
+  induction l.
+  Case "l = []".
+    intros.
+    rewrite element_at_index_empty_none in H1. inversion H1.
+  Case "l = a::l". destruct a.
+    intros. simpl.
+    remember (ble_nat k3 n) as k3len.
+    destruct k3len; symmetry in Heqk3len; [apply ble_nat_true in Heqk3len|apply ble_nat_false in Heqk3len].
+    SSCase "k3 <= n".
+      remember (beq_nat k3 n) as k3eqn.
+      destruct k3eqn; symmetry in Heqk3eqn; [apply beq_nat_true_iff in Heqk3eqn|apply beq_nat_false_iff in Heqk3eqn].
+      SSSCase "k3 = n". subst.
+        apply ex_falso_quodlibet. apply H. apply ai_here.
+      SSSCase "k3 < n".
+        apply H1.
+    SSCase "k3 > n".
+      destruct b. 
+      SSSCase "b = 0". 
+        simpl in H1. inversion H1. subst. 
+        apply ex_falso_quodlibet. omega.
+      SSSCase "b = S b".
+       simpl in H1.
+       eapply IHl.
+         unfold not. intro. apply H. apply ai_later. apply H3.
+         apply list_tail_is_sorted in H0. apply H0.
+         apply H1.
+         apply H2.
+Qed.
