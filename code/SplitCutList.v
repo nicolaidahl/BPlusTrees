@@ -72,7 +72,31 @@ Proof.
   reflexivity. omega.
 Qed.
     
-    
+Theorem cut_left_not_nil: forall (X: Type) (b: nat) (l: list X),
+  length l > 0 -> b <> 0 -> cut_list_left b l <> [].
+Proof.
+  intros.
+  destruct l. simpl in H. apply ex_falso_quodlibet. omega.
+  destruct b. apply ex_falso_quodlibet. omega.
+  simpl. unfold not. intro. inversion H1.
+Qed.
+
+Theorem cut_right_not_nil: forall (X: Type) (b: nat) (l: list X),
+  length l > b -> cut_list_right b l <> [].
+Proof.
+  intros. generalize dependent b.
+  induction l. 
+  Case "l = []". 
+    intros. simpl in H.
+    apply ex_falso_quodlibet. omega.
+  Case "l = a::l".
+    intros.
+    destruct b. simpl.  unfold not. intro. inversion H0.
+    simpl. apply IHl. simpl in H. omega.
+Qed.
+  
+
+
     
     
     

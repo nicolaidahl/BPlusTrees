@@ -6,6 +6,7 @@ Require Import ValidBPlusTree.
 Require Import AppearsInKVL.
 Require Export AppearsInTree.
 Require Import ElementAtIndexProofs.
+Require Import SplitCutList.
   
 Lemma split_never_returns_empty_none : forall (X: Type) (b: nat) (leaf: list (nat * X)) (k: nat) (v: X),
   b <> 0 -> insert_leaf b k v leaf = ([], None) -> False. 
@@ -732,9 +733,49 @@ Proof.
 Qed.
 
 Theorem insert_leaf_split_never_empty: forall {X: Type} b k (v: X) l l1 l2,
+  b <> 0 ->
   (l1, Some l2) = insert_leaf b k v l -> l1 <> [] /\ l2 <> [].
-Proof. Admitted.
-
+Proof. 
+  intros.
+  induction l.
+  Case "l = []".
+    unfold insert_leaf in H0.
+    simpl in H0. remember (b*2). destruct n.
+    apply ex_falso_quodlibet. omega.
+    inversion H0.
+  Case "l = a::l". destruct a.
+    unfold insert_leaf in H0.
+    simpl in H0.
+    remember (ble_nat k n) as klen. 
+    destruct klen; symmetry in Heqklen; [apply ble_nat_true in Heqklen | apply ble_nat_false in Heqklen].
+    SCase "k <= n". remember (beq_nat k n) as keqn. 
+      destruct keqn; symmetry in Heqkeqn; [apply beq_nat_true_iff in Heqkeqn | apply beq_nat_false_iff in Heqkeqn].
+      SSCase "k = n".
+        simpl in H0. replace (b*2) with (S(S(pred(b)*2))) in H0 by omega.
+        remember (ble_nat (length l) (S (pred b * 2))) as tl.
+        destruct tl. inversion H0.
+        inversion H0.
+        symmetry in Heqtl. apply ble_nat_false in Heqtl.
+        split.
+          apply cut_left_not_nil; simpl; try assumption; try omega.
+          apply cut_right_not_nil; simpl; try assumption; try omega.
+      SSCase "k < n".
+        remember (ble_nat (length ((k, v) :: (n, x) :: l)) (b * 2)) as tl.
+        destruct tl. inversion H0.
+        symmetry in Heqtl. apply ble_nat_false in Heqtl. simpl in Heqtl.
+        inversion H0.
+        split.
+          apply cut_left_not_nil; simpl; try assumption; try omega. 
+          apply cut_right_not_nil; simpl; try assumption; try omega.
+    SCase "k > n".
+      remember (ble_nat (length ((n, x) :: insert_into_list k v l)) (b * 2)) as tl.
+      destruct tl. inversion H0.
+      inversion H0.
+      symmetry in Heqtl. apply ble_nat_false in Heqtl. simpl in Heqtl.
+      split.
+          apply cut_left_not_nil; simpl; try assumption; try omega. 
+          apply cut_right_not_nil; simpl; try assumption; try omega.
+Qed.
 
 Theorem insert_works : forall (b: nat) (X: Type) (t t1: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X t -> 
