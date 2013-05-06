@@ -1,6 +1,6 @@
-Require Import HelperFunctions.
-Require Import LowLevelHelperProofs.
-Require Import BPlusTree.
+Require Export HelperFunctions.
+Require Export LowLevelHelperProofs.
+Require Export BPlusTree.
 
 (* 
  * Proofs about appears In List 

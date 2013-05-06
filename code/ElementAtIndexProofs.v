@@ -1,10 +1,10 @@
-Require Import HelperFunctions.
-Require Import HelperProofs.
-Require Import BPlusTree.
-Require Import AppearsInKVL.
-Require Import SortingProofs.
-Require Import BPlusTree.
-Require Import ValidBPlusTree.
+Require Export HelperFunctions.
+Require Export HelperProofs.
+Require Export BPlusTree.
+Require Export AppearsInKVL.
+Require Export SortingProofs.
+Require Export BPlusTree.
+Require Export ValidBPlusTree.
 
 (* 
  * Proofs about Element at Index 

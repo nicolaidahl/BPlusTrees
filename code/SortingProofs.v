@@ -48,26 +48,27 @@ Lemma kvl_sorted_app : forall (X: Type) (l1 l2: list (nat * X)),
   kvl_sorted (l1++l2) -> kvl_sorted l1 /\ kvl_sorted l2.
 Proof.
   intros.
-  split.
-  Case "kvl_sorted l1".
-    induction l1.
-    SCase "l1 = []".
-      apply kvl_sorted_0.
-    SCase "l1 = a::l1".
-      rewrite <- app_comm_cons in H.
-      destruct l1;  
-      destruct a. apply kvl_sorted_1.
-      destruct p. inversion H. subst.
-      apply kvl_sorted_cons. apply IHl1.
-      apply list_tail_is_sorted in H. apply H.
-      apply H6.
-  Case "kvl_sorted l2".
-    induction l1.
-      simpl in H. apply H.
-      apply IHl1.
-      rewrite <- app_comm_cons in H.
-      destruct a.
-      apply list_tail_is_sorted in H. apply H.
+  split; intros. 
+    SCase "kvl_sorted l1".
+      induction l1.
+      SSCase "l1 = []".
+        apply kvl_sorted_0.
+      SSCase "l1 = a::l1".
+        rewrite <- app_comm_cons in H.
+        destruct l1;  
+        destruct a. apply kvl_sorted_1.
+        destruct p. inversion H. subst.
+        apply kvl_sorted_cons. apply IHl1.
+        apply list_tail_is_sorted in H. apply H.
+        apply H6.
+    SCase "kvl_sorted l2".
+      induction l1.
+        simpl in H. apply H.
+        apply IHl1.
+        rewrite <- app_comm_cons in H.
+        destruct a.
+        apply list_tail_is_sorted in H. apply H.
+    
 Qed.
 
 Lemma kvl_sorted_key_across_app : forall (X: Type) (l1 l2: list (nat * X)) (k1 k2: nat) (v1 v2: X),

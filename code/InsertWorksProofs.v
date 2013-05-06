@@ -1,12 +1,12 @@
 Require Export BPlusTree.
 Require Export HelperProofs.
-Require Import SortingProofs.
+Require Export SortingProofs.
 Require Export HelperFunctions.
-Require Import ValidBPlusTree.
-Require Import AppearsInKVL.
+Require Export ValidBPlusTree.
+Require Export AppearsInKVL.
 Require Export AppearsInTree.
-Require Import ElementAtIndexProofs.
-Require Import SplitCutList.
+Require Export ElementAtIndexProofs.
+Require Export SplitCutList.
   
 Lemma split_never_returns_empty_none : forall (X: Type) (b: nat) (leaf: list (nat * X)) (k: nat) (v: X),
   b <> 0 -> insert_leaf b k v leaf = ([], None) -> False. 
@@ -581,7 +581,7 @@ Proof.
 Qed.
 
 
-Theorem split_insert_normal : forall {X: Type} {b: nat} (leaf left: list (nat * X)) (k: nat) (v: X),
+Theorem insert_leaf_normal : forall {X: Type} {b: nat} (leaf left: list (nat * X)) (k: nat) (v: X),
   b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> length leaf < mult b 2 ->
   insert_leaf b k v leaf = (left, None) -> appears_in_kvl k left.
 Proof.
@@ -688,7 +688,7 @@ Proof.
       apply ex_falso_quodlibet. apply Heqtl.
       apply insert_new_into_list_increases_length_lt with (k := k) (v := v) in Heqblt_length_b; try assumption.
     SCase "rightOption = None".  
-      eapply split_insert_normal. 
+      eapply insert_leaf_normal. 
         apply H.
         apply H0.
         apply H1.
@@ -830,7 +830,68 @@ Proof.
           apply cut_right_not_nil; simpl; try assumption; try omega.
 Qed.
 
-Theorem insert_works : forall (b: nat) (X: Type) (t t1: bplustree b X) (k: nat) (v: X),
+Theorem appears_kvl_appears_leaf_tree: forall {X: Type} (b: nat) k l,
+  appears_in_kvl k l -> appears_in_tree k (bptLeaf b X l).
+Proof.
+  intros. induction H. apply ait_leaf. apply ai_here. apply ait_leaf.
+  eapply appears_in_super_set_appears. reflexivity. apply H.
+Qed.
+
+Lemma insert_not_split_impl_space_left: forall {X: Type} (b: nat) k (v:X) l l',
+  ~ appears_in_kvl k l ->
+  insert_leaf b k v l = (l', None) -> length l < b * 2.
+Proof.
+  intros. unfold insert_leaf in H. remember (ble_nat (length (insert_into_list k v l)) (b * 2)) as blelen.
+  destruct blelen. Admitted.
+
+
+
+Lemma appears_in_split_node_appears_in_lists: forall {X: Type} b k n left right, 
+  kvl_sorted (left ++ right) ->
+  key_at_index 0 right = Some n ->
+  appears_in_kvl k left \/ appears_in_kvl k right ->
+  appears_in_tree k (bptNode b X [(0, bptLeaf b X left), (n, bptLeaf b X right)]).
+Proof.
+  intros. destruct H1. 
+  Case "Left hand side".
+    apply ait_node_here. apply ait_leaf. assumption. destruct right.
+    simpl in H0. inversion H0. inversion H0. destruct p. inversion H3. subst.
+    apply appears_in_kvl_app in H1. do 3 destruct H1. subst. 
+    rewrite <- app_assoc in H. apply kvl_sorted_app with (l1:=witness) in H. destruct H.
+    apply kvl_sorted_key_across_app in H1. omega.
+  Case "Right hand side".
+    apply ait_node_later. apply ait_node_one. apply ait_leaf. assumption. 
+    SCase "n <=".
+      inversion H0. destruct right. inversion H3. destruct p. inversion H3. subst. remember (beq_nat n k).
+      destruct b0. symmetry in Heqb0. apply beq_nat_true in Heqb0. subst. omega.
+      apply appears_cons in H1. apply appears_in_kvl_app in H1. do 3 destruct H1. subst.
+      apply kvl_sorted_app with (l1:=left) in H. inversion H. 
+      apply kvl_sorted_key_across_app in H2.  omega. symmetry in Heqb0. 
+      apply beq_nat_false in Heqb0. omega.
+    SCase "< n".
+    inversion H0. destruct right. inversion H3. destruct p. inversion H3. subst.
+    remember (beq_nat n k).
+    destruct b0. symmetry in Heqb0. apply beq_nat_true in Heqb0. subst. omega.
+    apply appears_cons in H1. apply appears_in_kvl_app in H1. do 3 destruct H1. subst.
+    apply kvl_sorted_app with (l1:=left) in H. inversion H. 
+    apply kvl_sorted_key_across_app in H2. omega. symmetry in Heqb0. 
+    apply beq_nat_false in Heqb0. omega.
+Qed.
+
+
+Lemma key_at_index_0none_impl_empty: forall (X: Type) l,
+  @key_at_index X 0 l = None -> l = [].
+Proof. 
+  intros. unfold key_at_index in H. destruct l. reflexivity. destruct p. inversion H.
+Qed.
+
+Lemma insert_leaf_preserves_sort: forall (X: Type) b k (v:X) l l1 l2,
+  kvl_sorted l ->
+  insert_leaf b k v l = (l1, Some l2) ->
+  kvl_sorted(l1 ++ l2).
+Proof. Admitted.
+
+Theorem insert_works : forall {X: Type} {b: nat} (t t1: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X t -> 
   ~appears_in_tree k t -> 
   insert k v t = t1 -> 
@@ -842,18 +903,33 @@ Proof.
 	unfold insert in H1.  unfold insert' in H1. remember (insert_leaf b k v l) as il. 
 	destruct il. destruct o.
 	SCase "insert split".
-	  remember (key_at_index 0 l1) as kat. destruct kat. admit.
-	  apply insert_leaf_split_never_empty in Heqil. simpl in Heqkat. inversion Heqil.
-	  destruct l1. apply ex_falso_quodlibet. apply H5. reflexivity.
-	  
-	
+	  symmetry in Heqil. assert (insert_leaf b k v l = (l0, Some l1)).  assumption.
+	  apply insert_leaf_works in Heqil; try assumption.
+	  remember (key_at_index 0 l1) as kat. destruct kat.
+	  SSCase "kat = (l0, Some l1)".
+	    rewrite <- H1. apply appears_in_split_node_appears_in_lists. destruct Heqil. 
+	    apply insert_leaf_preserves_sort in H4; assumption; assumption.
+	    apply insert_leaf_preserves_sort in H4; assumption; assumption.
+	    symmetry in Heqkat. assumption.
+	    destruct Heqil. left. assumption.
+	    inversion H5. right. do 3 destruct H5. inversion H6. inversion H5. assumption.
+	    rewrite <- H1. apply ait_leaf. destruct Heqil. assumption.
+	    symmetry in H4. apply insert_leaf_split_never_empty in H4. destruct H4.
+	    symmetry in Heqkat. apply key_at_index_0none_impl_empty in Heqkat. unfold not in H6.
+	    apply H6 in Heqkat. inversion Heqkat. assumption.
+	    unfold not. intros. unfold not in H0. apply H0. apply ait_leaf.  assumption.
+	SCase "insert_normal".
+	  symmetry in Heqil. apply insert_leaf_normal in Heqil; try assumption. rewrite <- H1. 
+	  apply ait_leaf; try assumption. unfold not. intro. unfold not in H0.
+	  eapply appears_kvl_appears_leaf_tree in H4. apply H0. apply H4. 
+	  apply insert_not_split_impl_space_left in Heqil. assumption.
 	
   Case "node". 
     admit.
 	 
 Admitted.
     
-  
+
   
   
   
