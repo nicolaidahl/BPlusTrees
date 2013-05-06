@@ -722,44 +722,7 @@ Proof.
   unfold not in Heqlb2.
   apply ex_falso_quodlibet.
   apply Heqlb2. simpl in H0. simpl. apply H0.
-Qed.    
-
-Theorem insert_leaf_normal : forall (X: Type) (b: nat) (k: nat) (v: X) (kvl: list (nat * X)),
-  b <> 0 -> kvl_sorted kvl -> S (length(kvl)) < mult b 2-> 
-  insert_leaf b k v kvl = (insert_into_list k v kvl, None).
-Proof.
-  intros. 
-  generalize dependent b.
-  induction kvl. 
-  Case "kvl = []".
-    intros.
-    destruct b. apply ex_falso_quodlibet. apply H. reflexivity. clear H.
-    unfold insert_leaf.
-    simpl. reflexivity. 
-  Case "kvl = a::kvl".
-    intros.
-    destruct a. simpl. remember (ble_nat k n) as klen.
-    destruct klen; symmetry in Heqklen; [apply ble_nat_true in Heqklen | apply ble_nat_false in Heqklen].
-    SCase "k <= n".
-      remember (beq_nat k n) as keqn.
-      destruct keqn; symmetry in Heqkeqn; [apply beq_nat_true_iff in Heqkeqn | apply beq_nat_false_iff in Heqkeqn].
-      SSCase "k = n". subst. 
-        apply insert_leaf_shaddow; try assumption.
-        simpl in H1. simpl. omega.
-      SSCase "k <> n".
-        
-        admit.  
-    SCase "k > n". 
-      admit.
-Admitted.
-
-Theorem insert_leaf_split : forall (X: Type) (b: nat) (k: nat) (v: X) (kvl kvl1 kvl2: list (nat * X)),
-  kvl_sorted kvl -> length(kvl) = mult b 2 -> 
-  (kvl1, kvl2) = split_list b (insert_into_list k v kvl1) -> 
-  insert_leaf b k v kvl = (kvl1, Some kvl2).
-Proof.
-  admit.
-Admitted.
+Qed.
 
 Theorem insert_works : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X t -> search k (insert k v t) = Some v.
