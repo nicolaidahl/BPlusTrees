@@ -96,6 +96,40 @@ Proof.
       simpl in H1. omega.
 Qed.
 
+Lemma insert_new_into_list_increases_length_lt : forall (X: Type) (l: list (nat * X)) (k n: nat) (v: X),
+  kvl_sorted l -> ~(appears_in_kvl k l ) -> length l < n -> length (insert_into_list k v l) <= n.
+Proof.
+  intros.
+  generalize dependent l. induction n; intros.
+  Case "n = 0".
+    apply ex_falso_quodlibet. omega.
+  Case "n = S n".
+    destruct l. simpl. omega.
+    destruct p.
+    simpl. remember (ble_nat k n0) as klen.
+    destruct klen; symmetry in Heqklen; [apply ble_nat_true in Heqklen | apply ble_nat_false in Heqklen].
+    SCase "k <= n0".
+      remember (beq_nat k n0) as keqn.
+      destruct keqn; symmetry in Heqkeqn; [apply beq_nat_true_iff in Heqkeqn | apply beq_nat_false_iff in Heqkeqn].
+      SSCase "k = n0".
+        subst. simpl.
+        apply ex_falso_quodlibet.
+        apply H0. apply ai_here.
+      SSCase "k < n0".
+        simpl. simpl in H1. omega.
+    SCase "k > n0".
+      simpl. apply le_n_S.
+      apply IHn.
+      apply list_tail_is_sorted in H.
+      apply H.
+      unfold not.
+      intros.
+      apply H0.
+      apply ai_later. apply H2.
+      simpl in H1. omega.
+Qed.
+
+
 Lemma insert_leaf_cons_eq : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
   b <> 0 -> kvl_sorted ((k2, v2)::l) -> k1 = k2 -> length((k2,v2)::l) <= mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::l, None).
 Proof.
@@ -633,68 +667,87 @@ Qed.
 
 
 
-Theorem insert_leaf_works : forall {X: Type} {b: nat} (k: nat) (v: X) (leaf left right: list (nat * X)),
+Theorem insert_leaf_works : forall {X: Type} {b: nat} (k: nat) (v: X) (leaf left: list (nat * X)) (rightOption: option (list (nat * X))),
   b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> 
   length leaf <= mult b 2 ->
-  exists rightOption: option (list (nat * X)), insert_leaf b k v leaf = (left, rightOption) ->
-  appears_in_kvl k left \/ rightOption = Some(right) /\ appears_in_kvl k right.
+  insert_leaf b k v leaf = (left, rightOption) ->
+  appears_in_kvl k left \/ (exists right, rightOption = Some(right) /\ appears_in_kvl k right).
 Proof.
   intros.
   remember (blt_nat (length leaf) (b * 2)) as blt_length_b.
   destruct blt_length_b; symmetry in Heqblt_length_b; [apply blt_nat_true in Heqblt_length_b | apply blt_nat_false in Heqblt_length_b].
   Case "less".
-    exists None.
     left.
-    eapply split_insert_normal. 
-      apply H.
-      apply H0.
-      apply H1.
-      apply Heqblt_length_b.
-      apply H3.
+    destruct rightOption.
+    SCase "rightOption = Some".
+      unfold insert_leaf in H3.
+      remember (ble_nat (length (insert_into_list k v leaf)) (b * 2)) as tl.
+      destruct tl.
+      inversion H3.
+      symmetry in Heqtl. apply ble_nat_false in Heqtl.
+      apply ex_falso_quodlibet. apply Heqtl.
+      apply insert_new_into_list_increases_length_lt with (k := k) (v := v) in Heqblt_length_b; try assumption.
+    SCase "rightOption = None".  
+      eapply split_insert_normal. 
+        apply H.
+        apply H0.
+        apply H1.
+        apply Heqblt_length_b.
+        apply H3.
   Case "equal".
     assert (length leaf = b * 2) by omega.
     assert (b <= length leaf) by omega.
     remember (pred b).
     assert (n < length leaf) by omega.
-    apply list_of_length_b_implies_element_at_b with (b := n) in H5.
-    rewrite Heqn in H5. clear Heqn. clear n.
-    do 2 destruct H5. 
-    remember (ble_nat witness k) as ble_kb_k.
-    destruct ble_kb_k; symmetry in Heqble_kb_k; [apply ble_nat_true in Heqble_kb_k | apply ble_nat_false in Heqble_kb_k].
-    apply le_lt_or_eq_iff in Heqble_kb_k.
-    inversion Heqble_kb_k.
-    SCase "right".
-      exists (Some right).
-      right.
-      split.
-      SSCase "right = right".
-        reflexivity.
-      SSCase "appears in".
-        eapply split_insert_right.
+    assert (leaf <> []).
+      destruct leaf. simpl in H6. apply ex_falso_quodlibet. omega.
+      unfold not. intro. inversion H7.
+    destruct rightOption.
+    SCase "rightOption = Some".
+      apply list_of_length_b_implies_element_at_b with (b := n) (kvl := leaf) in H7; try assumption.
+      rewrite Heqn in H7. clear Heqn. clear H6. clear n.
+      destruct H7. destruct H6.
+      remember (ble_nat witness k) as ble_kb_k.
+      destruct ble_kb_k; symmetry in Heqble_kb_k; [apply ble_nat_true in Heqble_kb_k | apply ble_nat_false in Heqble_kb_k].
+        apply le_lt_or_eq_iff in Heqble_kb_k.
+        inversion Heqble_kb_k.
+        SSCase "right".
+          right. exists l.
+          split.
+          SSSCase "right = right".
+            reflexivity.
+          SSSCase "appears in".
+            eapply split_insert_right.
+              apply H.
+              apply H0.
+              apply H1.
+              apply H6.
+              apply H7.
+              apply H4.
+              apply H3.
+        SSCase "equals".
+          rewrite H7 in H6.
+          apply element_at_index_impl_appears in H6.
+          apply ex_falso_quodlibet. apply H1. apply H6.   
+      SSCase "split left".
+        left.
+        eapply split_insert_left.
           apply H.
           apply H0.
           apply H1.
-          apply H5.
           apply H6.
+          omega.
+          apply H4.
           apply H3.
-          apply H7.
-    SCase "equals".
-      rewrite H6 in H5.
-      apply element_at_index_impl_appears in H5.
-      apply ex_falso_quodlibet. apply H1. apply H5.
-    SCase "split left".
-      exists (Some right).
-      left.
-      eapply split_insert_left.
-        apply H.
-        apply H0.
-        apply H1.
-        apply H5.
-        omega.
-        apply H3.
-        apply H6.
-    destruct leaf. simpl in H5. inversion H5.
-    unfold not. intro. inversion H6.
+    SCase "rightOption = None".
+        unfold insert_leaf in H3.
+        remember (ble_nat (length (insert_into_list k v leaf)) (b * 2)) as tl.
+        destruct tl.
+        symmetry in Heqtl. apply ble_nat_true in Heqtl.
+        apply insert_new_into_list_increases_length with (k:=k) (v:=v) in H4; try assumption.
+        rewrite H4 in Heqtl.
+        apply ex_falso_quodlibet. omega.
+        inversion H3.
 Qed.
 
 Theorem insert_into_list_works : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
