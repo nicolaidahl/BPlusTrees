@@ -923,7 +923,7 @@ Proof.
 	  apply ait_leaf; try assumption. unfold not. intro. unfold not in H0.
 	  eapply appears_kvl_appears_leaf_tree in H4. apply H0. apply H4. 
 	  apply insert_not_split_impl_space_left in Heqil. assumption.
-	
+	  unfold not. unfold not in H0. intros. apply H0. apply ait_leaf. assumption.
   Case "node". 
     admit.
 	 
