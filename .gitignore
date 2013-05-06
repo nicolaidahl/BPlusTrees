@@ -30,6 +30,8 @@
 *.vrb
 *.xdy
 *.tdo
+*.fls
+report/BPlusTree-report.pdf
 
 # Coq specific ignores
 *.glob
@@ -37,3 +39,6 @@
 
 # Mac OSX
 .DS_store
+
+#Sublime
+*.sublime-workspace
