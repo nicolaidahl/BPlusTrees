@@ -725,6 +725,11 @@ Proof.
   apply Heqlb2. simpl in H0. simpl. apply H0.
 Qed.
 
+Theorem insert_leaf_split_never_empty: forall {X: Type} b k (v: X) l l1 l2,
+  (l1, Some l2) = insert_leaf b k v l -> l1 <> [] /\ l2 <> [].
+Proof. Admitted.
+
+
 Theorem insert_works : forall (b: nat) (X: Type) (t t1: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X t -> 
   ~appears_in_tree k t -> 
@@ -735,17 +740,26 @@ Proof.
   induction H.
   Case "leaf".
 	unfold insert in H1.  unfold insert' in H1. remember (insert_leaf b k v l) as il. 
-	destruct il.
-	admit.
+	destruct il. destruct o.
+	SCase "insert split".
+	  remember (key_at_index 0 l1) as kat. destruct kat. admit.
+	  apply insert_leaf_split_never_empty in Heqil. simpl in Heqkat. inversion Heqil.
+	  destruct l1. apply ex_falso_quodlibet. apply H5. reflexivity.
+	  
+	
 	
   Case "node". 
     admit.
 	 
 Admitted.
     
-Theorem appears_search_works : forall (b: nat) (X: Type) (t t1: bplustree b X) (k: nat) (v: X),
-  valid_bplustree b X t -> 
-  appears_in_tree k t -> 
-  search k t = Some(v).
-Proof. Admitted.
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
