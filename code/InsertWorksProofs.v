@@ -737,13 +737,13 @@ Theorem insert_leaf_split_never_empty: forall {X: Type} b k (v: X) l l1 l2,
   (l1, Some l2) = insert_leaf b k v l -> l1 <> [] /\ l2 <> [].
 Proof. 
   intros.
-  induction l.
+  destruct l.
   Case "l = []".
     unfold insert_leaf in H0.
     simpl in H0. remember (b*2). destruct n.
     apply ex_falso_quodlibet. omega.
     inversion H0.
-  Case "l = a::l". destruct a.
+  Case "l = p::l". destruct p.
     unfold insert_leaf in H0.
     simpl in H0.
     remember (ble_nat k n) as klen. 
