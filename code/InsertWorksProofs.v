@@ -4,6 +4,7 @@ Require Import SortingProofs.
 Require Export HelperFunctions.
 Require Import ValidBPlusTree.
 Require Import AppearsInKVL.
+Require Export AppearsInTree.
 Require Import ElementAtIndexProofs.
   
 Lemma split_never_returns_empty_none : forall (X: Type) (b: nat) (leaf: list (nat * X)) (k: nat) (v: X),
@@ -724,14 +725,27 @@ Proof.
   apply Heqlb2. simpl in H0. simpl. apply H0.
 Qed.
 
-Theorem insert_works : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat) (v: X),
-  valid_bplustree b X t -> search k (insert k v t) = Some v.
+Theorem insert_works : forall (b: nat) (X: Type) (t t1: bplustree b X) (k: nat) (v: X),
+  valid_bplustree b X t -> 
+  ~appears_in_tree k t -> 
+  insert k v t = t1 -> 
+  appears_in_tree k t1.
 Proof.
   intros.
   induction H.
   Case "leaf".
-    unfold insert. remember (insert' k v (bptLeaf b X l)) as insert'. destruct insert'.
-  admit.
-  admit.
+	unfold insert in H1.  unfold insert' in H1. remember (insert_leaf b k v l) as il. 
+	destruct il.
+	admit.
+	
+  Case "node". 
+    admit.
+	 
 Admitted.
     
+Theorem appears_search_works : forall (b: nat) (X: Type) (t t1: bplustree b X) (k: nat) (v: X),
+  valid_bplustree b X t -> 
+  appears_in_tree k t -> 
+  search k t = Some(v).
+Proof. Admitted.
+
