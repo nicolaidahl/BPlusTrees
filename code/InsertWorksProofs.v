@@ -921,7 +921,19 @@ Lemma insert_leaf_preserves_sort: forall (X: Type) b k (v:X) l l1 l2,
   kvl_sorted l ->
   insert_leaf b k v l = (l1, Some l2) ->
   kvl_sorted(l1 ++ l2).
-Proof. Admitted.
+Proof.
+  intros.
+  unfold insert_leaf in H0.
+  remember (ble_nat (length (insert_into_list k v l)) (b * 2)).
+  destruct b0.
+  inversion H0.
+  remember (split_list b (insert_into_list k v l)). destruct p.
+  symmetry in Heqp. apply split_list_preserves_lists in Heqp.
+  inversion H0. subst.
+  assert (kvl_sorted (insert_into_list k v l)).
+    apply insert_preserves_sort. apply H.
+  rewrite Heqp in H1. apply H1.
+Qed.
 
 Theorem insert_works : forall {X: Type} {b: nat} (t t1: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X t -> 
