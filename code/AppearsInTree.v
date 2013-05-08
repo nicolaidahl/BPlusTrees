@@ -4,12 +4,7 @@ Require Export BPlusTree.
 Require Export ValidBPlusTree.
 Require Export SortingProofs.
 
-Theorem appears_search_works : forall (b: nat) (X: Type) (t t1: bplustree b X) (k: nat) (v: X),
-  valid_bplustree b X t -> 
-  appears_in_tree k t -> 
-  search k t = Some(v).
-Proof.
-  intros. induction H0. Admitted.
+
   
 
   
