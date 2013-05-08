@@ -1,6 +1,15 @@
 Require Export BPlusTree.
 Require Export HelperProofs.
 
+(* Proofs about height *)
+Lemma height_of_parent_one_bigger: forall (X:Type) b kpl k v l,
+  kpl = ((k, v)::l) -> all_values_eq_prop (bplustree b X) (equal_height) kpl ->
+  S (height v) = height (bptNode b X kpl).
+Proof.
+  intros. induction H0; try inversion H; reflexivity.
+Qed.
+
+(* Proofs about insertion *)
 Lemma insert_new_into_list_length_gt_length : forall (X: Type) (k: nat) (v: X) (l: list (nat*X)),
   ~ appears_in_kvl k l ->
   length l < length (insert_into_list k v l).

@@ -961,11 +961,8 @@ Proof.
 Admitted.
     
     
-Lemma height_of_parent_one_bigger: forall (X:Type) b k v l,
-  S (height v) = height (bptNode b X ((k, v)::l)).
-Proof.
-  intros. induction v. admit. Admitted.
 
+    
 
 
 Theorem appears_search_works : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat),
@@ -991,10 +988,7 @@ Proof.
       (* actually it's because it's a valid sub-tree, and that's a stronger
          claim than valid tree *)
     assumption.
-    apply height_of_parent_one_bigger.
-
-    (* This should hold *)
-    
+    eapply height_of_parent_one_bigger. reflexivity. apply H7.    
   Case "node here".
     replace (height (bptNode b X ((k1, v1) :: (k2, v2) :: l))) with (S (height v1)).
     assert (ble_nat k1 k && blt_nat k k2 = true).
