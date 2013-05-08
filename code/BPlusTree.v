@@ -25,57 +25,6 @@ Definition centre := bptLeaf 1 nat [(7, 77)].
 Definition right := bptLeaf 1 nat [(9, 99)].
 Definition root := bptNode 1 nat [(0, left), (leftmost_key centre, centre), (leftmost_key right, right)].
 
-Fixpoint search_leaf {X: Type} (sk: nat) (kvl: (list (nat * X))) : option X :=
-  match kvl with
-    | nil => None
-    | (k, v) :: kvl' => if beq_nat k sk then Some v else search_leaf sk kvl'
-  end.
-
-Fixpoint find_subtree {X: Type} {b: nat} (sk: nat) (kpl: list (nat * bplustree b X)) : option (nat * bplustree b X) :=
-  match kpl with
-    | [] => None
-    | (k, last_tree) :: [] => Some (k, last_tree)
-    | (k1, subtree) :: ((k2, _) :: _) as kpl' => if ble_nat k1 sk && blt_nat sk k2
-                                                   then Some (k1, subtree)
-                                                   else find_subtree sk kpl'
-  end.
-
-Fixpoint search {X: Type} {b: nat} (counter sk: nat) (tree: bplustree b X) {struct counter}: option X :=
-  match (counter, tree) with
-    | (_, bptLeaf kvl) => search_leaf sk kvl
-    | (0, _) => None
-    | (S counter', bptNode kpl) => match find_subtree sk kpl with
-      | Some (_, subtree) => search counter' sk subtree
-      | None => None
-    end
-  end.
-
-Example search_test_find_item_left : search 99 4 root = None.
-Proof. simpl. reflexivity. Qed.
-Example search_test_find_item_centre : search 99 7 root = Some 77.
-Proof. simpl. reflexivity. Qed.
-Example search_test_find_item_right : search 99 9 root = Some 99.
-Proof. unfold root. unfold leftmost_key. simpl. reflexivity. Qed.
-Example search_test_cant_find_missing : search 99 6 root = None.
-Proof. simpl. reflexivity. Qed.
-
-Fixpoint all_members {X: Type} {b: nat} (tree: (bplustree b X)) : list (nat * X) :=
-  let fix node_members (kpl: (list (nat * bplustree b X))) : list (nat * X) :=
-    match kpl with
-      | nil => []
-      | (k, p) :: kpl' => (all_members p) ++ (node_members kpl')
-    end
-  in
-  match tree with
-    | bptLeaf kpl => kpl
-    | bptNode kpl => (node_members kpl)
-  end.
-
-Example all_members_left : all_members left = [(5, 55)].
-Proof. simpl. reflexivity. Qed.
-Example all_members_root : all_members root = [(5, 55), (7, 77), (9, 99)].
-Proof. simpl. reflexivity. Qed.
-
 (* Height *)
 Fixpoint height {X: Type} {b: nat} (tree: bplustree b X) : nat :=
   match tree with
@@ -95,6 +44,60 @@ Example height_3 : height
                [(1, bptLeaf 1 nat [(2, 102)])])])])]) = 4.
 Proof. simpl. reflexivity. Qed. 
 
+(* Search *)
+Fixpoint search_leaf {X: Type} (sk: nat) (kvl: (list (nat * X))) : option X :=
+  match kvl with
+    | nil => None
+    | (k, v) :: kvl' => if beq_nat k sk then Some v else search_leaf sk kvl'
+  end.
+
+Fixpoint find_subtree {X: Type} {b: nat} (sk: nat) (kpl: list (nat * bplustree b X)) : option (nat * bplustree b X) :=
+  match kpl with
+    | [] => None
+    | (k, last_tree) :: [] => Some (k, last_tree)
+    | (k1, subtree) :: ((k2, _) :: _) as kpl' => if ble_nat k1 sk && blt_nat sk k2
+                                                   then Some (k1, subtree)
+                                                   else find_subtree sk kpl'
+  end.
+
+Fixpoint search' {X: Type} {b: nat} (counter sk: nat) (tree: bplustree b X) {struct counter}: option X :=
+  match (counter, tree) with
+    | (_, bptLeaf kvl) => search_leaf sk kvl
+    | (0, _) => None
+    | (S counter', bptNode kpl) => match find_subtree sk kpl with
+      | Some (_, subtree) => search' counter' sk subtree
+      | None => None
+    end
+  end.
+
+Definition search {X: Type} {b: nat} (sk: nat) (tree: bplustree b X) : option X :=
+  search' (height tree) sk tree.
+
+Example search_test_find_item_left : search 4 root = None.
+Proof. simpl. reflexivity. Qed.
+Example search_test_find_item_centre : search 7 root = Some 77.
+Proof. simpl. reflexivity. Qed.
+Example search_test_find_item_right : search 9 root = Some 99.
+Proof. unfold root. unfold leftmost_key. simpl. reflexivity. Qed.
+Example search_test_cant_find_missing : search 6 root = None.
+Proof. simpl. reflexivity. Qed.
+
+Fixpoint all_members {X: Type} {b: nat} (tree: (bplustree b X)) : list (nat * X) :=
+  let fix node_members (kpl: (list (nat * bplustree b X))) : list (nat * X) :=
+    match kpl with
+      | nil => []
+      | (k, p) :: kpl' => (all_members p) ++ (node_members kpl')
+    end
+  in
+  match tree with
+    | bptLeaf kpl => kpl
+    | bptNode kpl => (node_members kpl)
+  end.
+
+Example all_members_left : all_members left = [(5, 55)].
+Proof. simpl. reflexivity. Qed.
+Example all_members_root : all_members root = [(5, 55), (7, 77), (9, 99)].
+Proof. simpl. reflexivity. Qed.
 
 (* Insertion *)
 (* Leafs *)
@@ -155,8 +158,8 @@ Definition insert_node {X: Type} {b: nat} (insertion_key: nat) (old_tree: (bplus
   
 Fixpoint insert' {X: Type} {b: nat} (counter k: nat) (v: X) (tree: (bplustree b X))
                 : (bplustree b X * option (nat * bplustree b X)) :=
-  match (counter, tree) with
-    | (_, bptLeaf kvl) => let (fst, snd_opt) := insert_leaf b k v kvl in
+  match (tree, counter) with
+    | (bptLeaf kvl, _) => let (fst, snd_opt) := insert_leaf b k v kvl in
                      match snd_opt with
                      | None => (bptLeaf b X fst, None)
                      | Some snd => 
@@ -165,8 +168,8 @@ Fixpoint insert' {X: Type} {b: nat} (counter k: nat) (v: X) (tree: (bplustree b 
                          | Some first_key => (bptLeaf b X fst, Some (first_key, bptLeaf b X snd))
                          end
                      end
-    | (0, _) => (tree, None)
-    | (S counter', bptNode kpl) => match find_subtree k kpl with
+    | (_, 0) => (tree, None)
+    | (bptNode kpl, S counter') => match find_subtree k kpl with
       | None => (tree, None)
       | Some (key, subtree) => insert_node key tree (insert' counter' k v subtree)
     end

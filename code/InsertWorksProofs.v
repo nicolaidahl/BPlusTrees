@@ -836,12 +836,12 @@ Qed.
 
 
 
-
+(*
 Lemma insert'_not_split_impl_space_left: forall {X: Type} (b: nat) k (v:X) kpl tree,
   b <> 0 ->
   ~ appears_in_tree k (bptNode b X kpl) ->
   kvl_sorted kpl ->
-  insert' k v (bptNode b X kpl) = (tree, None) ->
+  insert' (height tree) k v (bptNode b X kpl) = (tree, None) ->
   length kpl < S (b*2).
 Proof.
   intros.
@@ -853,7 +853,7 @@ Proof.
   Case "kpl = []".
     simpl. omega.
   Case "kpl = a::kpl". destruct a. generalize H2.
-    set (insert' k v (bptNode b X ((n, b0) :: kpl))) as test.
+    set (insert' (height bptNode b X l) k v (bptNode b X ((n, b0) :: kpl))) as test.
     intro.
     hnf in test.
     destruct kpl.
@@ -883,6 +883,7 @@ Proof.
   simpl.
     admit.
 Admitted.
+*)
 
 Lemma key_at_index_0none_impl_empty: forall (X: Type) l,
   @key_at_index X 0 l = None -> l = [].
@@ -910,7 +911,7 @@ Qed.
 
 Theorem insert'_normal : forall {X: Type} {b: nat} (kpl: list (nat * bplustree b X)) (tree: bplustree b X) (k: nat) (v: X),
   b <> 0 -> kvl_sorted kpl -> not (appears_in_tree k (bptNode b X kpl)) -> length kpl < S (mult b 2) ->
-  insert' k v (bptNode b X kpl) = (tree, None) -> appears_in_tree k tree.
+  insert' (height (bptNode b X kpl)) k v (bptNode b X kpl) = (tree, None) -> appears_in_tree k tree.
 Proof.
   admit.
 Admitted.
@@ -924,24 +925,25 @@ Proof.
   intros.
   induction H.
   Case "leaf".
-	unfold insert in H1.  unfold insert' in H1. remember (insert_leaf b k v l) as il. 
+	unfold insert in H1.  unfold insert' in H1. simpl in H1. remember (insert_leaf b k v l) as il. 
 	destruct il. destruct o.
 	SCase "insert split".
-	  symmetry in Heqil. assert (insert_leaf b k v l = (l0, Some l1)).  assumption.
+	  assert ((l0, Some l1) = insert_leaf b k v l) by assumption.
+	  apply insert_leaf_split_never_empty  in H4.
+	  destruct l1. 
+	    inversion H4. exfalso. apply H6. reflexivity.
+	  destruct p.
+	    
+	  symmetry in Heqil. assert (insert_leaf b k v l = (l0, Some ((n,x)::l1))) by assumption.
 	  apply insert_leaf_works in Heqil; try assumption.
-	  remember (key_at_index 0 l1) as kat. destruct kat.
-	  SSCase "kat = (l0, Some l1)".
 	    rewrite <- H1. apply appears_in_split_node_appears_in_lists. destruct Heqil. 
-	    apply insert_leaf_preserves_sort in H4; assumption; assumption.
-	    apply insert_leaf_preserves_sort in H4; assumption; assumption.
-	    symmetry in Heqkat. assumption.
+	    apply insert_leaf_preserves_sort in H5; assumption; assumption.
+	    apply insert_leaf_preserves_sort in H5; assumption; assumption.
+	    simpl. reflexivity.
 	    destruct Heqil. left. assumption.
-	    inversion H5. right. do 3 destruct H5. inversion H6. inversion H5. assumption.
-	    rewrite <- H1. apply ait_leaf. destruct Heqil. assumption.
-	    symmetry in H4. apply insert_leaf_split_never_empty in H4. destruct H4.
-	    symmetry in Heqkat. apply key_at_index_0none_impl_empty in Heqkat. unfold not in H6.
-	    apply H6 in Heqkat. inversion Heqkat. assumption.
-	    unfold not. intros. unfold not in H0. apply H0. apply ait_leaf.  assumption.
+	    inversion H6. right. do 3 destruct H6. inversion H7. inversion H6. rewrite H11. assumption.
+	    unfold not. intro. apply H0. apply ait_leaf. apply H6.
+	    assumption.
 	SCase "insert_normal".
 	  symmetry in Heqil. apply insert_leaf_normal in Heqil; try assumption. rewrite <- H1. 
 	  apply ait_leaf; try assumption. unfold not. intro. unfold not in H0.
@@ -950,14 +952,7 @@ Proof.
 	  unfold not. unfold not in H0. intros. apply H0. apply ait_leaf. assumption.
   Case "node". 
     unfold insert in H1.
-    remember (insert' k v (bptNode b X kpl)) as insn.
-    destruct insn. destruct o. 
-    SCase "insert split".
-      admit.
-    SCase "insert normal".
-      subst.
-      symmetry in Heqinsn. apply insert'_normal in Heqinsn; try assumption.
-      apply insert'_not_split_impl_space_left in Heqinsn; try assumption.
+    admit.
 Admitted.
     
 
@@ -980,9 +975,10 @@ Qed.
 Theorem appears_search_works : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat),
   valid_bplustree b X t -> 
   appears_in_tree k t -> 
-  exists v, search (height t) k t = Some(v).
+  exists v, search k t = Some(v).
 Proof.
   intros.
+  unfold search.
   induction H0; inversion H.
   Case "leaf".
     simpl.
