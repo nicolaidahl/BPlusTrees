@@ -1,16 +1,8 @@
 Require Export AppearsInKVL.
+Require Export InductiveDataTypes.
 Require Export BPlusTree.
 Require Export ValidBPlusTree.
-
-Inductive appears_in_tree {X:Type} {b: nat} (sk: nat) : bplustree b X -> Prop :=
-  | ait_leaf       : forall l,       appears_in_kvl sk l -> appears_in_tree sk (bptLeaf b X l)
-  | ait_node_one   : forall k v,     appears_in_tree sk v -> k <= sk ->
-                                     appears_in_tree sk (bptNode b X [(k, v)])
-  | ait_node_here  : forall k1 k2 v1 v2 l, 
-                                     appears_in_tree sk v1 -> k1 <= sk /\ sk < k2 ->
-                                     appears_in_tree sk (bptNode b X ((k1, v1)::(k2, v2)::l))
-  | ait_node_later : forall x k v l, appears_in_tree sk (bptNode b X ((k, v)::l)) -> k <= sk ->
-                                     appears_in_tree sk (bptNode b X (x::(k, v)::l)).
+Require Export SortingProofs.
 
 Theorem appears_search_works : forall (b: nat) (X: Type) (t t1: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X t -> 
@@ -21,7 +13,37 @@ Proof.
   
 
   
-  
+Lemma appears_in_split_node_appears_in_lists: forall {X: Type} b k n left right, 
+  kvl_sorted (left ++ right) ->
+  key_at_index 0 right = Some n ->
+  appears_in_kvl k left \/ appears_in_kvl k right ->
+  appears_in_tree k (bptNode b X [(0, bptLeaf b X left), (n, bptLeaf b X right)]).
+Proof.
+  intros. destruct H1. 
+  Case "Left hand side".
+    apply ait_node_here. apply ait_leaf. assumption. destruct right.
+    simpl in H0. inversion H0. inversion H0. destruct p. inversion H3. subst.
+    apply appears_in_kvl_app in H1. do 3 destruct H1. subst. 
+    rewrite <- app_assoc in H. apply kvl_sorted_app with (l1:=witness) in H. destruct H.
+    apply kvl_sorted_key_across_app in H1. omega.
+  Case "Right hand side".
+    apply ait_node_later. apply ait_node_one. apply ait_leaf. assumption. 
+    SCase "n <=".
+      inversion H0. destruct right. inversion H3. destruct p. inversion H3. subst. remember (beq_nat n k).
+      destruct b0. symmetry in Heqb0. apply beq_nat_true in Heqb0. subst. omega.
+      apply appears_cons in H1. apply appears_in_kvl_app in H1. do 3 destruct H1. subst.
+      apply kvl_sorted_app with (l1:=left) in H. inversion H. 
+      apply kvl_sorted_key_across_app in H2.  omega. symmetry in Heqb0. 
+      apply beq_nat_false in Heqb0. omega.
+    SCase "< n".
+    inversion H0. destruct right. inversion H3. destruct p. inversion H3. subst.
+    remember (beq_nat n k).
+    destruct b0. symmetry in Heqb0. apply beq_nat_true in Heqb0. subst. omega.
+    apply appears_cons in H1. apply appears_in_kvl_app in H1. do 3 destruct H1. subst.
+    apply kvl_sorted_app with (l1:=left) in H. inversion H. 
+    apply kvl_sorted_key_across_app in H2. omega. symmetry in Heqb0. 
+    apply beq_nat_false in Heqb0. omega.
+Qed.
   
   
   

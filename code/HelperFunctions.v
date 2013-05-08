@@ -12,6 +12,18 @@ Fixpoint element_at_index {X: Type} (n : nat) (lst: list X): option X :=
             | _ :: xs => element_at_index n' xs
             end
   end.  
+  
+Fixpoint key_at_index {X: Type} (n: nat) (kpl: (list (nat * X))) : option nat :=
+  match n with
+    | 0 => match kpl with
+           | nil => None
+           | (k, v) :: _ => Some(k)
+           end
+    | S n' => match kpl with
+              | nil => None
+              | _ :: kvl' => key_at_index n' kvl'
+              end
+  end.
 
 Fixpoint cut_list_left {X: Type} (b: nat) (lst: list X) : list X :=
   match b with
@@ -37,6 +49,7 @@ Definition split_list {X: Type} (b: nat) (lst: list X) : (list X * list X) :=
 Definition alist := [0,1,2,3,4,5,6].
 Definition ab := 9.
 Eval compute in split_list ab alist.
+
 
 (*
  * blt_nat

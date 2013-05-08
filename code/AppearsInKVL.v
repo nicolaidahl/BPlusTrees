@@ -1,15 +1,11 @@
 Require Export HelperFunctions.
 Require Export LowLevelHelperProofs.
 Require Export BPlusTree.
+Require Export InductiveDataTypes.
 
 (* 
  * Proofs about appears In List 
  *)
-
-Inductive appears_in_kvl {X:Type} (sk: nat) : list (nat * X) -> Prop :=
-  | ai_here : forall v l, appears_in_kvl sk ((sk, v)::l)
-  | ai_later : forall k v l, appears_in_kvl sk l -> appears_in_kvl sk ((k, v)::l).
-
 Lemma element_at_index_impl_appears: forall (X: Type) (b k: nat) (v: X) (l: list (nat*X)),
   element_at_index b l = Some (k, v) -> appears_in_kvl k l.
 Proof.
@@ -56,6 +52,13 @@ Proof.
         appears_in_kvl k ((k0, v) :: l1) \/ appears_in_kvl k l2). 
         intros. destruct H1. left. apply ai_later. assumption. right. assumption. 
     apply H1. apply IHappears_in_kvl. apply H3.
+Qed.
+
+Theorem appears_kvl_appears_leaf_tree: forall {X: Type} (b: nat) k l,
+  appears_in_kvl k l -> appears_in_tree k (bptLeaf b X l).
+Proof.
+  intros. induction H. apply ait_leaf. apply ai_here. apply ait_leaf.
+  eapply appears_in_super_set_appears. reflexivity. apply H.
 Qed.
 
 Lemma appears_cons : forall (X: Type) (k k1: nat) (v1: X) (l: list (nat*X)),

@@ -345,5 +345,15 @@ Proof.
 Qed.
 
 
+(**
+  key_at_index proofs
+**)
+
+Lemma key_at_index_0none_impl_empty: forall (X: Type) l,
+  @key_at_index X 0 l = None -> l = [].
+Proof. 
+  intros. unfold key_at_index in H. destruct l. reflexivity. destruct p. inversion H.
+Qed.
+
 
 

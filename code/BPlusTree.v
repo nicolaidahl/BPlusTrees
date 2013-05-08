@@ -1,32 +1,10 @@
 Require Export SfLib.
 Require Export HelperFunctions.
 Require Export SplitCutList.
+Require Export InductiveDataTypes.
 
   
-Inductive bplustree (b: nat) (X:Type) : Type :=
-  | bptLeaf : list (nat * X) -> bplustree b X
-  | bptNode : list (nat * (bplustree b X)) -> bplustree b X
-  . 
 
-Notation "[[ b , X | x , .. , y ]]" := (bptLeaf b X (cons x .. (cons y []) ..)) (at level 100, format 
-  "[[ b , X | '[v ' x , .. , y ']' ]]").
-Notation "{{ b , X | f , x , .. , y }}" := (bptNode b X f (cons x .. (cons y []) ..)) (at level 99, format
-  "{{ b , X | '[v  ' '//' f , '//' x , .. , y ']' '//' }}").
-
-Example test := bptLeaf 2 bool [(1, true), (2, false)].
-
-
-Fixpoint key_at_index {X: Type} (n: nat) (kpl: (list (nat * X))) : option nat :=
-  match n with
-    | 0 => match kpl with
-           | nil => None
-           | (k, v) :: _ => Some(k)
-           end
-    | S n' => match kpl with
-              | nil => None
-              | _ :: kvl' => key_at_index n' kvl'
-              end
-  end.
 
 Fixpoint leftmost_key {X: Type} {b: nat} (tree: bplustree b X) : nat :=
   match tree with
@@ -111,15 +89,6 @@ Fixpoint insert_into_list {X: Type} (k: nat) (v: X) (kvl: list (nat * X)) : list
     						else ((k, v) :: kvl)
     					  else (k', v') :: (insert_into_list k v kvl')
   end.
-
-Inductive kvl_sorted {X: Type}: list (nat * X) -> Prop :=
-  kvl_sorted_0    : kvl_sorted []
-| kvl_sorted_1    : forall (n: nat) (x: X), 
-                      kvl_sorted [(n, x)]
-| kvl_sorted_cons : forall (n1 n2: nat) (x1 x2: X) (lst: list (nat * X)), 
-                      kvl_sorted ((n2,x2)::lst) -> blt_nat n1 n2 = true
-                       -> kvl_sorted ((n1,x1)::(n2,x2)::lst) 
-.
 
 
 
