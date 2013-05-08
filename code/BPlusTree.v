@@ -40,47 +40,23 @@ Fixpoint find_subtree {X: Type} {b: nat} (sk: nat) (kpl: list (nat * bplustree b
                                                    else find_subtree sk kpl'
   end.
 
-Fixpoint search' {X: Type} {b: nat} (counter sk: nat) (tree: bplustree b X) {struct counter}: option X :=
+Fixpoint search {X: Type} {b: nat} (counter sk: nat) (tree: bplustree b X) {struct counter}: option X :=
   match (counter, tree) with
     | (_, bptLeaf kvl) => search_leaf sk kvl
     | (0, _) => None
     | (S counter', bptNode kpl) => match find_subtree sk kpl with
-      | Some subtree => search' counter' sk subtree
+      | Some subtree => search counter' sk subtree
       | None => None
     end
   end.
 
-Eval compute in search' 999 6 root.
-
-Fixpoint search {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X)) : option X :=  
-  
-  let fix search_node (kpl: (list (nat * bplustree b X))): option X :=
-      match kpl with
-        | nil => None
-        | (_, t1) :: kpl' => match kpl' with
-                             | nil => search sk t1
-                             | (k2, t2) :: _ =>
-							   if blt_nat sk k2
-							   then search sk t1
-							   else search_node kpl'
-							 end
-      end 
-  in
-    
-  match tree with
-  | bptLeaf kvl => search_leaf sk kvl
-  | bptNode kpl' => search_node kpl'
-  end.
-  
-  
-
-Example search_test_find_item_left : search 4 root = None.
+Example search_test_find_item_left : search 99 4 root = None.
 Proof. simpl. reflexivity. Qed.
-Example search_test_find_item_centre : search 7 root = Some 77.
+Example search_test_find_item_centre : search 99 7 root = Some 77.
 Proof. simpl. reflexivity. Qed.
-Example search_test_find_item_right : search 9 root = Some 99.
+Example search_test_find_item_right : search 99 9 root = Some 99.
 Proof. unfold root. unfold leftmost_key. simpl. reflexivity. Qed.
-Example search_test_cant_find_missing : search 6 root = None.
+Example search_test_cant_find_missing : search 99 6 root = None.
 Proof. simpl. reflexivity. Qed.
 
 Fixpoint all_members {X: Type} {b: nat} (tree: (bplustree b X)) : list (nat * X) :=
