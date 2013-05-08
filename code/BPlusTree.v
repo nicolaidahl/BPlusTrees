@@ -197,6 +197,14 @@ Eval compute in insert 5 105 (insert 4 104 (insert 3 103 (insert 2 102 (insert 1
 
 
 (* Height *)
+Fixpoint height {X: Type} {b: nat} (tree: bplustree b X) : nat :=
+  match tree with
+    | bptLeaf _ => 0
+    | bptNode [] => 0
+    | bptNode ((_, subtree)::_) => S (height (subtree))
+  end.
+
+(*
 Fixpoint height' {X: Type} {b: nat} (h: nat) (tree: bplustree b X) : nat :=
   let fix highest_in_list (h: nat) (tlist: list (nat * (bplustree b X))) : nat :=
 	  match tlist with
@@ -214,6 +222,7 @@ Fixpoint height' {X: Type} {b: nat} (h: nat) (tree: bplustree b X) : nat :=
 
 Definition height {X: Type} {b: nat} (tree: bplustree b X) : nat :=
   height' 0 tree.
+*)
   
 Example height_1 : height root = 1.
 Proof. simpl. reflexivity. Qed.
@@ -229,7 +238,7 @@ Proof. simpl. reflexivity. Qed.
 
 
 
-(* Mindepth *)
+(* Mindepth 
 Fixpoint mindepth' {X: Type} {b: nat} (h: nat) (tree: bplustree b X) : nat :=
   let fix lowest_in_list (h: nat) (tlist: list (nat * (bplustree b X))) : nat :=
     match tlist with
@@ -251,6 +260,7 @@ Definition mindepth {X: Type} {b: nat} (tree: bplustree b X) : nat :=
 Definition mindepth_tree := (bptNode 1 nat [(22, bptNode 1 nat [(1, bptNode 1 nat [])])]).
 Eval compute in (mindepth mindepth_tree).
 Eval compute in (height mindepth_tree).
+*)
 
 (* List2Bplustree *)
 Fixpoint list2bplustree' {b: nat} {X: Type} (l: list (nat * X)) (tree: bplustree b X) : bplustree b X :=
