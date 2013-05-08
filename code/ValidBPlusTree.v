@@ -9,11 +9,11 @@ Definition equal_height {X: Type} {b: nat}: bplustree b X -> bplustree b X -> Pr
 (* Prop for determining if the splitting points indicated actually are splits *)
 Inductive valid_splits (b: nat) (X: Type) : list (nat * bplustree b X) -> Prop :=
   | valid_p : forall (t1 t2: bplustree b X) (n1 n2: nat) (l: list (nat * bplustree b X)),
-              all_keys X (between n1 n2) (all_members t1) ->
+              all_keys X (between n1 n2) (inorder t1) ->
               valid_splits b X ((n2, t2)::l) ->
               valid_splits b X ((n1, t1)::(n2, t2)::l)
   | valid_ep : forall (t: bplustree b X) (n: nat),
-               all_keys X (above n) (all_members t) ->
+               all_keys X (above n) (inorder t) ->
                valid_splits b X ((n, t)::[]).
 
 (* Prop for determining if a subtree is a valid subtree *)
