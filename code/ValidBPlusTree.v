@@ -105,4 +105,10 @@ Example valid_small_tree'' : valid_bplustree 1 nat root.
 Proof. compute. repeat constructor; simpl; omega. Qed.
 
 
-
+Lemma valid_sub_bplustree_impl_valid_bplustree : forall {X: Type} {b: nat} (tree: bplustree b X),
+  valid_sub_bplustree b X tree -> valid_bplustree b X tree.
+Proof.
+  intros.
+  inversion H; constructor; try assumption.
+  omega.
+Qed.
