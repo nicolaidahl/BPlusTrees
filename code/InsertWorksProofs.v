@@ -966,7 +966,21 @@ Lemma height_of_parent_one_bigger: forall (X:Type) b k v l,
 Proof.
   intros. induction v. admit. Admitted.
 
-
+Lemma height_cons: forall (X: Type) (b k: nat) (p: bplustree b X) (l: list (nat * bplustree b X)),
+  valid_bplustree b X (bptNode b X ((k, p)::l)) ->
+  valid_bplustree b X (bptNode b X (l)) ->
+  ((height (bptNode b X ((k, p)::l)))) = ((height (bptNode b X (l)))).
+Proof.
+  intros.
+  inversion H.
+  inversion H6. 
+    inversion H0.
+    subst.
+    simpl in H14. apply ex_falso_quodlibet. omega.
+    simpl. 
+    unfold equal_height in H13.
+    rewrite beq_nat_true_iff in H13. omega.
+Qed.
 
 Theorem appears_search_works : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat),
   valid_bplustree b X t -> 
@@ -987,14 +1001,12 @@ Proof.
     simpl.
     apply IHappears_in_tree.
     inversion H6.
-    assert (valid_bplustree b X v) by admit.
+    assert (valid_bplustree b X v).
+      apply valid_sub_bplustree_impl_valid_bplustree in H14. assumption.
       (* actually it's because it's a valid sub-tree, and that's a stronger
          claim than valid tree *)
     assumption.
     apply height_of_parent_one_bigger.
-
-    (* This should hold *)
-    
   Case "node here".
     replace (height (bptNode b X ((k1, v1) :: (k2, v2) :: l))) with (S (height v1)).
     assert (ble_nat k1 k && blt_nat k k2 = true).
@@ -1002,28 +1014,40 @@ Proof.
     simpl. 
     rewrite H10.  
     apply IHappears_in_tree.
-    
-    admit.
-    (* actually it's because it's a valid sub-tree, and that's a stronger
+    assert (valid_bplustree b X v1).
+      inversion H6.
+      apply valid_sub_bplustree_impl_valid_bplustree in H15. assumption.
+      (* actually it's because it's a valid sub-tree, and that's a stronger
          claim than valid tree *)
+    assumption.
     
     admit.
     (* this should hold *)
   Case "node later".
-    admit.
+    destruct x.
+    inversion H8. apply blt_nat_true in H16. subst.
+    replace ((height (bptNode b X ((n, b0) :: (k0, v) :: l)))) with ((height (bptNode b X ((k0, v) :: l)))).
+    
+    simpl.
+    assert (ble_nat n k && blt_nat k k0 = false).
+      apply andb_false_iff. right. apply blt_nat_false. omega.
+    rewrite H2.
+    
+    simpl in IHappears_in_tree. apply IHappears_in_tree.
+    clear IHappears_in_tree.
+    inversion H6.
+    constructor; try assumption.
+    simpl. omega.
+    simpl. simpl in H5. omega.
+    inversion H7. apply H19.
+    inversion H9. apply H23.
+    
+    symmetry. rewrite height_cons. reflexivity.
+    apply H.
+    simpl in H5.
+    constructor; try assumption; simpl; try omega.
+    inversion H6. apply H11.
+    inversion H7. apply H11.
+    inversion H9. apply H17.
 Admitted.
-
-
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-
 
