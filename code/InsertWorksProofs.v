@@ -9,14 +9,6 @@ Require Export ElementAtIndexProofs.
 Require Export SplitCutList.
 Require Export InsertProofs.
   
-
-
-
-
-
-
-
-
 Lemma list_of_length_b_implies_element_at_b : forall (X: Type) (b: nat) (kvl: list (nat* X)),
   kvl <> [] -> b < length kvl -> 
   exists k, exists v, element_at_index b kvl = Some(k, v).
@@ -455,14 +447,16 @@ Qed.
 
 
 
-(*
 Lemma insert'_not_split_impl_space_left: forall {X: Type} (b: nat) k (v:X) kpl tree,
   b <> 0 ->
   ~ appears_in_tree k (bptNode b X kpl) ->
   kvl_sorted kpl ->
-  insert' (height tree) k v (bptNode b X kpl) = (tree, None) ->
+  insert' (height (bptNode b X kpl)) k v (bptNode b X kpl) = (tree, None) ->
   length kpl < S (b*2).
 Proof.
+  admit.
+Admitted.
+(*
   intros.
   destruct tree.
     (* This wont happen, because insert' on a node, can't return a leaf *)
@@ -525,9 +519,20 @@ Proof.
 Qed.
 
 Theorem insert'_normal : forall {X: Type} {b: nat} (kpl: list (nat * bplustree b X)) (tree: bplustree b X) (k: nat) (v: X),
-  b <> 0 -> kvl_sorted kpl -> not (appears_in_tree k (bptNode b X kpl)) -> length kpl < S (mult b 2) ->
+  b <> 0 -> valid_bplustree b X (bptNode b X kpl) -> not (appears_in_tree k (bptNode b X kpl)) -> length kpl < S (mult b 2) ->
   insert' (height (bptNode b X kpl)) k v (bptNode b X kpl) = (tree, None) -> appears_in_tree k tree.
 Proof.
+  intros.
+  induction kpl.
+  Case "kpl = []".
+    inversion H0.
+    simpl in H6. apply ex_falso_quodlibet. omega.
+  Case "kpl = a::kpl". destruct a. 
+    simpl in H3.
+    destruct kpl.
+    rewrite ble_nat_symm in H3.
+    rewrite <- beq_nat_refl in H3.
+  admit.
   admit.
 Admitted.
 
@@ -567,7 +572,16 @@ Proof.
 	  unfold not. unfold not in H0. intros. apply H0. apply ait_leaf. assumption.
   Case "node". 
     unfold insert in H1.
-    admit.
+    remember (insert' (height (bptNode b X kpl)) k v (bptNode b X kpl)).
+    destruct p. destruct o.
+    SCase "node overflow".
+      destruct p.
+      subst.
+      admit.
+    SCase "node normal".
+      subst.
+      symmetry in Heqp. apply insert'_normal in Heqp; try assumption.
+      apply insert'_not_split_impl_space_left in Heqp; try assumption.
 Admitted.
     
 
