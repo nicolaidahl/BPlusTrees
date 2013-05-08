@@ -448,16 +448,18 @@ Qed.
 
 
 Lemma insert'_not_split_impl_space_left: forall {X: Type} (b: nat) k (v:X) kpl tree,
-  b <> 0 ->
+  valid_bplustree b X (bptNode b X kpl) ->
   ~ appears_in_tree k (bptNode b X kpl) ->
   kvl_sorted kpl ->
   insert' (height (bptNode b X kpl)) k v (bptNode b X kpl) = (tree, None) ->
   length kpl < S (b*2).
 Proof.
-  admit.
-Admitted.
-(*
-  intros.
+  intros. inversion H.
+  subst.
+    
+  
+  
+  
   destruct tree.
     (* This wont happen, because insert' on a node, can't return a leaf *)
     admit.
@@ -466,6 +468,7 @@ Admitted.
   Case "kpl = []".
     simpl. omega.
   Case "kpl = a::kpl". destruct a. generalize H2.
+    (*
     set (insert' (height bptNode b X l) k v (bptNode b X ((n, b0) :: kpl))) as test.
     intro.
     hnf in test.
@@ -494,9 +497,10 @@ Admitted.
       admit.
       
   simpl.
+    admit.*)
     admit.
 Admitted.
-*)
+
 
 
 
@@ -581,7 +585,9 @@ Proof.
     SCase "node normal".
       subst.
       symmetry in Heqp. apply insert'_normal in Heqp; try assumption.
-      apply insert'_not_split_impl_space_left in Heqp; try assumption.
+      constructor; try assumption.
+      eapply insert'_not_split_impl_space_left in Heqp. apply Heqp. reflexivity.
+      constructor; try assumption. apply H0. apply H6.
 Admitted.
     
 
