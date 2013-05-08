@@ -998,8 +998,6 @@ Proof.
     inversion H6.
     assert (valid_bplustree b X v).
       apply valid_sub_bplustree_impl_valid_bplustree in H14. assumption.
-      (* actually it's because it's a valid sub-tree, and that's a stronger
-         claim than valid tree *)
     assumption.
     eapply height_of_parent_one_bigger. reflexivity. apply H7.    
   Case "node here".
@@ -1011,13 +1009,8 @@ Proof.
     apply IHappears_in_tree.
     assert (valid_bplustree b X v1).
       inversion H6.
-      apply valid_sub_bplustree_impl_valid_bplustree in H15. assumption.
-      (* actually it's because it's a valid sub-tree, and that's a stronger
-         claim than valid tree *)
+      apply valid_sub_bplustree_impl_valid_bplustree in H16. assumption.
     assumption.
-    
-    
-    (* this should hold *)
   Case "node later".
     destruct x.
     inversion H8. apply blt_nat_true in H16. subst.
@@ -1044,5 +1037,5 @@ Proof.
     inversion H6. apply H11.
     inversion H7. apply H11.
     inversion H9. apply H17.
-Admitted.
+Qed.
 
