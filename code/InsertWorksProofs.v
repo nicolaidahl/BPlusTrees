@@ -882,10 +882,6 @@ Proof.
       
   simpl.
     admit.
-<<<<<<< HEAD
-=======
-    
->>>>>>> 2fb45de45216e458028120013593e0d6f1212410
 Admitted.
 
 Lemma key_at_index_0none_impl_empty: forall (X: Type) l,
