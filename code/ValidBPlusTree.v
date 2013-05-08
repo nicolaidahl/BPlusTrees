@@ -1,5 +1,5 @@
+Require Import InductiveDataTypes.
 Require Import BPlusTree.
-
 
 (* Some props for having a prop apply to all elements in a list *)
 Inductive all_values (X : Type) (P : X -> Prop) : list (nat * X) -> Prop :=

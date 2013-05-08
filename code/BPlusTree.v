@@ -31,6 +31,27 @@ Fixpoint search_leaf {X: Type} (sk: nat) (kvl: (list (nat * X))) : option X :=
     | (k, v) :: kvl' => if beq_nat k sk then Some v else search_leaf sk kvl'
   end.
 
+Fixpoint find_subtree {X: Type} {b: nat} (sk: nat) (kpl: list (nat * bplustree b X)) : option (bplustree b X) :=
+  match kpl with
+    | [] => None
+    | (_, last_tree) :: [] => Some last_tree
+    | (k1, subtree) :: ((k2, _) :: _) as kpl' => if ble_nat k1 sk && blt_nat sk k2
+                                                   then Some subtree
+                                                   else find_subtree sk kpl'
+  end.
+
+Fixpoint search' {X: Type} {b: nat} (counter sk: nat) (tree: bplustree b X) {struct counter}: option X :=
+  match (counter, tree) with
+    | (0, _) => None
+    | (_, bptLeaf kvl) => search_leaf sk kvl
+    | (S counter', bptNode kpl) => match find_subtree sk kpl with
+      | Some subtree => search' counter' sk subtree
+      | None => None
+    end
+  end.
+
+Eval compute in search' 999 6 root.
+
 Fixpoint search {X: Type} {b: nat} (sk: nat) (tree: (bplustree b X)) : option X :=  
   
   let fix search_node (kpl: (list (nat * bplustree b X))): option X :=
