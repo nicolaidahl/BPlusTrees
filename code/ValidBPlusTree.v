@@ -26,7 +26,7 @@ Inductive valid_sub_bplustree (b: nat) (X: Type) : bplustree b X -> Prop :=
                      valid_sub_bplustree b X (bptLeaf b X l)
   | valid_node : forall (kpl: list (nat * bplustree b X)),
                       b <> 0 -> 
-                      b <= length(kpl) -> 
+                      S b <= length(kpl) -> 
                       length(kpl) <= S (mult b 2) -> 
                       all_values (bplustree b X) (valid_sub_bplustree b X) kpl ->
                       all_values_eq_prop (bplustree b X) equal_height kpl ->
@@ -44,7 +44,7 @@ Inductive valid_bplustree (b: nat) (X: Type) : bplustree b X -> Prop :=
                      valid_bplustree b X (bptLeaf b X l)
   | valid_root_node : forall (kpl: list (nat * bplustree b X)),
                       b <> 0 -> 
-                      length(kpl) <> 0 -> 
+                      2 <= length(kpl) -> 
                       length(kpl) <= S (mult b 2) -> 
                       all_values (bplustree b X) (valid_sub_bplustree b X) kpl ->
                       all_values_eq_prop (bplustree b X) equal_height kpl ->

@@ -8,12 +8,14 @@
 \usepackage[T1]{fontenc} % Fixed missing font warning for \maketitle
 \usepackage{url}
 \usepackage{todonotes} % remove later - this is for TODO notes
+\usepackage{coqdoc}
+\usepackage{amsmath,amssymb}
 
 \bibliographystyle{plain}
 
 \begin{document}
 \mainmatter
-\title{Prooving B+ trees in Coq}
+\title{Proving B+ trees in Coq}
 \author{Nicolai Dahl Blicher-Petersen \and Christian Harrington \and Morten Fangel Jensen \\
 \email{\{ndbl, cnha, mfan\}@itu.dk}}
 \institute{IT University of Copenhagen, Rued Langgaards Vej 7, 2300 Copenhagen S, Denmark}
@@ -27,10 +29,11 @@ Abstract
 \input{sections/01.Introduction.tex}
 \input{sections/02.Background.tex}
 \input{sections/03.ProblemAnalysis.tex}
-\input{sections/04.TechnicalDescription.tex}
-\input{sections/05.Conclusion.tex}
-\input{sections/06.References.tex}
-\input{sections/07.Appendix.tex}
+\input{sections/04.ProofRealization.tex}
+\input{sections/05.Reflections.tex}
+\input{sections/06.Conclusion.tex}
+\input{sections/07.References.tex}
+\input{sections/08.Appendix.tex}
 
 
 \end{document}
