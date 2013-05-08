@@ -300,8 +300,6 @@ Definition bigtree := list2bplustree 1 [(11, 1), (22, 2), (33, 3), (44, 4), (55,
 
 Eval compute in (bigtree).
 Eval compute in (height bigtree).
-Eval compute in (mindepth' 0 bigtree). (*TODO fix*)
-
 
 
 (* Deletion *)
