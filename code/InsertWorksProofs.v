@@ -1014,12 +1014,20 @@ Proof.
   Case "node later".
     destruct x.
     inversion H8. apply blt_nat_true in H16. subst.
-    replace ((height (bptNode b X ((n, b0) :: (k0, v) :: l)))) with ((height (bptNode b X ((k0, v) :: l)))).
+    assert ((height (bptNode b X ((n, b0) :: (k0, v) :: l))) = (height (bptNode b X ((k0, v) :: l)))).
+      rewrite height_cons. reflexivity.
+      apply H.
+      simpl in H5.
+      constructor; try assumption; simpl; try omega.
+      inversion H6. apply H11.
+      inversion H7. apply H11.
+      inversion H9. apply H17.
+    rewrite H2.
     
     simpl.
     assert (ble_nat n k && blt_nat k k0 = false).
       apply andb_false_iff. right. apply blt_nat_false. omega.
-    rewrite H2.
+    rewrite H10.
     
     simpl in IHappears_in_tree. apply IHappears_in_tree.
     clear IHappears_in_tree.
@@ -1027,15 +1035,7 @@ Proof.
     constructor; try assumption.
     simpl. omega.
     simpl. simpl in H5. omega.
-    inversion H7. apply H19.
-    inversion H9. apply H23.
-    
-    symmetry. rewrite height_cons. reflexivity.
-    apply H.
-    simpl in H5.
-    constructor; try assumption; simpl; try omega.
-    inversion H6. apply H11.
-    inversion H7. apply H11.
-    inversion H9. apply H17.
+    inversion H7. apply H20.
+    inversion H9. apply H24.
 Qed.
 
