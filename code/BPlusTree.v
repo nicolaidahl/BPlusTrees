@@ -42,8 +42,8 @@ Fixpoint find_subtree {X: Type} {b: nat} (sk: nat) (kpl: list (nat * bplustree b
 
 Fixpoint search' {X: Type} {b: nat} (counter sk: nat) (tree: bplustree b X) {struct counter}: option X :=
   match (counter, tree) with
-    | (0, _) => None
     | (_, bptLeaf kvl) => search_leaf sk kvl
+    | (0, _) => None
     | (S counter', bptNode kpl) => match find_subtree sk kpl with
       | Some subtree => search' counter' sk subtree
       | None => None

@@ -917,8 +917,6 @@ Proof.
       
   simpl.
     admit.
-    
-  admit.
 Admitted.
 
 Lemma key_at_index_0none_impl_empty: forall (X: Type) l,
@@ -998,30 +996,48 @@ Proof.
 Admitted.
     
 
-Theorem appears_search_works : forall (b: nat) (X: Type) (t t1: bplustree b X) (k: nat),
+Theorem appears_search_works : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat),
   valid_bplustree b X t -> 
   appears_in_tree k t -> 
-  exists v, search k t = Some(v).
+  exists v, search' (height t) k t = Some(v).
 Proof.
   intros.
   induction H0; inversion H.
   Case "leaf".
-    unfold search.
+    simpl.
     apply search_leaf_works.
     SCase "l sorted".
       assumption.
     SCase "appears in l".
       assumption.
   Case "node".
-    remember ([(k0, v)]) as kpl1.
-    destruct kpl1.
-    SCase "kpl1 = []".
-      apply ex_falso_quodlibet. apply H4. simpl. omega.
-    SCase "kpl1 = p :: kpl1".
-      simpl.subst.
-      
-  Case "node here".
+    replace (height (bptNode b X [(k0,v)])) with (S (height v)).
+    simpl.
+    apply IHappears_in_tree.
+    inversion H6.
+    assert (valid_bplustree b X v) by admit.
+      (* actually it's because it's a valid sub-tree, and that's a stronger
+         claim than valid tree *)
+    assumption.
+
+
     admit.
-  Case "later node".
+    (* This should hold *)
+    
+  Case "node here".
+    replace (height (bptNode b X ((k1, v1) :: (k2, v2) :: l))) with (S (height v1)).
+    assert (ble_nat k1 k && blt_nat k k2 = true).
+      apply andb_true_iff; split; [apply ble_nat_true | apply blt_nat_true]; omega.
+    simpl.
+    rewrite H9.  
+    apply IHappears_in_tree.
+    
+    admit.
+    (* actually it's because it's a valid sub-tree, and that's a stronger
+         claim than valid tree *)
+    
+    admit.
+    (* this should hold *)
+  Case "node later".
     admit.
 Admitted.
