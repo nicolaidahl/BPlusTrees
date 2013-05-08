@@ -523,19 +523,53 @@ Proof.
 Qed.
 
 Theorem insert'_normal : forall {X: Type} {b: nat} (kpl: list (nat * bplustree b X)) (tree: bplustree b X) (k: nat) (v: X),
-  b <> 0 -> valid_bplustree b X (bptNode b X kpl) -> not (appears_in_tree k (bptNode b X kpl)) -> length kpl < S (mult b 2) ->
-  insert' (height (bptNode b X kpl)) k v (bptNode b X kpl) = (tree, None) -> appears_in_tree k tree.
+  valid_bplustree b X (bptNode b X kpl) -> 
+  not (appears_in_tree k (bptNode b X kpl)) -> 
+  length kpl < S (mult b 2) ->
+  insert' (height (bptNode b X kpl)) k v (bptNode b X kpl) = (tree, None) -> 
+  
+  appears_in_tree k tree.
 Proof.
-  intros.
   induction kpl.
   Case "kpl = []".
-    inversion H0.
-    simpl in H6. apply ex_falso_quodlibet. omega.
-  Case "kpl = a::kpl". destruct a. 
-    simpl in H3.
+    intros.
+    inversion H.
+    simpl in H5. apply ex_falso_quodlibet. omega.
+  Case "kpl = a::kpl". destruct a.
+    intros. 
+    simpl in H2.
     destruct kpl.
-    rewrite ble_nat_symm in H3.
-    rewrite <- beq_nat_refl in H3.
+      inversion H. simpl in H5. exfalso. omega.
+      
+    destruct p.
+    remember (ble_nat n k && blt_nat k n0) as here.
+    destruct here.
+    SCase "insert here".
+      remember (insert' (height b0) k v b0).
+      destruct p. destruct o. destruct p.
+      (*
+      remember (ble_nat n0 n) as n0len.
+      destruct n0len; symmetry in Heqn0len; [apply ble_nat_true in Heqn0len| apply ble_nat_false in Heqn0len].
+      SSCase "n0 <= n".
+        remember (beq_nat n0 n) as n0eqn.
+        destruct n0eqn; symmetry in Heqn0eqn; [apply beq_nat_true_iff in Heqn0eqn| apply beq_nat_false_iff in Heqn0eqn].
+        SSSCase "n0 = n".
+          remember (ble_nat (length (insert_into_list n b1 [(n, b2)])) (b * 2 + 1)) as too_long.
+          destruct too_long.
+          symmetry in Heqtoo_long. apply ble_nat_true in Heqtoo_long.
+          simpl in Heqtoo_long.
+          rewrite ble_nat_symm in Heqtoo_long. rewrite <- beq_nat_refl in Heqtoo_long.
+          remember (ble_nat (length (insert_into_list n b1 [(n0, b2)])) (b * 2 + 1)) as too_long2.
+          destruct too_long2.
+          simpl in H2.
+        inversion H3.
+        rewrite ble_nat_symm in H6. rewrite <- beq_nat_refl in H6.
+        apply IHkpl.
+    
+    SCse "n0 > n".
+    
+  admit. *)
+  admit.
   admit.
   admit.
 Admitted.
@@ -586,7 +620,9 @@ Proof.
       subst.
       symmetry in Heqp. apply insert'_normal in Heqp; try assumption.
       constructor; try assumption.
-      eapply insert'_not_split_impl_space_left in Heqp. apply Heqp. reflexivity.
+      eapply insert'_not_split_impl_space_left in Heqp. apply Heqp. 
+        inversion H4. subst. simpl in H2. exfalso. omega.
+        subst.
       constructor; try assumption. apply H0. apply H6.
 Admitted.
     

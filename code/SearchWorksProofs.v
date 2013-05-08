@@ -59,18 +59,23 @@ Proof.
       assumption.
     SCase "appears in l".
       assumption.
-  Case "node".
-    replace (height (bptNode b X [(k0,v)])) with (S (height v)).
+  Case "node last".
+    replace (height (bptNode b X [(k1,v1), (k2,v2)])) with (S (height v2)).
     simpl.
+    remember (ble_nat k1 k && blt_nat k k2) as here.
+    destruct here.
+      symmetry in Heqhere. apply andb_true_iff in Heqhere. inversion Heqhere.
+      apply blt_nat_true in H11. exfalso. omega.
     apply IHappears_in_tree.
     inversion H6.
-    assert (valid_bplustree b X v).
-      apply valid_sub_bplustree_impl_valid_bplustree in H14. assumption.
+    assert (valid_bplustree b X v2).
+      inversion H12.
+      apply valid_sub_bplustree_impl_valid_bplustree in H19. assumption.
     assumption.
-    eapply height_of_parent_one_bigger. reflexivity. apply H7.    
+    apply height_of_parent_one_bigger with (l1 := [(k1, v1)]) (l2 := []) (k := k2). reflexivity. apply H7.    
   Case "node here".
     assert (height (bptNode b X ((k1, v1) :: (k2, v2) :: l)) = S (height v1)).
-      symmetry. eapply height_of_parent_one_bigger. reflexivity. assumption.
+      symmetry. apply height_of_parent_one_bigger with (l1 := []) (l2 := (k2, v2)::l) (k := k1). reflexivity. assumption.
     assert (ble_nat k1 k && blt_nat k k2 = true).
       apply andb_true_iff; split; [apply ble_nat_true | apply blt_nat_true]; omega.
     simpl. rewrite H11.   
@@ -79,21 +84,23 @@ Proof.
       inversion H6.
       apply valid_sub_bplustree_impl_valid_bplustree in H16. assumption.
     assumption.
+    
   Case "node later".
     destruct x.
     inversion H8. apply blt_nat_true in H16. subst.
-    assert ((height (bptNode b X ((n, b0) :: (k0, v) :: l))) = (height (bptNode b X ((k0, v) :: l)))).
+    assert ((height (bptNode b X ((n, b0) :: (k1, v1) :: (k2, v2) :: l))) = (height (bptNode b X ((k1, v1) :: (k2, v2) :: l)))).
       rewrite height_cons. reflexivity.
       apply H.
       simpl in H5.
       constructor; try assumption; simpl; try omega.
+      simpl in H4. 
       inversion H6. apply H11.
       inversion H7. apply H11.
       inversion H9. apply H17.
     rewrite H2.
     
     simpl.
-    assert (ble_nat n k && blt_nat k k0 = false).
+    assert (ble_nat n k && blt_nat k k1 = false).
       apply andb_false_iff. right. apply blt_nat_false. omega.
     rewrite H10.
     
@@ -101,7 +108,7 @@ Proof.
     clear IHappears_in_tree.
     inversion H6.
     constructor; try assumption.
-    simpl. omega.
+    simpl. omega. 
     simpl. simpl in H5. omega.
     inversion H7. apply H20.
     inversion H9. apply H24.
