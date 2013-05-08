@@ -1,3 +1,51 @@
 %!TEX root = ../BPlusTree-report.tex
 \section{Problem Analysis}
 \label{sec:ProblemAnalysis}
+% Notes:
+% Relevant constructs
+%   - bplustree
+%   - insert
+%   - search 
+%   - height
+%   - deletion
+% We want to prove:
+%   - Insert works
+%     - Inductive data types
+%       - valid_bplus_tree
+%       - appears_in_kvl
+%       - appears_in_tree
+%       - kvl_sorted
+%     - Works under these assumptions...
+%       -Valid bplustree
+%       - Insertion preserves tree
+%   - Search works
+To implement B+ trees in Gallina, several different components have to be implemented. Most importantly, we must specify an inductive data type that describes a B+ tree, which can be seen in Figure \ref{fig:inductive_data_type}.
+
+\begin{figure}
+\centering
+\begin{coqdoccode}
+\coqdockw{Inductive} \coqdocvar{bplustree} (\coqdocvar{b}: \coqdocvar{nat}) (\coqdocvar{X}:\coqdockw{Type}) : \coqdockw{Type} :=\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{bptLeaf} : \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X}) \ensuremath{\rightarrow} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{bptNode} : \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} (\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})) \ensuremath{\rightarrow} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}.\coqdoceol
+\end{coqdoccode}
+\caption{Inductive data type for B+ tree.}
+\label{fig:inductive_data_type}
+\end{figure}
+
+\paragraph{}
+Now that we have a inductive data type for B+ trees, we can start working on proofs. For this project, our focus will be on proving our implementations of the $insert$ function and the $search$ function.
+
+\subsubsection{Insert}
+
+\paragraph{}
+\todo{Write about valid bplus}
+
+\paragraph{}
+\todo{Write about appears in...}
+
+\paragraph{}
+
+\subsubsection{Search}
+\todo{Write about sorted}
