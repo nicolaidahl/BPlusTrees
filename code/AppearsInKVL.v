@@ -1,7 +1,9 @@
 Require Export HelperFunctions.
 Require Export LowLevelHelperProofs.
+Require Export HelperProofs.
 Require Export BPlusTree.
 Require Export InductiveDataTypes.
+Require Export SortingProofs.
 
 (* 
  * Proofs about appears In List 
@@ -73,4 +75,91 @@ Proof.
   subst.
   apply H2.
 Qed.
+
+Theorem insert_into_list_appears : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
+  appears_in_kvl k (insert_into_list k v l).
+Proof.
+  intros.
+  induction l.
+  Case "l = []".
+    simpl. apply ai_here.
+  Case "l = a::l".
+    destruct a. simpl. 
+    remember (ble_nat k n) as klen. 
+    destruct klen; symmetry in Heqklen; [apply ble_nat_true in Heqklen | apply ble_nat_false in Heqklen].
+    SCase "k <= n". remember (beq_nat k n) as keqn. 
+      destruct keqn; symmetry in Heqkeqn; [apply beq_nat_true_iff in Heqkeqn | apply beq_nat_false_iff in Heqkeqn].
+      SSCase "k = n".
+        apply ai_here.
+      SSCase "k <> n".
+      apply ai_here.
+    SCase "k > n".
+      apply ai_later. apply IHl.
+Qed.
+
+
+
+Lemma key_greater_than_all_keys_does_not_appear : forall (X: Type) (k kb: nat) (l: list (nat*X)), 
+  kvl_sorted l ->
+  all_keys X (below kb) l ->
+  k > kb ->
+
+  ~ appears_in_kvl k l.
+Proof.
+  unfold not.
+  intros.
+  induction H0.
+  inversion H2.
+  apply IHall_keys.
+  apply list_tail_is_sorted in H. apply H.
+  remember (beq_nat k n).
+  destruct b; symmetry in Heqb; [apply beq_nat_true_iff in Heqb|apply beq_nat_false_iff in Heqb].
+  subst. 
+  inversion H3. apply blt_nat_true in H5. apply ex_falso_quodlibet. omega.
+  apply appears_cons in H2. assumption.
+  assumption.
+Qed.
+
+Lemma key_greater_than_all_keys_does_not_appear_ble : forall (X: Type) (k kb: nat) (l: list (nat*X)), 
+  kvl_sorted l ->
+  all_keys X (below_equal kb) l ->
+  k > kb ->
+
+  ~ appears_in_kvl k l.
+Proof.
+  unfold not.
+  intros.
+  induction H0.
+  inversion H2.
+  apply IHall_keys.
+  apply list_tail_is_sorted in H. apply H.
+  remember (beq_nat k n).
+  destruct b; symmetry in Heqb; [apply beq_nat_true_iff in Heqb|apply beq_nat_false_iff in Heqb].
+  subst. 
+  inversion H3. apply ble_nat_true in H5. apply ex_falso_quodlibet. omega.
+  apply appears_cons in H2. assumption.
+  assumption.
+Qed.
+
+Lemma key_smaller_than_all_keys_does_not_appear : forall (X: Type) (k kb: nat) (l: list (nat*X)), 
+  kvl_sorted l ->
+  all_keys X (above kb) l ->
+  k < kb ->
+
+  ~ appears_in_kvl k l.
+Proof.
+  unfold not.
+  intros.
+  induction H0.
+  subst. inversion H2.
+  apply IHall_keys.
+  apply list_tail_is_sorted in H. apply H.
+  remember (beq_nat k n).
+  destruct b; symmetry in Heqb; [apply beq_nat_true_iff in Heqb|apply beq_nat_false_iff in Heqb].
+  subst.
+  inversion H3. apply ble_nat_true in H5. apply ex_falso_quodlibet. omega.
+  apply appears_cons in H2. assumption.
+  assumption.
+Qed.
+
 
