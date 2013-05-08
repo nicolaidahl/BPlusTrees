@@ -857,7 +857,7 @@ Qed.
 
 
 
-Lemma insert_not_split_impl_space_left: forall {X: Type} (b: nat) k (v:X) l l',
+Lemma insert_leaf_not_split_impl_space_left: forall {X: Type} (b: nat) k (v:X) l l',
   ~ appears_in_kvl k l ->
   insert_leaf b k v l = (l', None) -> length l < b * 2.
 Proof.
@@ -872,8 +872,85 @@ Proof.
   inversion H0.
 Qed.
 
+Lemma insert'_not_split_impl_space_left: forall {X: Type} (b: nat) k (v:X) kpl tree,
+  b <> 0 ->
+  ~ appears_in_tree k (bptNode b X kpl) ->
+  kvl_sorted kpl ->
+  insert' k v (bptNode b X kpl) = (tree, None) ->
+  length kpl < S (b*2).
+Proof.
+  intros.
+  destruct tree.
+    (* This wont happen, because insert' on a node, can't return a leaf *)
+    admit.
 
+  induction kpl.
+  Case "kpl = []".
+    simpl. omega.
+  Case "kpl = a::kpl". destruct a. generalize H2.
+    set (insert' k v (bptNode b X ((n, b0) :: kpl))) as test.
+    intro.
+    hnf in test.
+    destruct kpl.
+      simpl. omega.
+      destruct p.
+      remember (ble_nat n k && blt_nat k n0).
+      destruct b2. hnf in test.
+      remember (insert' k v b0).
+      destruct p. destruct o. destruct p.
+      SCase "insert in child overflowed".
+        admit.
+      SCase "insert in child had room".
+        simpl in test. remember (ble_nat n n).  destruct b3.
+        remember (beq_nat n n). destruct b3.
+        
+        admit.
+        
+        
+        rewrite <- beq_nat_refl in Heqb0. inversion Heqb0.
+        rewrite ble_nat_symm in Heqb3. inversion Heqb3.
+        
+      
+        
+      destruct kpl.
+      admit.
+      
+  simpl.
+    admit.
+    
+  admit.
+Admitted.
 
+Lemma key_at_index_0none_impl_empty: forall (X: Type) l,
+  @key_at_index X 0 l = None -> l = [].
+Proof. 
+  intros. unfold key_at_index in H. destruct l. reflexivity. destruct p. inversion H.
+Qed.
+
+Lemma insert_leaf_preserves_sort: forall (X: Type) b k (v:X) l l1 l2,
+  kvl_sorted l ->
+  insert_leaf b k v l = (l1, Some l2) ->
+  kvl_sorted(l1 ++ l2).
+Proof.
+  intros.
+  unfold insert_leaf in H0.
+  remember (ble_nat (length (insert_into_list k v l)) (b * 2)).
+  destruct b0.
+  inversion H0.
+  remember (split_list b (insert_into_list k v l)). destruct p.
+  symmetry in Heqp. apply split_list_preserves_lists in Heqp.
+  inversion H0. subst.
+  assert (kvl_sorted (insert_into_list k v l)).
+    apply insert_preserves_sort. apply H.
+  rewrite Heqp in H1. apply H1.
+Qed.
+
+Theorem insert'_normal : forall {X: Type} {b: nat} (kpl: list (nat * bplustree b X)) (tree: bplustree b X) (k: nat) (v: X),
+  b <> 0 -> kvl_sorted kpl -> not (appears_in_tree k (bptNode b X kpl)) -> length kpl < S (mult b 2) ->
+  insert' k v (bptNode b X kpl) = (tree, None) -> appears_in_tree k tree.
+Proof.
+  admit.
+Admitted.
 
 Theorem insert_works : forall {X: Type} {b: nat} (t t1: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X t -> 
@@ -906,11 +983,18 @@ Proof.
 	  symmetry in Heqil. apply insert_leaf_normal in Heqil; try assumption. rewrite <- H1. 
 	  apply ait_leaf; try assumption. unfold not. intro. unfold not in H0.
 	  eapply appears_kvl_appears_leaf_tree in H4. apply H0. apply H4. 
-	  apply insert_not_split_impl_space_left in Heqil. assumption.
+	  apply insert_leaf_not_split_impl_space_left in Heqil. assumption.
 	  unfold not. unfold not in H0. intros. apply H0. apply ait_leaf. assumption.
   Case "node". 
-    admit.
-	 
+    unfold insert in H1.
+    remember (insert' k v (bptNode b X kpl)) as insn.
+    destruct insn. destruct o. 
+    SCase "insert split".
+      admit.
+    SCase "insert normal".
+      subst.
+      symmetry in Heqinsn. apply insert'_normal in Heqinsn; try assumption.
+      apply insert'_not_split_impl_space_left in Heqinsn; try assumption.
 Admitted.
     
 
