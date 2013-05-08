@@ -12,12 +12,7 @@ Inductive appears_in_tree {X:Type} {b: nat} (sk: nat) : bplustree b X -> Prop :=
   | ait_node_later : forall x k v l, appears_in_tree sk (bptNode b X ((k, v)::l)) -> k <= sk ->
                                      appears_in_tree sk (bptNode b X (x::(k, v)::l)).
 
-Theorem appears_search_works : forall (b: nat) (X: Type) (t t1: bplustree b X) (k: nat) (v: X),
-  valid_bplustree b X t -> 
-  appears_in_tree k t -> 
-  search k t = Some(v).
-Proof.
-  intros. induction H0. Admitted.
+
   
 
   

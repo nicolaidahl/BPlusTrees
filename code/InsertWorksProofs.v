@@ -974,12 +974,30 @@ Proof.
 Admitted.
     
 
-  
-  
-  
-  
-  
-  
-  
-  
-
+Theorem appears_search_works : forall (b: nat) (X: Type) (t t1: bplustree b X) (k: nat),
+  valid_bplustree b X t -> 
+  appears_in_tree k t -> 
+  exists v, search k t = Some(v).
+Proof.
+  intros.
+  induction H0; inversion H.
+  Case "leaf".
+    unfold search.
+    apply search_leaf_works.
+    SCase "l sorted".
+      assumption.
+    SCase "appears in l".
+      assumption.
+  Case "node".
+    remember ([(k0, v)]) as kpl1.
+    destruct kpl1.
+    SCase "kpl1 = []".
+      apply ex_falso_quodlibet. apply H4. simpl. omega.
+    SCase "kpl1 = p :: kpl1".
+      simpl.subst.
+      
+  Case "node here".
+    admit.
+  Case "later node".
+    admit.
+Admitted.
