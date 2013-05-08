@@ -1003,11 +1003,11 @@ Proof.
     assumption.
     eapply height_of_parent_one_bigger. reflexivity. apply H7.    
   Case "node here".
-    replace (height (bptNode b X ((k1, v1) :: (k2, v2) :: l))) with (S (height v1)).
+    assert (height (bptNode b X ((k1, v1) :: (k2, v2) :: l)) = S (height v1)).
+      symmetry. eapply height_of_parent_one_bigger. reflexivity. assumption.
     assert (ble_nat k1 k && blt_nat k k2 = true).
       apply andb_true_iff; split; [apply ble_nat_true | apply blt_nat_true]; omega.
-    simpl. 
-    rewrite H10.  
+    simpl. rewrite H11.   
     apply IHappears_in_tree.
     assert (valid_bplustree b X v1).
       inversion H6.
@@ -1016,7 +1016,7 @@ Proof.
          claim than valid tree *)
     assumption.
     
-    admit.
+    
     (* this should hold *)
   Case "node later".
     destruct x.
