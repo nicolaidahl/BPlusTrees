@@ -972,7 +972,7 @@ Admitted.
 Theorem appears_search_works : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat),
   valid_bplustree b X t -> 
   appears_in_tree k t -> 
-  exists v, search' (height t) k t = Some(v).
+  exists v, search (height t) k t = Some(v).
 Proof.
   intros.
   induction H0; inversion H.
