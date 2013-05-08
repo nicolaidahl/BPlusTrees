@@ -293,7 +293,7 @@ Eval compute in (height bigtree).
 Eval compute in (mindepth' 0 bigtree). (*TODO fix*)
 
 
-(*
+
 (* Deletion *)
 Fixpoint delete_from_list {X: Type} (sk: nat) (lst: list (nat * X))
                           : list (nat * X) :=
@@ -304,7 +304,7 @@ Fixpoint delete_from_list {X: Type} (sk: nat) (lst: list (nat * X))
                     else (k,v) :: delete_from_list sk xs
                          
   end.
-
+(*
 Definition node_length {X: Type} {b: nat} (tree: bplustree b X): nat :=
   match tree with
   | bptLeaf kvl => length kvl
