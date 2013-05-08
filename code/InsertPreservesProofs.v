@@ -1,7 +1,8 @@
-Require Import BPlusTree.
-Require Import HelperProofs.
-Require Import SortingProofs.
-Require Import ValidBPlusTree.
+Require Export BPlusTree.
+Require Export HelperProofs.
+Require Export SortingProofs.
+Require Export ValidBPlusTree.
+Require Export InsertProofs.
 
 Lemma insert_into_node_impl_leaf_false: forall {X: Type} b k v l l' o,
   insert' k v (bptNode b X l) = (bptLeaf b X l', o) -> False.
@@ -58,6 +59,11 @@ Lemma insert_leaf_split_ensures_n_positive : forall {X: Type} b k v n t l l',
 Proof.
 Admitted.
 
+Lemma split_leaf_impl_length_max_fan_out: forall {X: Type} b t1 t2 n k v l,
+   (t1, Some (n, t2)) = insert' k v (bptLeaf b X l) ->
+   length l = S (b * 2).
+Proof. Admitted.
+
 Theorem insert_preserves_valid_bplustree : forall (b: nat) (X: Type) (tree: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X tree -> valid_bplustree b X (insert k v tree).
 Proof.
@@ -79,8 +85,10 @@ Proof.
         SSSCase "is the non-option tree valid".
           induction b0.
           SSSSCase "valid sub leaf".
-            apply valid_leaf; try assumption. eapply insert_leaf_preserves_min_fan_out.
-            apply valid_leaf; try assumption. apply Heqinsert'.
+            apply valid_leaf; try assumption. symmetry in Heqinsert'. 
+            apply insert_leaf_preserves_min_fan_out in Heqinsert'. omega.
+            apply valid_leaf; try assumption. symmetry in Heqinsert'.
+            apply split_leaf_impl_length_max_fan_out in Heqinsert'. omega.
             eapply insert_leaf_preserves_max_fan_out. apply Heqinsert'.
             eapply insert_leaf_preserves_sort. apply H1. apply Heqinsert'.
           SSSSCase "valid sub node".
@@ -98,3 +106,7 @@ Proof.
     
   
 Admitted.
+
+
+
+

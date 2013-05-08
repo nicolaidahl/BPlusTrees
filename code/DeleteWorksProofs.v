@@ -1,6 +1,7 @@
 Require Export ValidBPlusTree.
 Require Export SfLib.
 Require Export HelperProofs.
+Require Export BPlusTree.
 
  
 
@@ -49,7 +50,9 @@ Proof.
     SCase "beq_nat n1 sk = false".
       inversion H. assert (beq_nat n2 n1 = false). apply blt_implies_not_eq in H0. 
       rewrite beq_nat_sym. apply H0. rewrite H1.
-	         
+      admit. admit.
+      
+Admitted.
   
   
 
@@ -63,8 +66,9 @@ Proof.
    remember (delete_from_list sk l) as del.
   induction del. reflexivity.
   unfold search_leaf.
-  
-
+  admit.
+  Admitted.
+(*
 Theorem deletion_removes_element: forall (b: nat) (X: Type) (sk: nat) (t: bplustree b X),
   valid_bplustree b X (t) ->
   search sk (delete sk t) = None. 
@@ -83,4 +87,4 @@ Theorem deletion_preserves_invariant: forall (b: nat) (X: Type) (k: nat) (t: bpl
   valid_bplustree b X (t) -> 
   valid_bplustree b X (delete k t).
 Proof.
-Admitted.
+Admitted.*)

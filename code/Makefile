@@ -49,7 +49,7 @@ AppearsInTree.vo: AppearsInTree.v ValidBPlusTree.vo \
 	$(COQC) AppearsInTree.v
 
 DeleteWorksProofs.vo: DeleteWorksProofs.v SfLib.vo ValidBPlusTree.vo \
-											HelperProofs.vo
+											HelperProofs.vo BPlusTree.vo
 	$(COQC) DeleteWorksProofs.v
 
 ElementAtIndexProofs.vo: ElementAtIndexProofs.v HelperFunctions.vo \
@@ -57,12 +57,15 @@ ElementAtIndexProofs.vo: ElementAtIndexProofs.v HelperFunctions.vo \
 												 HelperProofs.vo SortingProofs.vo
 	$(COQC) ElementAtIndexProofs.v
 
+InsertProofs.vo: InsertProofs.v BPlusTree.vo HelperProofs.vo
+	$(COQC) InsertProofs.v
+
 InsertPreservesProofs.vo: InsertPreservesProofs.v BPlusTree.vo \
-													ValidBPlusTree.vo SortingProofs.vo HelperProofs.vo
+													ValidBPlusTree.vo SortingProofs.vo HelperProofs.vo InsertProofs.vo
 	$(COQC) InsertPreservesProofs.v
 
 InsertWorksProofs.vo: InsertWorksProofs.v SplitCutList.vo HelperFunctions.vo \
 											BPlusTree.vo ValidBPlusTree.vo ElementAtIndexProofs.vo \
 											SortingProofs.vo HelperProofs.vo \
-											AppearsInTree.vo AppearsInKVL.vo
+											AppearsInTree.vo AppearsInKVL.vo InsertProofs.vo
 	$(COQC) InsertWorksProofs.v
