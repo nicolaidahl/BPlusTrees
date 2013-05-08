@@ -36,7 +36,7 @@ ValidBPlusTree.vo: ValidBPlusTree.v BPlusTree.vo
 	$(COQC) ValidBPlusTree.v
 
 HelperProofs.vo: HelperProofs.v ValidBPlusTree.vo SplitCutList.vo \
-								 SfLib.vo HelperFunctions.vo
+								 SfLib.vo HelperFunctions.vo InductiveDataTypes.vo
 	$(COQC) HelperProofs.v
 
 SortingProofs.vo: SortingProofs.v ValidBPlusTree.vo BPlusTree.vo \

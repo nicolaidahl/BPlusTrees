@@ -93,9 +93,13 @@ Proof.
             eapply insert_leaf_preserves_sort. apply H1. apply Heqinsert'.
           SSSSCase "valid sub node".
             apply ex_falso_quodlibet. eapply insert_leaf_split_never_node. right. apply Heqinsert'.
+      SSCase "all trees equal height".
+        admit.
       SSCase "kvl sorted".
         eapply insert_leaf_split_ensures_n_positive in Heqinsert'. 
         apply kvl_sorted_cons. apply kvl_sorted_1. apply blt_nat_true. omega. apply H1.
+      
+        
       SSCase "valid_splits".
         apply valid_p. admit.
         apply valid_ep. admit.

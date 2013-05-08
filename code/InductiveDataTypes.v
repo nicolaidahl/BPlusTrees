@@ -35,5 +35,32 @@ Inductive kvl_sorted {X: Type}: list (nat * X) -> Prop :=
                       kvl_sorted [(n, x)]
 | kvl_sorted_cons : forall (n1 n2: nat) (x1 x2: X) (lst: list (nat * X)), 
                       kvl_sorted ((n2,x2)::lst) -> blt_nat n1 n2 = true
-                       -> kvl_sorted ((n1,x1)::(n2,x2)::lst) 
+                       -> kvl_sorted ((n1,x1)::(n2,x2)::lst) .
+                       
+(* Some props for having a prop apply to all elements in a list *)
+Inductive all_values (X : Type) (P : X -> Prop) : list (nat * X) -> Prop :=
+  | av_empty : all_values X P []
+  | av_next : forall (x:X) (n: nat) (l: list (nat * X)), all_values X P l -> P x -> all_values X P ((n,x)::l)
 .
+Inductive all_keys (X : Type) (P : nat -> Prop) : list (nat * X) -> Prop :=
+  | ak_empty : all_keys X P []
+  | ak_next : forall (x:X) (n: nat) (l: list (nat * X)), all_keys X P l -> P n -> all_keys X P ((n,x)::l)
+.
+
+Inductive all_values_eq_prop (X: Type)(P: X -> X -> Prop) : list (nat * X) -> Prop :=
+  | alep_0    : all_values_eq_prop X P []
+  | alep_1    : forall (x:X) (n: nat), all_values_eq_prop X P [(n, x)]
+  | alep_next : forall (x1 x2:X) (n1 n2: nat) l,  
+                  all_values_eq_prop X P ((n2, x2) :: l) -> 
+                  P x1 x2 -> 
+                  all_values_eq_prop X P ((n1, x1) :: (n2, x2) :: l).
+
+(* Some helper functions for checking if a number is above or below a given number *)
+Definition below (n: nat) : nat -> Prop :=
+  fun o => blt_nat o n = true. 
+Definition below_equal (n: nat) : nat -> Prop :=
+  fun o => ble_nat o n = true.
+Definition between (n m: nat) : nat -> Prop :=
+  fun o => andb (ble_nat n o) (blt_nat o m) = true.
+Definition above (m: nat) : nat -> Prop :=
+  fun o => ble_nat m o = true.

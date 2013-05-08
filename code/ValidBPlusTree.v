@@ -1,25 +1,10 @@
 Require Import InductiveDataTypes.
 Require Import BPlusTree.
 
-(* Some props for having a prop apply to all elements in a list *)
-Inductive all_values (X : Type) (P : X -> Prop) : list (nat * X) -> Prop :=
-  | av_empty : all_values X P []
-  | av_next : forall (x:X) (n: nat) (l: list (nat * X)), all_values X P l -> P x -> all_values X P ((n,x)::l)
-.
-Inductive all_keys (X : Type) (P : nat -> Prop) : list (nat * X) -> Prop :=
-  | ak_empty : all_keys X P []
-  | ak_next : forall (x:X) (n: nat) (l: list (nat * X)), all_keys X P l -> P n -> all_keys X P ((n,x)::l)
-.
 
-(* Some helper functions for checking if a number is above or below a given number *)
-Definition below (n: nat) : nat -> Prop :=
-  fun o => blt_nat o n = true. 
-Definition below_equal (n: nat) : nat -> Prop :=
-  fun o => ble_nat o n = true.
-Definition between (n m: nat) : nat -> Prop :=
-  fun o => andb (ble_nat n o) (blt_nat o m) = true.
-Definition above (m: nat) : nat -> Prop :=
-  fun o => ble_nat m o = true.
+Definition equal_height {X: Type} {b: nat}: bplustree b X -> bplustree b X -> Prop :=
+  fun n m => beq_nat (height n) (height m) = true.
+
 
 (* Prop for determining if the splitting points indicated actually are splits *)
 Inductive valid_splits (b: nat) (X: Type) : list (nat * bplustree b X) -> Prop :=
@@ -44,6 +29,7 @@ Inductive valid_sub_bplustree (b: nat) (X: Type) : bplustree b X -> Prop :=
                       b <= length(kpl) -> 
                       length(kpl) <= S (mult b 2) -> 
                       all_values (bplustree b X) (valid_sub_bplustree b X) kpl ->
+                      all_values_eq_prop (bplustree b X) equal_height kpl ->
                       kvl_sorted kpl ->
                       valid_splits b X kpl -> 
                       valid_sub_bplustree b X (bptNode b X kpl)   
@@ -61,6 +47,7 @@ Inductive valid_bplustree (b: nat) (X: Type) : bplustree b X -> Prop :=
                       length(kpl) <> 0 -> 
                       length(kpl) <= S (mult b 2) -> 
                       all_values (bplustree b X) (valid_sub_bplustree b X) kpl ->
+                      all_values_eq_prop (bplustree b X) equal_height kpl ->
                       kvl_sorted kpl ->  
                       valid_splits b X kpl ->
                       valid_bplustree b X (bptNode b X kpl)   
@@ -84,6 +71,8 @@ Proof. compute. apply valid_root_node.
     apply valid_leaf. omega. simpl. omega.  simpl. omega. apply kvl_sorted_1.
     apply valid_leaf. omega. simpl. omega.  simpl. omega. apply kvl_sorted_1.
     apply valid_leaf. omega. simpl. omega.  simpl. omega. apply kvl_sorted_1.
+  Case "valid height".
+    repeat apply alep_next; unfold equal_height; simpl; try reflexivity. apply alep_1. 
   Case "valid sorting". 
     apply kvl_sorted_cons. apply kvl_sorted_cons. apply kvl_sorted_1. reflexivity. reflexivity.
   Case "valid splits". 
@@ -98,6 +87,7 @@ Proof. compute.
   Case "has enough items". simpl. omega.
   Case "doesnt have too many items". simpl. omega.  
   Case "kvl". repeat constructor. omega. omega. omega.
+  Case "valid height". repeat constructor.
   Case "valid sorting". repeat constructor.
   Case "valid splits". repeat constructor.
 Qed.

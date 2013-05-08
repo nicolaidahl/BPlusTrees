@@ -1,7 +1,8 @@
 Require Export SfLib.
 Require Export HelperFunctions.
-Require Import SplitCutList.
-Require Import ValidBPlusTree.
+Require Export SplitCutList.
+Require Export ValidBPlusTree.
+Require Export InductiveDataTypes.
 
 
 (* 
