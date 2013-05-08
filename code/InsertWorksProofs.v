@@ -545,33 +545,9 @@ Proof.
     remember (ble_nat n k && blt_nat k n0) as here.
     destruct here.
     SCase "insert here".
-      remember (insert' (height b0) k v b0).
-      destruct p. destruct o. destruct p.
-      (*
-      remember (ble_nat n0 n) as n0len.
-      destruct n0len; symmetry in Heqn0len; [apply ble_nat_true in Heqn0len| apply ble_nat_false in Heqn0len].
-      SSCase "n0 <= n".
-        remember (beq_nat n0 n) as n0eqn.
-        destruct n0eqn; symmetry in Heqn0eqn; [apply beq_nat_true_iff in Heqn0eqn| apply beq_nat_false_iff in Heqn0eqn].
-        SSSCase "n0 = n".
-          remember (ble_nat (length (insert_into_list n b1 [(n, b2)])) (b * 2 + 1)) as too_long.
-          destruct too_long.
-          symmetry in Heqtoo_long. apply ble_nat_true in Heqtoo_long.
-          simpl in Heqtoo_long.
-          rewrite ble_nat_symm in Heqtoo_long. rewrite <- beq_nat_refl in Heqtoo_long.
-          remember (ble_nat (length (insert_into_list n b1 [(n0, b2)])) (b * 2 + 1)) as too_long2.
-          destruct too_long2.
-          simpl in H2.
-        inversion H3.
-        rewrite ble_nat_symm in H6. rewrite <- beq_nat_refl in H6.
-        apply IHkpl.
-    
-    SCse "n0 > n".
-    
-  admit. *)
-  admit.
-  admit.
-  admit.
+      admit.
+    SCase "insert later".
+      admit.
 Admitted.
 
 Theorem insert_works : forall {X: Type} {b: nat} (t t1: bplustree b X) (k: nat) (v: X),
