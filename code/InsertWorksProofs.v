@@ -98,7 +98,8 @@ Proof.
 Qed.
 
 Lemma insert_new_into_list_increases_length_lt : forall (X: Type) (l: list (nat * X)) (k n: nat) (v: X),
-  kvl_sorted l -> ~(appears_in_kvl k l ) -> length l < n -> length (insert_into_list k v l) <= n.
+  kvl_sorted l -> ~(appears_in_kvl k l ) -> 
+  length l < n -> length (insert_into_list k v l) <= n.
 Proof.
   intros.
   generalize dependent l. induction n; intros.
@@ -133,7 +134,9 @@ Qed.
 
 
 Lemma insert_leaf_cons_eq : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
-  b <> 0 -> kvl_sorted ((k2, v2)::l) -> k1 = k2 -> length((k2,v2)::l) <= mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::l, None).
+  b <> 0 -> kvl_sorted ((k2, v2)::l) -> 
+  k1 = k2 -> length((k2,v2)::l) <= mult b 2 -> 
+  insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::l, None).
 Proof.
   intros. 
   destruct b. apply ex_falso_quodlibet. apply H. reflexivity. subst.
@@ -171,7 +174,9 @@ Proof.
 Qed.
 
 Lemma insert_leaf_cons_lt_overflow : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
-  b <> 0 -> kvl_sorted ((k2, v2)::l) -> k1 < k2 -> length((k2,v2)::l) = mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = (let (fst, snd) := split_list b ((k1, v1) :: (k2, v2) :: l) in (fst, Some snd)).
+  b <> 0 -> kvl_sorted ((k2, v2)::l) -> 
+  k1 < k2 -> length((k2,v2)::l) = mult b 2 -> 
+  insert_leaf b k1 v1 ((k2, v2) :: l) = (let (fst, snd) := split_list b ((k1, v1) :: (k2, v2) :: l) in (fst, Some snd)).
 Proof.  
   intros.
   destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
@@ -223,7 +228,8 @@ Proof.
 Qed.
 
 Lemma insert_leaf_cons_gt_overflow : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
-  b <> 0 -> kvl_sorted ((k2,v2)::l) -> k1 > k2 -> ~(appears_in_kvl k1 l) -> length((k2,v2)::l) = mult b 2 -> 
+  b <> 0 -> kvl_sorted ((k2,v2)::l) -> k1 > k2 -> 
+  ~(appears_in_kvl k1 l) -> length((k2,v2)::l) = mult b 2 -> 
   insert_leaf b k1 v1 ((k2, v2) :: l) = (let (fst, snd) := split_list b ((k2, v2) :: insert_into_list k1 v1 l) in (fst, Some snd)).
 Proof.
   intros.
@@ -961,21 +967,7 @@ Proof.
 Admitted.
     
 
-Lemma height_cons: forall (X: Type) (b k: nat) (p: bplustree b X) (l: list (nat * bplustree b X)),
-  valid_bplustree b X (bptNode b X ((k, p)::l)) ->
-  valid_bplustree b X (bptNode b X (l)) ->
-  ((height (bptNode b X ((k, p)::l)))) = ((height (bptNode b X (l)))).
-Proof.
-  intros.
-  inversion H.
-  inversion H6. 
-    inversion H0.
-    subst.
-    simpl in H14. apply ex_falso_quodlibet. omega.
-    simpl. 
-    unfold equal_height in H13.
-    rewrite beq_nat_true_iff in H13. omega.
-Qed.
+
 
 Theorem appears_search_works : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat),
   valid_bplustree b X t -> 
