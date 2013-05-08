@@ -960,11 +960,6 @@ Proof.
       apply insert'_not_split_impl_space_left in Heqinsn; try assumption.
 Admitted.
     
-    
-Lemma height_of_parent_one_bigger: forall (X:Type) b k v l,
-  S (height v) = height (bptNode b X ((k, v)::l)).
-Proof.
-  intros. induction v. admit. Admitted.
 
 Lemma height_cons: forall (X: Type) (b k: nat) (p: bplustree b X) (l: list (nat * bplustree b X)),
   valid_bplustree b X (bptNode b X ((k, p)::l)) ->
@@ -1006,7 +1001,7 @@ Proof.
       (* actually it's because it's a valid sub-tree, and that's a stronger
          claim than valid tree *)
     assumption.
-    apply height_of_parent_one_bigger.
+    eapply height_of_parent_one_bigger. reflexivity. apply H7.    
   Case "node here".
     replace (height (bptNode b X ((k1, v1) :: (k2, v2) :: l))) with (S (height v1)).
     assert (ble_nat k1 k && blt_nat k k2 = true).
