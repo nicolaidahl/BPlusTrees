@@ -20,11 +20,33 @@ Proof.
     apply insert_into_node_impl_leaf_false in H0. inversion H0.
 Qed.
   
+Lemma insert_into_list_max_grows_one: forall {X: Type} k (v: X) l,
+  length (insert_into_list k v l) = length l \/ length (insert_into_list k v l) = S (length l).
+Proof. Admitted.
+
+Lemma insert_leaf_split_preserves_max_fan_out : forall {X: Type} b k v t n l l', 
+  (t, Some (n, bptLeaf b X l')) = insert' k v (bptLeaf b X l) ->
+  length l' <= b * 2.
+Proof. Admitted.
 
 Lemma insert_leaf_preserves_max_fan_out : forall {X: Type} b k v o l l', 
   (bptLeaf b X l', o) = insert' k v (bptLeaf b X l) ->
   length l' <= b * 2.
-Proof. Admitted.
+Proof.
+  intros. unfold insert' in H. unfold insert_leaf in H.
+  remember (ble_nat (length (insert_into_list k v l)) (b * 2)) as blelen. 
+  destruct blelen; symmetry in Heqblelen. 
+  Case "blelen true".
+    apply ble_nat_true in Heqblelen. inversion H.
+    assert (length (insert_into_list k v l) = length l \/ length (insert_into_list k v l) = S (length l)).
+    apply insert_into_list_max_grows_one. destruct H0. assumption. 
+    assumption.
+  Case "blelen false".
+    apply ble_nat_false in Heqblelen.     
+     admit.
+Admitted.
+  
+  
 
 Lemma insert_leaf_preserves_sort : forall {X: Type} b k v o l l', 
   kvl_sorted l -> (bptLeaf b X l', o) = insert' k v (bptLeaf b X l) ->
@@ -36,10 +58,7 @@ Lemma insert_leaf_split_preserves_min_fan_out : forall {X: Type} b k v t n l l',
   length l' >= b.
 Proof. Admitted.
 
-Lemma insert_leaf_split_preserves_max_fan_out : forall {X: Type} b k v t n l l', 
-  (t, Some (n, bptLeaf b X l')) = insert' k v (bptLeaf b X l) ->
-  length l' <= b * 2.
-Proof. Admitted.
+
 
 Lemma insert_leaf_split_preserves_sort_right : forall {X: Type} b k v t n l l', 
   kvl_sorted l -> (t, Some (n, bptLeaf b X l')) = insert' k v (bptLeaf b X l) ->
