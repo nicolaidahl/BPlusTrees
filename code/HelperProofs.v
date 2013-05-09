@@ -345,6 +345,18 @@ Proof.
   repeat constructor; assumption.
 Qed.
 
+Lemma all_values_single : forall (X: Type) (P: X -> Prop) (x: X) (n: nat) (l1 l2: list (nat * X)),
+  all_values X P (l1 ++ (n, x) :: l2) -> P x.
+Proof.
+  intros.
+  induction l1.
+  Case "l1 = []".
+    simpl in H. inversion H. apply H4.
+  Case "l1 = a::l1".
+    rewrite <- app_comm_cons in H. inversion H. 
+    apply IHl1.
+      apply H2.
+Qed.
 
 (**
   key_at_index proofs

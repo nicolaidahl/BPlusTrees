@@ -66,12 +66,14 @@ Proof.
     destruct here.
       symmetry in Heqhere. apply andb_true_iff in Heqhere. inversion Heqhere.
       apply blt_nat_true in H11. exfalso. omega.
+    replace (ble_nat k2 k) with (true).
     apply IHappears_in_tree.
     inversion H6.
     assert (valid_bplustree b X v2).
       inversion H12.
       apply valid_sub_bplustree_impl_valid_bplustree in H19. assumption.
     assumption.
+    symmetry. apply ble_nat_true. omega.
     apply height_of_parent_one_bigger with (l1 := [(k1, v1)]) (l2 := []) (k := k2). reflexivity. apply H7.    
   Case "node here".
     assert (height (bptNode b X ((k1, v1) :: (k2, v2) :: l)) = S (height v1)).
@@ -113,3 +115,4 @@ Proof.
     inversion H7. apply H20.
     inversion H9. apply H24.
 Qed.
+

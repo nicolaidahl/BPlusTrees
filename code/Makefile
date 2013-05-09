@@ -57,7 +57,7 @@ HeightProofs.vo: HeightProofs.v BPlusTree.vo HelperProofs.vo
 	$(COQC) HeightProofs.v
 
 InsertProofs.vo: InsertProofs.v BPlusTree.vo HelperProofs.vo HeightProofs.vo\
-								 SortingProofs.vo
+								 SortingProofs.vo AppearsInTree.vo
 	$(COQC) InsertProofs.v
 
 InsertPreservesProofs.vo: InsertPreservesProofs.v BPlusTree.vo \

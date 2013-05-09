@@ -131,6 +131,15 @@ Proof.
   apply kvl_sorted_elim_list in H. apply H.
 Qed.
 
+Lemma kvl_sorted_elim_common_head : forall (X: Type) (n: nat) (v: X) (l1 l2 l3 l4: list (nat * X)),
+  kvl_sorted (l1++(n, v)::l2) ->
+  kvl_sorted (l3++(n, v)::l4) ->
+  l1++(n, v)::l2 = l3++(n, v)::l4 ->
+  l2 = l4.
+Proof.
+  admit.
+Admitted.
+
 Theorem insert_preserves_sort : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
   kvl_sorted l -> kvl_sorted (insert_into_list k v l).
 Proof.

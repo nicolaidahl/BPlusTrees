@@ -2,7 +2,7 @@ Require Export BPlusTree.
 Require Export HelperProofs.
 Require Export HeightProofs.
 Require Export SortingProofs.
-
+Require Export AppearsInTree.
 
 (* Proofs about insertion *)
 Lemma insert_new_into_list_length_gt_length : forall (X: Type) (k: nat) (v: X) (l: list (nat*X)),
@@ -167,7 +167,19 @@ Proof.
       simpl in H1. omega.
 Qed.
 
+Lemma override_in_list_preserves_length : forall (X: Type) (k: nat) (v: X) (kpl: list (nat * X)),
+  appears_in_kvl k kpl ->
+  length kpl = length (insert_into_list k v kpl).
+Proof.
+  admit.
+Admitted.
 
+Lemma override_in_list_app : forall (X: Type) (k: nat) (v1 v2: X) (l1 l2: list (nat * X)),
+  kvl_sorted (l1 ++ (k, v1)::l2) -> 
+  insert_into_list k v2 (l1 ++ (k, v1)::l2) = l1 ++ (k,v2)::l2.
+Proof.
+  admit.
+Admitted.
 
 Lemma insert_leaf_cons_eq : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
   b <> 0 -> kvl_sorted ((k2, v2)::l) -> 
@@ -293,18 +305,22 @@ Proof.
 Qed.
 
 Lemma find_subtree_finds_a_subtree : forall (X: Type) (b sk: nat) (l: list (nat * bplustree b X)),
-  l <> [] ->
+  2 <= length l ->
   exists key, exists child, find_subtree sk l = Some (key, child).
 Proof.
+  admit.
+Admitted.
+
+(*
   intros.
   induction l.
   Case "l = []".
-    exfalso. apply H. reflexivity.
+    simpl in H. exfalso. omega.
   Case "list = a::list". destruct a.
     simpl.
     destruct l.
     SCase "l = [a]".
-      exists n. exists b0. reflexivity.
+      simpl in H. exfalso. omega.
     SCase "l = a::p::l".
      destruct p.
       remember (ble_nat n sk && blt_nat sk n0) as here.
@@ -312,14 +328,33 @@ Proof.
       SSCase "here".
         exists n. exists b0. reflexivity.
       SSCase "not here".
+        destruct l.
+        simpl. remember (ble_nat n0 sk).
+        destruct b2.
+          exists n0. exists b1. reflexivity.
+          symmetry in Heqb2. apply ble_nat_false in Heqb2.
+          symmetry in Heqhere. apply blt_nat_false in Heqhere.
+          exfalso. omega.
         apply IHl.
-        unfold not. intro. inversion H0.
+          simpl. omega.
 Qed.
+*)
 
 Lemma find_subtree_impl_kpl_app : forall (X: Type) (b sk key: nat) (kpl: list (nat * bplustree b X)) (subtree: bplustree b X),
   find_subtree sk kpl = Some (key, subtree) ->
-  exists l1, exists l2, kpl = l1 ++ (key, subtree)::l2.
+  
+  exists l1, exists l2, kpl = l1 ++ (key, subtree)::l2
+  /\
+  (l2 = [] 
+    \/
+   exists k2, exists v2, exists l2', l2 = (k2,v2)::l2' /\ sk < k2).
 Proof.
+  admit.
+Admitted.
+
+
+
+(*
   intros.
   induction kpl.
   Case "kpl = []".
@@ -350,6 +385,144 @@ Proof.
          apply H0.
          apply IHkpl.
            apply H.
+Qed.
+*)
+
+Lemma find_subtree_returns_a_bigger_key : forall (X: Type) (b sk key: nat) (child: bplustree b X) (l: list (nat * bplustree b X)),
+  2 <= length l ->
+  kvl_sorted l -> 
+  find_subtree sk l = Some (key, child) ->
+  key <= sk.
+Proof.
+  admit.
+Admitted.
+  (*
+  intros.
+  induction l.
+  Case "l = []".
+    inversion H.
+    simpl in H3. exfalso. omega.
+  Case "l = a::l". destruct a.
+    simpl in H0.
+    destruct l. inversion H. simpl in H3. exfalso. omega.
+    SCase "l = a::p::l".
+    destruct p.
+    remember (blt_nat sk n0) as here.
+    destruct here.
+    SSCase "here".
+      inversion H0. subst. clear H0.
+      inversion H. clear H1. clear H2. clear H3.  clear H4. clear H5. clear H7. clear H0.
+      inversion H6. clear H2. clear H0. clear H1. clear H3. clear H4. clear H5.
+      clear n1. clear n2. clear x1. clear x2. clear lst.
+      apply blt_nat_true in H7.
+      symmetry in Heqhere. apply blt_nat_true in Heqhere.
+      
+      inversion Heqhere. apply ble_nat_true in H1.
+      apply H1.
+    SCase "later".
+      destruct l.
+      simpl in H0.
+      symmetry in Heqhere. apply andb_false_iff in Heqhere. 
+      inversion Heqhere.
+      apply ble_nat_false in H1.
+      assert (sk < n) by omega.
+      simpl in H0. inversion H0. subst.
+      inversion H.
+      inversion H9.
+      apply blt_nat_true in H17.
+      clear H4. clear H5. clear H6. clear H7. clear H8. clear H9. clear H10. clear H3.
+      clear H13. clear H11. clear H12. clear H14. clear H15. clear H16.
+      clear n1. clear n2. clear x1. clear x2. clear lst. clear kpl.
+      apply 
+      apply IHl.
+*)      
+
+Lemma find_subtree_after_replace: forall (X: Type) (b key sk: nat) (t1 t2: bplustree b X) (kpl: list (nat * bplustree b X)),
+  valid_bplustree b X (bptNode b X kpl) ->
+  find_subtree sk kpl = Some (key, t1) ->
+  find_subtree sk (insert_into_list key t2 kpl) = Some (key, t2).
+Proof.
+  admit.
+Admitted.
+(*
+  intros.
+  apply find_subtree_impl_kpl_app in H0.
+  do 2 destruct H0. inversion H0.
+  rewrite H1.
+  rewrite override_in_list_app.
+  destruct H2.
+  Case "t1 appeared at the end of the tree".
+    subst.
+    destruct witness.
+    inversion H. simpl in H3. exfalso. omega.
+    destruct p.
+    rewrite <- app_comm_cons.
+    
+  
+  
+  
+  SearchAbout [find_subtree].
+  
+  induction kpl.
+  Case "kpl = []".
+    simpl. reflexivity.
+  Case "kpl = a::kpl". destruct a.
+    simpl.
+    destruct kpl.
+    inversion H0. rewrite ble_nat_symm. rewrite <- beq_nat_refl.
+    simpl. reflexivity.
+    destruct p.
+    
+    remember (ble_nat key n) as keylen.
+    destruct keylen; symmetry in Heqkeylen; [apply ble_nat_true in Heqkeylen | apply ble_nat_false in Heqkeylen].
+      remember (beq_nat key n) as keyeqn.
+      destruct keyeqn; symmetry in Heqkeyeqn; [apply beq_nat_true_iff in Heqkeyeqn | apply beq_nat_false_iff in Heqkeyeqn].
+      subst.
+      simpl in H0.
+      simpl.
+      remember (ble_nat n sk && blt_nat sk n0) as here.
+      destruct here. reflexivity.
+        remember 
+*)      
+
+Lemma insert_into_list_app : forall (X: Type) (k: nat) (v: X) (kpl kpl': list (nat * X)),
+  insert_into_list k v kpl = kpl' ->
+  exists l1, exists l2, kpl' = l1 ++ (k,v)::l2.
+Proof.
+  intros. generalize dependent kpl'.
+  induction kpl.
+  Case "kpl = []".
+    intros.
+    simpl in H. subst.
+    exists []. exists []. reflexivity.
+  Case "kpl = a::kpl".
+    intros.
+    destruct a.
+    simpl in H.
+    remember (ble_nat k n) as klen.
+    destruct klen; symmetry in Heqklen; [apply ble_nat_true in Heqklen | apply ble_nat_false in Heqklen].
+    SCase "k <= n".
+      remember (beq_nat k n) as keqn.
+      destruct keqn; symmetry in Heqkeqn; [apply beq_nat_true_iff in Heqkeqn | apply beq_nat_false_iff in Heqkeqn].
+      SSCase "k = n".
+        rewrite <- H.
+        exists []. exists kpl. reflexivity.
+      SSCase "k < n".
+        rewrite <- H.
+        exists []. exists ((n,x)::kpl). reflexivity.
+    SCase "k > n".
+      destruct kpl'. inversion H.
+      inversion H.
+      assert ((exists l0 : list (nat * X), exists l3 : list (nat * X),
+                insert_into_list k v kpl = l0 ++ (k, v) :: l3) ->
+              (exists l0 : list (nat * X), exists l3 : list (nat * X),
+                (n, x) :: insert_into_list k v kpl = l0 ++ (k, v) :: l3)).
+        intro. do 2 destruct H0.
+        exists ((n,x)::witness). exists witness0.
+        rewrite <- app_comm_cons. rewrite H0. reflexivity.
+      apply H0.
+      apply IHkpl.
+        reflexivity.
 Qed.
 
 Lemma key_at_index_0none_impl_empty: forall (X: Type) l,

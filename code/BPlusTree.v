@@ -54,7 +54,7 @@ Fixpoint search_leaf {X: Type} (sk: nat) (kvl: (list (nat * X))) : option X :=
 Fixpoint find_subtree {X: Type} {b: nat} (sk: nat) (kpl: list (nat * bplustree b X)) : option (nat * bplustree b X) :=
   match kpl with
     | [] => None
-    | (k, last_tree) :: [] => Some (k, last_tree)
+    | (k, last_tree) :: [] => if ble_nat k sk then Some (k, last_tree) else None
     | (k1, subtree) :: ((k2, _) :: _) as kpl' => if ble_nat k1 sk && blt_nat sk k2
                                                    then Some (k1, subtree)
                                                    else find_subtree sk kpl'
@@ -131,10 +131,17 @@ Definition split_if_necessary {X: Type} {b: nat} (tree: (bplustree b X))
   	| bptNode kpl => 
   	  if ble_nat (length kpl) ((b * 2) + 1)
         then (tree, None)
-        else 
+        else match (split_list (b + 1) kpl) with
+          | (fst, []) => (bptNode b X fst, None)
+          | (fst, (lmk,lmt)::snd') =>  
+            (bptNode b X fst, Some (lmk, bptNode b X ((0, lmt)::snd')))
+        end
+          (*  
+            
           let (fst, snd) := split_list (b + 1) kpl in
           let new_node := bptNode b X snd in
           (bptNode b X fst, Some (leftmost_key_deep new_node, new_node))
+          *)
   end. 
 
 Definition insert_node {X: Type} {b: nat} (insertion_key: nat) (old_tree: (bplustree b X)) 
@@ -218,7 +225,7 @@ bptNode 1 nat
          [(0, bptNode 1 nat [(0, [[1,nat|(1, 1)]]), (2, [[1,nat|(2, 2)]])]),
          (3,
          bptNode 1 nat
-           [(3, [[1,nat|(3, 3)]]), (4, [[1,nat|(4, 4)]]),
+           [(0, [[1,nat|(3, 3)]]), (4, [[1,nat|(4, 4)]]),
            (5, [[1,nat|(5, 5),(6, 6)]])])].
 Proof. compute. reflexivity. Qed.
 
