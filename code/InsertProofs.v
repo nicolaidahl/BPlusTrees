@@ -292,8 +292,29 @@ Proof.
       reflexivity.
 Qed.
 
-
-
+Lemma find_subtree_finds_a_subtree : forall (X: Type) (b sk: nat) (list: list (nat * bplustree b X)),
+  list <> [] ->
+  exists key, exists child, find_subtree sk list = Some (key, child).
+Proof.
+  intros.
+  induction list.
+  Case "list = []".
+    exfalso. apply H. reflexivity.
+  Case "list = a::list". destruct a.
+    simpl.
+    destruct list.
+    SCase "list = [a]".
+      exists n. exists b0. reflexivity.
+    SCase "list = a::p::list".
+     destruct p.
+      remember (ble_nat n sk && blt_nat sk n0) as here.
+      destruct here.
+      SSCase "here".
+        exists n. exists b0. reflexivity.
+      SSCase "not here".
+        apply IHlist.
+        unfold not. intro. inversion H0.
+Qed.
 
 Lemma key_at_index_0none_impl_empty: forall (X: Type) l,
   @key_at_index X 0 l = None -> l = [].
