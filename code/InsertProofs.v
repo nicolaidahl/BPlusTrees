@@ -292,28 +292,64 @@ Proof.
       reflexivity.
 Qed.
 
-Lemma find_subtree_finds_a_subtree : forall (X: Type) (b sk: nat) (list: list (nat * bplustree b X)),
-  list <> [] ->
-  exists key, exists child, find_subtree sk list = Some (key, child).
+Lemma find_subtree_finds_a_subtree : forall (X: Type) (b sk: nat) (l: list (nat * bplustree b X)),
+  l <> [] ->
+  exists key, exists child, find_subtree sk l = Some (key, child).
 Proof.
   intros.
-  induction list.
-  Case "list = []".
+  induction l.
+  Case "l = []".
     exfalso. apply H. reflexivity.
   Case "list = a::list". destruct a.
     simpl.
-    destruct list.
-    SCase "list = [a]".
+    destruct l.
+    SCase "l = [a]".
       exists n. exists b0. reflexivity.
-    SCase "list = a::p::list".
+    SCase "l = a::p::l".
      destruct p.
       remember (ble_nat n sk && blt_nat sk n0) as here.
       destruct here.
       SSCase "here".
         exists n. exists b0. reflexivity.
       SSCase "not here".
-        apply IHlist.
+        apply IHl.
         unfold not. intro. inversion H0.
+Qed.
+
+Lemma find_subtree_impl_kpl_app : forall (X: Type) (b sk key: nat) (kpl: list (nat * bplustree b X)) (subtree: bplustree b X),
+  find_subtree sk kpl = Some (key, subtree) ->
+  exists l1, exists l2, kpl = l1 ++ (key, subtree)::l2.
+Proof.
+  intros.
+  induction kpl.
+  Case "kpl = []".
+    simpl in H. inversion H.
+  Case "kpl = a::kpl".
+    destruct kpl.
+    simpl in H. destruct a. inversion H. subst.
+    SCase "kpl = [a]".
+      exists []. exists []. reflexivity.
+    SCase "kpl = a::p::kpl".
+      destruct a. destruct p.
+      simpl in H.
+      remember (ble_nat n sk && blt_nat sk n0) as here.
+      destruct here.
+      SSCase "here".
+        inversion H. subst.
+        exists []. exists ((n0,b1)::kpl). reflexivity.
+      SSCase "not here".
+        simpl in IHkpl.
+        assert ((exists l1 : list (nat * bplustree b X), exists l2 : list (nat * bplustree b X),
+                  (n0, b1) :: kpl = l1 ++ (key, subtree) :: l2) ->
+                (exists l1 : list (nat * bplustree b X), exists l2 : list (nat * bplustree b X),
+                  (n, b0) :: (n0, b1) :: kpl = l1 ++ (key, subtree) :: l2)).
+          intro.
+           do 2 destruct H0.
+           exists ((n, b0)::witness). exists witness0.
+           rewrite <- app_comm_cons. rewrite H0. reflexivity.
+         apply H0.
+         apply IHkpl.
+           apply H.
 Qed.
 
 Lemma key_at_index_0none_impl_empty: forall (X: Type) l,
