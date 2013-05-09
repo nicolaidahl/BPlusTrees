@@ -82,11 +82,11 @@ Proof. unfold root. unfold leftmost_key. simpl. reflexivity. Qed.
 Example search_test_cant_find_missing : search 6 root = None.
 Proof. simpl. reflexivity. Qed.
 
-Fixpoint all_members {X: Type} {b: nat} (tree: (bplustree b X)) : list (nat * X) :=
+Fixpoint inorder {X: Type} {b: nat} (tree: (bplustree b X)) : list (nat * X) :=
   let fix node_members (kpl: (list (nat * bplustree b X))) : list (nat * X) :=
     match kpl with
       | nil => []
-      | (k, p) :: kpl' => (all_members p) ++ (node_members kpl')
+      | (k, p) :: kpl' => (inorder p) ++ (node_members kpl')
     end
   in
   match tree with
@@ -94,9 +94,9 @@ Fixpoint all_members {X: Type} {b: nat} (tree: (bplustree b X)) : list (nat * X)
     | bptNode kpl => (node_members kpl)
   end.
 
-Example all_members_left : all_members left = [(5, 55)].
+Example all_members_left : inorder left = [(5, 55)].
 Proof. simpl. reflexivity. Qed.
-Example all_members_root : all_members root = [(5, 55), (7, 77), (9, 99)].
+Example all_members_root : inorder root = [(5, 55), (7, 77), (9, 99)].
 Proof. simpl. reflexivity. Qed.
 
 (* Insertion *)
