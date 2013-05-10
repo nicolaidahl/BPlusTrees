@@ -137,8 +137,44 @@ Lemma kvl_sorted_elim_common_head : forall (X: Type) (n: nat) (v: X) (l1 l2 l3 l
   l1++(n, v)::l2 = l3++(n, v)::l4 ->
   l2 = l4.
 Proof.
-  admit.
-Admitted.
+  intros. generalize dependent l3.
+  induction l1.
+  Case "l1 = []".
+    intros.
+    simpl in *.
+    destruct l3.
+    SCase "l3 = []".
+      simpl in *.
+      inversion H1. reflexivity.
+    SCase "l3 = p::l3".
+      destruct p.
+      rewrite <- app_comm_cons in H1. inversion H1.
+      rewrite H3 in H0.
+      rewrite <- app_comm_cons in H0.
+      apply kvl_sorted_key_across_app in H0.
+      apply n_lt_n_inversion with (n := n0). assumption.
+  Case "l1 = a::l1".
+    intros.
+    simpl in *.
+    destruct l3.
+    SCase "l3 = []".
+      simpl in *.
+      destruct a.
+      inversion H1. rewrite H3 in H.
+      apply kvl_sorted_key_across_app in H.
+      apply n_lt_n_inversion with (n := n0). rewrite <- H3 in H. assumption.
+    SCase "l3 = p::l3".
+      rewrite <- app_comm_cons in H1.
+      inversion H1.
+      apply IHl1 with (l3 := l3).
+      destruct a.
+      apply list_tail_is_sorted in H. apply H.
+      rewrite <- app_comm_cons in H0.
+      destruct p.
+      apply list_tail_is_sorted in H0.
+      apply H0.
+      apply H4.
+Qed.
 
 Theorem insert_preserves_sort : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
   kvl_sorted l -> kvl_sorted (insert_into_list k v l).
