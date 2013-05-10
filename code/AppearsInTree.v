@@ -92,18 +92,118 @@ Proof.
       omega.
 Qed.    
 
-Lemma appears_in_subtree_when_appears_in_tree_and_found: forall (X: Type) (b k key: nat) (parent subtree: bplustree b X) (kpl: list (nat * bplustree b X)),
-  parent = bptNode b X kpl -> 
-  appears_in_tree k parent ->
+Lemma ble_and_blt_true: forall n m k,
+  ble_nat n k && blt_nat k m = true ->
+  n <= k < m.
+Proof.
+  intros. unfold andb in H. remember (ble_nat n k). destruct b. apply blt_nat_true in H.
+  symmetry in Heqb. apply ble_nat_true in Heqb. omega. inversion H.
+Qed.
+
+Lemma ble_and_blt_false: forall n m k,
+  ble_nat n k && blt_nat k m = false ->
+  n > k \/ k >= m.
+Proof.
+  intros. unfold andb in H. remember (ble_nat n k). destruct b. symmetry in Heqb.
+  apply ble_nat_true in Heqb. apply blt_nat_false in H. right. omega. 
+  symmetry in Heqb. apply ble_nat_false in Heqb. left. omega.
+Qed.
+
+Lemma appears_in_known_subtree: forall {X:Type} b n1 k n2 t1 t2 kpl kpl', 
+  kpl = bptNode b X ((n1, t1) :: (n2, t2) :: kpl') ->
+  n1 <= k < n2 ->
+  appears_in_tree k (kpl) ->
+  appears_in_tree k t1.
+Proof.
+  intros. induction H1; inversion H; subst; try omega.
+  Case "ait_here".
+    assumption.
+Qed.
+
+Lemma appears_in_later_subtree: forall {X:Type} b n1 k n2 n3 t1 t2 t3 kpl kpl', 
+  kpl = bptNode b X ((n1, t1) :: (n2, t2) :: (n3, t3) :: kpl') ->
+  kvl_sorted ((n1, t1) :: (n2, t2) :: (n3, t3) :: kpl') ->
+  k >= n2 ->
+  appears_in_tree k kpl ->
+  appears_in_tree k (bptNode b X ((n2, t2) :: (n3, t3) :: kpl')).
+Proof. 
+  intros. induction H2; inversion H; subst. 
+  omega.
+  assumption.
+Qed.
+
+
+Lemma appears_in_tree_before_kpl_start_false: forall {X:Type} b n k t kpl, 
+  n > k ->
+  appears_in_tree k (bptNode b X ((n, t) :: kpl)) ->
+  False.
+Proof.
+Admitted.
+
+Lemma find_subtree_later: forall {X: Type} b n1 n2 k t1 t2 kpl key subtree,
+  n1 > k \/ k >= n2 ->
+  @find_subtree X b k ((n1, t1) :: (n2, t2) :: kpl) = Some (key, subtree) ->
+  @find_subtree X b k ((n2, t2) :: kpl) = Some (key, subtree).
+Proof.
+Admitted.
+
+Lemma appears_in_tree_two_last: forall {X: Type} b n1 n2 t1 t2 k,
+  k >= n2 ->
+  appears_in_tree k (bptNode b X [(n1, t1), (n2, t2)]) ->
+  appears_in_tree k t2.
+Proof. Admitted.
+
+Lemma find_subtree_one_impl_found: forall {X: Type} b k n t key subtree,
+  k >= n ->
+  @find_subtree X b k [(n, t)] = Some (key, subtree) ->
+  t = subtree.
+Proof. Admitted.
+
+(* Informal: We know k appears in the parent tree, and we know that find_subtree
+ * returns the subtree when searching for k, so hence k must also appear in the
+ * subtree *)
+Lemma appears_in_subtree_when_appears_in_tree_and_found: 
+    forall (X: Type) (b k key: nat) 
+    (parent subtree: bplustree b X) (kpl: list (nat * bplustree b X)),
+  
+  kvl_sorted(kpl) ->
+  appears_in_tree k (bptNode b X kpl) ->
   find_subtree k kpl = Some (key, subtree) ->
   
   appears_in_tree k subtree.
 Proof.
-  (* Informal: We know k appears in the parent tree, and we know that find_subtree
-   * returns the subtree when searching for k, so hence k must also appear in the
-   * subtree *)
-  admit.
-Admitted.  
+  intros. induction kpl. 
+  Case "kpl = []".
+	  simpl in H0. inversion H0. 
+  Case "kpl = a :: kpl".
+  	  destruct a. destruct kpl. 
+  	    inversion H0. 
+  	    destruct p. remember (ble_nat n k && blt_nat k n0) as loc. destruct loc. 
+  	      unfold find_subtree in H1. rewrite <- Heqloc in H1. inversion H1. 
+	      symmetry in Heqloc. unfold andb in Heqloc. 
+	      apply ble_and_blt_true in Heqloc. eapply appears_in_known_subtree in H0. 
+	      apply H0. rewrite H4. reflexivity. assumption. 
+	  symmetry in Heqloc. apply ble_and_blt_false in Heqloc.
+	  destruct kpl.
+	  SCase "kpl = []".
+	    destruct Heqloc. apply appears_in_tree_before_kpl_start_false in H0. inversion H0.
+	    assumption.
+	    apply appears_in_tree_two_last in H0.  apply find_subtree_later in H1. 
+	    apply find_subtree_one_impl_found in H1. rewrite <- H1. assumption. assumption.
+	    right. assumption. assumption.
+	  SCase "kpl = p :: kpl".
+	    destruct p.	    
+	    apply IHkpl. apply list_tail_is_sorted in H. assumption. 
+	    destruct Heqloc.
+	      apply appears_in_tree_before_kpl_start_false in H0; try assumption. inversion H0.
+	      eapply appears_in_later_subtree in H0. apply H0. reflexivity.  assumption. assumption.
+	    eapply find_subtree_later in Heqloc. apply Heqloc. apply H1.
+Qed.
+  
+
+
+
+
   
 (*
 Lemma key_valid_when_appears_and_between : forall (X: Type) (b k1 k2 sk: nat) (t: bplustree b X), 
