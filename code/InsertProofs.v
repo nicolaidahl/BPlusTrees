@@ -304,41 +304,56 @@ Proof.
       reflexivity.
 Qed.
 
-Lemma find_subtree_finds_a_subtree : forall (X: Type) (b sk: nat) (l: list (nat * bplustree b X)),
-  2 <= length l ->
-  exists key, exists child, find_subtree sk l = Some (key, child).
+Lemma find_subtree_finds_a_subtree' : forall (X: Type) (b sk k0: nat) (t0: bplustree b X) (l: list (nat * bplustree b X)),
+  2 <= length ((k0, t0)::l) ->
+  k0 <= sk ->
+  exists key, exists child, find_subtree sk ((k0, t0)::l) = Some (key, child).
 Proof.
-  admit.
-Admitted.
-
-(*
-  intros.
+  intros. generalize dependent k0. generalize dependent t0.
   induction l.
   Case "l = []".
+    intros.
     simpl in H. exfalso. omega.
-  Case "list = a::list". destruct a.
-    simpl.
+  Case "l = a::l".
+    intros.
+    destruct a.
     destruct l.
-    SCase "l = [a]".
-      simpl in H. exfalso. omega.
-    SCase "l = a::p::l".
-     destruct p.
-      remember (ble_nat n sk && blt_nat sk n0) as here.
+    SCase "l = [_, _]".
+      assert (ble_nat k0 sk = true) by (apply ble_nat_true; assumption).
+      simpl. rewrite H1. simpl.
+      remember (blt_nat sk n).
+      destruct b1. exists k0. exists t0. reflexivity.
+      remember (ble_nat n sk).
+      destruct b1.
+      exists n. exists b0. reflexivity.
+      symmetry in Heqb1. apply blt_nat_false in Heqb1.
+      symmetry in Heqb0. apply ble_nat_false in Heqb0. 
+      exfalso. omega.
+    SCase "l = _::_::p::l".
+      simpl. simpl in IHl.
+      remember (ble_nat k0 sk && blt_nat sk n) as here.
       destruct here.
-      SSCase "here".
-        exists n. exists b0. reflexivity.
-      SSCase "not here".
-        destruct l.
-        simpl. remember (ble_nat n0 sk).
-        destruct b2.
-          exists n0. exists b1. reflexivity.
-          symmetry in Heqb2. apply ble_nat_false in Heqb2.
-          symmetry in Heqhere. apply blt_nat_false in Heqhere.
-          exfalso. omega.
-        apply IHl.
-          simpl. omega.
+      exists k0. exists t0. reflexivity. 
+      apply IHl. omega.
+      symmetry in Heqhere. apply andb_false_iff in Heqhere.
+      inversion Heqhere.
+      apply ble_nat_false in H1. exfalso. omega.
+      apply blt_nat_false in H1. omega.
 Qed.
-*)
+
+Lemma find_subtree_finds_a_subtree : forall (X: Type) (b sk: nat) (l: list (nat * bplustree b X)),
+  valid_bplustree b X (bptNode b X l) ->
+  exists key, exists child, find_subtree sk l = Some (key, child).
+Proof.
+  intros.
+  inversion H.
+  destruct l.  simpl in H2. exfalso. omega.
+  destruct p.
+  simpl in H4. inversion H4.
+  apply find_subtree_finds_a_subtree'.
+    assumption.
+    omega.
+Qed.
 
 Lemma find_subtree_impl_kpl_app : forall (X: Type) (b sk key: nat) (kpl: list (nat * bplustree b X)) (subtree: bplustree b X),
   find_subtree sk kpl = Some (key, subtree) ->

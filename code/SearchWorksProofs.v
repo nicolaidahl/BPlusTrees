@@ -98,8 +98,9 @@ Proof.
           
         apply IHcounter; assumption.
       SSCase "find_subtree = None".
-        apply find_subtree_finds_a_subtree with (sk := sk) in H3.
-        do 2 destruct H3. rewrite H3 in Heqo.
+        rewrite <- H10 in H. 
+        apply find_subtree_finds_a_subtree with (sk := sk) in H.
+        do 2 destruct H. rewrite H in Heqo.
         inversion Heqo.
 Qed.
     

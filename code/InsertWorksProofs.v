@@ -608,8 +608,8 @@ Proof.
 
 
     inversion H.
-    apply find_subtree_finds_a_subtree with (sk := k) in H6.
-    do 2 destruct H6. rewrite H6 in Heqo. inversion Heqo.
+    apply find_subtree_finds_a_subtree with (sk := k) in H.
+    do 2 destruct H. rewrite H in Heqo. inversion Heqo.
 Admitted.
 
 Theorem insert_works : forall {X: Type} {b: nat} (t t1: bplustree b X) (k: nat) (v: X),
