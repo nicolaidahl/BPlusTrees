@@ -21,6 +21,9 @@ Proof.
     admit.
   Case "tree is node".
     apply insert_into_node_impl_leaf_false in H0. inversion H0.
+    constructor; try assumption.
+    destruct b. exfalso. omega.
+    omega.
 Qed.
   
 Lemma insert_into_list_max_grows_one: forall {X: Type} k (v: X) l,
