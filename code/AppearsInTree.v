@@ -135,36 +135,92 @@ Qed.
 
 Lemma appears_in_tree_before_kpl_start_false: forall {X:Type} b n k t kpl, 
   n > k ->
+  kvl_sorted ((n, t) :: kpl) ->
   appears_in_tree k (bptNode b X ((n, t) :: kpl)) ->
   False.
 Proof.
-Admitted.
+  intros. remember (bptNode b X ((n, t) :: kpl)). destruct H1; inversion Heqb0; subst.
+  apply kvl_sorted_key_across_app with (l1:=[])(l2:=[]) in H0. omega. omega.
+  apply kvl_sorted_key_across_app with (k1:=n)(v1:=t)(k2:=k1)(v2:=v1)(l1:=[])(l2:=(k2, v2)::l) in H0. 
+  omega.
+Qed.
+
+Lemma find_subtree_finds_a_subtree' : forall (X: Type) (b sk k0: nat) (t0: bplustree b X) (l: list (nat * bplustree b X)),
+  2 <= length ((k0, t0)::l) ->
+  k0 <= sk ->
+  exists key, exists child, find_subtree sk ((k0, t0)::l) = Some (key, child).
+Proof.
+  intros. generalize dependent k0. generalize dependent t0.
+  induction l.
+  Case "l = []".
+    intros.
+    simpl in H. exfalso. omega.
+  Case "l = a::l".
+    intros.
+    destruct a.
+    destruct l.
+    SCase "l = [_, _]".
+      assert (ble_nat k0 sk = true) by (apply ble_nat_true; assumption).
+      simpl. rewrite H1. simpl.
+      remember (blt_nat sk n).
+      destruct b1. exists k0. exists t0. reflexivity.
+      remember (ble_nat n sk).
+      destruct b1.
+      exists n. exists b0. reflexivity.
+      symmetry in Heqb1. apply blt_nat_false in Heqb1.
+      symmetry in Heqb0. apply ble_nat_false in Heqb0. 
+      exfalso. omega.
+    SCase "l = _::_::p::l".
+      simpl. simpl in IHl.
+      remember (ble_nat k0 sk && blt_nat sk n) as here.
+      destruct here.
+      exists k0. exists t0. reflexivity. 
+      apply IHl. omega.
+      symmetry in Heqhere. apply andb_false_iff in Heqhere.
+      inversion Heqhere.
+      apply ble_nat_false in H1. exfalso. omega.
+      apply blt_nat_false in H1. omega.
+Qed.
 
 Lemma find_subtree_later: forall {X: Type} b n1 n2 k t1 t2 kpl key subtree,
   n1 > k \/ k >= n2 ->
+  kvl_sorted((n1, t1) :: (n2, t2) :: kpl) ->
   @find_subtree X b k ((n1, t1) :: (n2, t2) :: kpl) = Some (key, subtree) ->
   @find_subtree X b k ((n2, t2) :: kpl) = Some (key, subtree).
 Proof.
-Admitted.
+  intros. destruct H. admit.
+  simpl in H1. assert (~ (k < n2)). omega. apply blt_nat_false in H2.
+  assert (ble_nat n1 k && blt_nat k n2 = false). unfold andb. rewrite H2. 
+    destruct (ble_nat n1 k). reflexivity. reflexivity.
+   rewrite H3 in H1. apply H1.
+Qed.
 
 Lemma appears_in_tree_two_last: forall {X: Type} b n1 n2 t1 t2 k,
   k >= n2 ->
   appears_in_tree k (bptNode b X [(n1, t1), (n2, t2)]) ->
   appears_in_tree k t2.
-Proof. Admitted.
+Proof. 
+  intros. remember (bptNode b X [(n1, t1), (n2, t2)]). destruct H0. inversion Heqb0.
+  inversion Heqb0. subst. assumption. inversion Heqb0. subst.  omega.
+  inversion Heqb0.
+Qed.
+  
 
 Lemma find_subtree_one_impl_found: forall {X: Type} b k n t key subtree,
   k >= n ->
   @find_subtree X b k [(n, t)] = Some (key, subtree) ->
   t = subtree.
-Proof. Admitted.
+Proof.
+  intros. simpl in H0. destruct (ble_nat n k). inversion H0. reflexivity. inversion H0.
+Qed.
+
 
 (* Informal: We know k appears in the parent tree, and we know that find_subtree
  * returns the subtree when searching for k, so hence k must also appear in the
  * subtree *)
 Lemma appears_in_subtree_when_appears_in_tree_and_found: 
     forall (X: Type) (b k key: nat) 
-    (parent subtree: bplustree b X) (kpl: list (nat * bplustree b X)),
+    (subtree: bplustree b X) (kpl: list (nat * bplustree b X)),
   
   kvl_sorted(kpl) ->
   appears_in_tree k (bptNode b X kpl) ->
@@ -186,18 +242,19 @@ Proof.
 	  symmetry in Heqloc. apply ble_and_blt_false in Heqloc.
 	  destruct kpl.
 	  SCase "kpl = []".
-	    destruct Heqloc. apply appears_in_tree_before_kpl_start_false in H0. inversion H0.
-	    assumption.
+	    destruct Heqloc.
+	    apply appears_in_tree_before_kpl_start_false in H0. inversion H0.
+	    assumption. assumption.
 	    apply appears_in_tree_two_last in H0.  apply find_subtree_later in H1. 
-	    apply find_subtree_one_impl_found in H1. rewrite <- H1. assumption. assumption.
-	    right. assumption. assumption.
+	    apply find_subtree_one_impl_found in H1. rewrite <- H1. assumption.  
+	    assumption. right. assumption. assumption. assumption.
 	  SCase "kpl = p :: kpl".
 	    destruct p.	    
 	    apply IHkpl. apply list_tail_is_sorted in H. assumption. 
 	    destruct Heqloc.
 	      apply appears_in_tree_before_kpl_start_false in H0; try assumption. inversion H0.
 	      eapply appears_in_later_subtree in H0. apply H0. reflexivity.  assumption. assumption.
-	    eapply find_subtree_later in Heqloc. apply Heqloc. apply H1.
+	    eapply find_subtree_later in Heqloc. apply Heqloc. apply H. apply H1.
 Qed.
   
 

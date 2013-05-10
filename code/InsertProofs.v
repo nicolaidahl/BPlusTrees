@@ -304,42 +304,7 @@ Proof.
       reflexivity.
 Qed.
 
-Lemma find_subtree_finds_a_subtree' : forall (X: Type) (b sk k0: nat) (t0: bplustree b X) (l: list (nat * bplustree b X)),
-  2 <= length ((k0, t0)::l) ->
-  k0 <= sk ->
-  exists key, exists child, find_subtree sk ((k0, t0)::l) = Some (key, child).
-Proof.
-  intros. generalize dependent k0. generalize dependent t0.
-  induction l.
-  Case "l = []".
-    intros.
-    simpl in H. exfalso. omega.
-  Case "l = a::l".
-    intros.
-    destruct a.
-    destruct l.
-    SCase "l = [_, _]".
-      assert (ble_nat k0 sk = true) by (apply ble_nat_true; assumption).
-      simpl. rewrite H1. simpl.
-      remember (blt_nat sk n).
-      destruct b1. exists k0. exists t0. reflexivity.
-      remember (ble_nat n sk).
-      destruct b1.
-      exists n. exists b0. reflexivity.
-      symmetry in Heqb1. apply blt_nat_false in Heqb1.
-      symmetry in Heqb0. apply ble_nat_false in Heqb0. 
-      exfalso. omega.
-    SCase "l = _::_::p::l".
-      simpl. simpl in IHl.
-      remember (ble_nat k0 sk && blt_nat sk n) as here.
-      destruct here.
-      exists k0. exists t0. reflexivity. 
-      apply IHl. omega.
-      symmetry in Heqhere. apply andb_false_iff in Heqhere.
-      inversion Heqhere.
-      apply ble_nat_false in H1. exfalso. omega.
-      apply blt_nat_false in H1. omega.
-Qed.
+
 
 Lemma find_subtree_finds_a_subtree : forall (X: Type) (b sk: nat) (l: list (nat * bplustree b X)),
   valid_bplustree b X (bptNode b X l) ->

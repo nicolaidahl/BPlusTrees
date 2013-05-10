@@ -85,9 +85,9 @@ Proof.
           apply valid_sub_bplustree_impl_valid_bplustree in H6.
           apply H6.
         assert (appears_in_tree sk b0).
-          apply appears_in_subtree_when_appears_in_tree_and_found with (parent := t) in Heqo.
-          apply Heqo.
-          rewrite H10. reflexivity. apply H0.
+          apply appears_in_subtree_when_appears_in_tree_and_found in Heqo.
+          apply Heqo. assumption.
+          rewrite H10. assumption.
         assert (counter = height b0).
           apply find_subtree_impl_kpl_app in H11.
           do 2 destruct H11. inversion H11. clear H11.
