@@ -5,8 +5,11 @@ Require Export ValidBPlusTree.
 Require Export InsertProofs.
 
 Lemma insert_into_node_impl_leaf_false: forall {X: Type} (b k counter: nat) (v: X) l l' (o: option (nat * bplustree b X)),
+  valid_bplustree b X (bptNode b X l) ->
   insert' counter k v (bptNode b X l) = (bptLeaf b X l', o) -> False.
-Proof. Admitted.
+Proof. 
+  intros. induction H. unfold insert' in H0. admit. admit.
+Admitted.
 
 Lemma insert_leaf_preserves_min_fan_out : forall {X: Type} b k v o counter l l', 
   valid_sub_bplustree b X (bptLeaf b X l) ->

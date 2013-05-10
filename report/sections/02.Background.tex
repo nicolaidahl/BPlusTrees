@@ -24,7 +24,18 @@ The B+ tree is a n-ary, self-balancing, tree data structure\todo{ref}, similar t
  \label{fig:bplustree}
 \end{figure}
 
-For a given B+ tree, a branching factor $b$ determines the capacity of nodes and leaves\todo{ref}. A node must have at least $b/2$ children, and at most $b$. A leaf must have between $b/2$ and $b$ values. This rule is relaxed for the root node, which must have between 2 and $b$ children.
+For a given B+ tree, a branching factor $b$ determines the capacity of nodes and
+leaves\todo{ref}. A node must have at least $b/2$ children, and at most $b$. A
+leaf must have between $b/2$ and $b$ values. This rule is relaxed for the root
+node, which must have between 2 and $b$ children. \todo{For nodes and 0 - 2*b for leaves}
+\paragraph{}
+In our implementation, a node is a list of key-pointer $(k, p)$ pairs where $p$ points to a child tree. A leaf is a list of key-value $(k, v)$. We support three operations, which we will refer to as our primary operations. These are: insert, search and height. Furthermore, we have implemented a simple in-order traversal, which we will not cover in this report.
 
-\subsubsection{Implementation}
-In our implementation, a node is a list of $(k, p)$ pairs, and a leaf is a list of $(k, v)$ pairs, through which we perform a linear search to find the correct value. Since Gallina does not support arrays, the only way to get lookups faster than $O(n)$ is through a tree structure, such as a B+ tree. This would add a large degree of complexity to our proofs, and since running time is not an objective of this project, it has been deemed out of scope.
+\subsubsection{Height}
+
+
+\subsubsection{Insertion}
+Since Gallina does not support arrays, the only way to get lookups faster than $O(n)$ is through a tree structure, such as a B+ tree. This would add a large degree of complexity to our proofs, and since running time is not an objective of this project, it has been deemed out of scope.
+
+\subsubsection{Search}
+
