@@ -72,7 +72,7 @@ InsertWorksProofs.vo: InsertWorksProofs.v SplitCutList.vo HelperFunctions.vo \
 	$(COQC) InsertWorksProofs.v
 
 SearchWorksProofs.vo: SearchWorksProofs.v BPlusTree.vo ValidBPlusTree.vo \
-											SortingProofs.vo AppearsInKVL.vo
+											SortingProofs.vo AppearsInKVL.vo InsertProofs.vo
 	$(COQC) SearchWorksProofs.v
 
 InsertSearchWorksProofs.vo: InsertSearchWorksProofs.v BPlusTree.vo \

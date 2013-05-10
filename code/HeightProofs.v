@@ -42,11 +42,11 @@ Lemma height_cons: forall (X: Type) (b k: nat) (p: bplustree b X) (l: list (nat 
 Proof.
   intros.
   inversion H.
-  inversion H6. 
+  inversion H7. 
     inversion H0.
     subst.
-    simpl in H14. apply ex_falso_quodlibet. omega.
+    simpl in H15. apply ex_falso_quodlibet. omega.
     simpl. 
-    unfold equal_height in H13.
-    rewrite beq_nat_true_iff in H13. omega.
+    unfold equal_height in H14.
+    rewrite beq_nat_true_iff in H14. omega.
 Qed.

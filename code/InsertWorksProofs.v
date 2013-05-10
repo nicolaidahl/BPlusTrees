@@ -576,16 +576,16 @@ Proof.
           apply height_of_parent_one_bigger in H7. rewrite <- H7 in H2.
           omega.
           inversion H.
-          apply H14.
+          apply H15.
         destruct b0.
         SSCase "child was a leaf".
           admit.
         SSCase "child was a node".
           inversion H.
-            clear H10. clear kpl0. clear H11. clear H12. clear H13. clear H15. clear H16. clear H17.
-          rewrite H7 in H14.
-          apply all_values_single in H14.
-          apply valid_sub_bplustree_impl_valid_bplustree in H14.
+            clear H10. clear kpl0. clear H11. clear H12. clear H13. clear H14. clear H16. clear H17. clear H18.
+          rewrite H7 in H15.
+          apply all_values_single in H15.
+          apply valid_sub_bplustree_impl_valid_bplustree in H15.
           
           apply IHcounter in Heqinsert_into_child; try assumption.
           inversion H3. rewrite H11. clear H3.
@@ -596,7 +596,7 @@ Proof.
             rewrite <- Heqkpl' in H5. apply H5.
           assert (kvl_sorted kpl').
             inversion H.
-            apply insert_preserves_sort with (k := n) (v := b1) in H18. 
+            apply insert_preserves_sort with (k := n) (v := b1) in H19. 
             rewrite Heqkpl'. assumption.
           symmetry in Heqkpl'.
           assert (insert_into_list n b1 kpl = kpl') by assumption.
@@ -621,8 +621,8 @@ Proof.
               rewrite override_in_list_app in H12.
               rewrite <- H12 in H10. apply H10. 
               inversion H. 
-              rewrite H7 in H22.
-              apply H22.     
+              rewrite H7 in H23.
+              apply H23.
             assert (witness0 = (n0, b0)::witness2). 
               rewrite H7 in H12.
               rewrite override_in_list_app in H12.
@@ -631,10 +631,10 @@ Proof.
               apply kvl_sorted_elim_common_head in H12.
               apply H12.
               apply H16.
-              apply H15.
+              apply H14.
               inversion H. 
-              rewrite H7 in H23.
-              apply H23.
+              rewrite H7 in H24.
+              apply H24.
             clear H16.
 
             assert (k < n0).
@@ -709,9 +709,9 @@ Proof.
       symmetry in Heqp. apply insert'_normal in Heqp; try assumption.
       constructor; try assumption.
       eapply insert'_not_split_impl_space_left in Heqp. apply Heqp. 
-        inversion H4. subst. simpl in H2. exfalso. omega.
+        inversion H5. subst. simpl in H2. exfalso. omega.
         subst.
-      constructor; try assumption. apply H0. apply H6.
+      constructor; try assumption. apply H0. apply H7.
 Admitted.
     
 

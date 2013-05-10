@@ -3,6 +3,7 @@ Require Export ValidBPlusTree.
 Require Export SortingProofs.
 Require Export AppearsInKVL.
 Require Export HeightProofs.
+Require Export InsertProofs.
 
 Theorem search_leaf_works_app : forall (X: Type) (k: nat) (v: X) (l1 l2: list (nat * X)), 
   kvl_sorted (l1 ++ (k, v) :: l2) ->
@@ -44,6 +45,64 @@ Proof.
 Qed.
 
 
+Theorem appears_search'_works : forall (counter b sk: nat) (X: Type) (t: bplustree b X),
+  valid_bplustree b X t ->
+  appears_in_tree sk t ->
+  counter = (height t) ->
+  exists v, search' counter sk t = Some(v).
+Proof.
+  induction counter.
+  Case "counter = 0".
+    intros.
+    inversion H. 
+    SCase "bptLeaf". 
+      subst. inversion H0.
+      apply search_leaf_works; assumption.
+    SCase "bptNode".
+      subst. simpl in H1.
+      destruct kpl.
+      simpl in H3. exfalso. omega.
+      destruct p. inversion H1.
+  Case "counter = S counter".
+    intros.
+    inversion H.
+    SCase "bptLeaf".
+      subst. simpl in H1. inversion H1.
+    SCase "bptNode".
+      simpl.
+      remember (find_subtree sk kpl).
+      destruct o.
+      SSCase "find_subtree = Some p". 
+        symmetry in Heqo. destruct p.
+        assert (find_subtree sk kpl = Some (n, b0)) by assumption.
+        (* Our goal here is to find all the requirements for using IHcounter
+         * on the tree b0. *)
+        assert (valid_bplustree b X b0).
+          apply find_subtree_impl_kpl_app in H11.
+          do 2 destruct H11. inversion H11. clear H11.
+          rewrite H12 in H6.
+          apply all_values_single in H6.
+          apply valid_sub_bplustree_impl_valid_bplustree in H6.
+          apply H6.
+        assert (appears_in_tree sk b0).
+          apply appears_in_subtree_when_appears_in_tree_and_found with (parent := t) in Heqo.
+          apply Heqo.
+          rewrite H10. reflexivity. apply H0.
+        assert (counter = height b0).
+          apply find_subtree_impl_kpl_app in H11.
+          do 2 destruct H11. inversion H11. clear H11.
+          apply height_of_parent_one_bigger in H14.
+          rewrite H10 in H14.
+          omega.
+          apply H7.
+          
+        apply IHcounter; assumption.
+      SSCase "find_subtree = None".
+        apply find_subtree_finds_a_subtree with (sk := sk) in H3.
+        do 2 destruct H3. rewrite H3 in Heqo.
+        inversion Heqo.
+Qed.
+    
 Theorem appears_search_works : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat),
   valid_bplustree b X t -> 
   appears_in_tree k t -> 
@@ -51,68 +110,7 @@ Theorem appears_search_works : forall (b: nat) (X: Type) (t: bplustree b X) (k: 
 Proof.
   intros.
   unfold search.
-  induction H0; inversion H.
-  Case "leaf".
-    simpl.
-    apply search_leaf_works.
-    SCase "l sorted".
-      assumption.
-    SCase "appears in l".
-      assumption.
-  Case "node last".
-    replace (height (bptNode b X [(k1,v1), (k2,v2)])) with (S (height v2)).
-    simpl.
-    remember (ble_nat k1 k && blt_nat k k2) as here.
-    destruct here.
-      symmetry in Heqhere. apply andb_true_iff in Heqhere. inversion Heqhere.
-      apply blt_nat_true in H11. exfalso. omega.
-    replace (ble_nat k2 k) with (true).
-    apply IHappears_in_tree.
-    inversion H6.
-    assert (valid_bplustree b X v2).
-      inversion H12.
-      apply valid_sub_bplustree_impl_valid_bplustree in H19. assumption.
-    assumption.
-    symmetry. apply ble_nat_true. omega.
-    apply height_of_parent_one_bigger with (l1 := [(k1, v1)]) (l2 := []) (k := k2). reflexivity. apply H7.    
-  Case "node here".
-    assert (height (bptNode b X ((k1, v1) :: (k2, v2) :: l)) = S (height v1)).
-      symmetry. apply height_of_parent_one_bigger with (l1 := []) (l2 := (k2, v2)::l) (k := k1). reflexivity. assumption.
-    assert (ble_nat k1 k && blt_nat k k2 = true).
-      apply andb_true_iff; split; [apply ble_nat_true | apply blt_nat_true]; omega.
-    simpl. rewrite H11.   
-    apply IHappears_in_tree.
-    assert (valid_bplustree b X v1).
-      inversion H6.
-      apply valid_sub_bplustree_impl_valid_bplustree in H16. assumption.
-    assumption.
-    
-  Case "node later".
-    destruct x.
-    inversion H8. apply blt_nat_true in H16. subst.
-    assert ((height (bptNode b X ((n, b0) :: (k1, v1) :: (k2, v2) :: l))) = (height (bptNode b X ((k1, v1) :: (k2, v2) :: l)))).
-      rewrite height_cons. reflexivity.
-      apply H.
-      simpl in H5.
-      constructor; try assumption; simpl; try omega.
-      simpl in H4. 
-      inversion H6. apply H11.
-      inversion H7. apply H11.
-      inversion H9. apply H17.
-    rewrite H2.
-    
-    simpl.
-    assert (ble_nat n k && blt_nat k k1 = false).
-      apply andb_false_iff. right. apply blt_nat_false. omega.
-    rewrite H10.
-    
-    simpl in IHappears_in_tree. apply IHappears_in_tree.
-    clear IHappears_in_tree.
-    inversion H6.
-    constructor; try assumption.
-    simpl. omega. 
-    simpl. simpl in H5. omega.
-    inversion H7. apply H20.
-    inversion H9. apply H24.
+  remember (height t) as counter.
+  apply appears_search'_works; assumption.
 Qed.
 

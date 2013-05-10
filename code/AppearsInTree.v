@@ -91,6 +91,19 @@ Proof.
       apply kvl_sorted_key_across_app with (l1 := ((n0, b1)::l1)) in H1.
       omega.
 Qed.    
+
+Lemma appears_in_subtree_when_appears_in_tree_and_found: forall (X: Type) (b k key: nat) (parent subtree: bplustree b X) (kpl: list (nat * bplustree b X)),
+  parent = bptNode b X kpl -> 
+  appears_in_tree k parent ->
+  find_subtree k kpl = Some (key, subtree) ->
+  
+  appears_in_tree k subtree.
+Proof.
+  (* Informal: We know k appears in the parent tree, and we know that find_subtree
+   * returns the subtree when searching for k, so hence k must also appear in the
+   * subtree *)
+  admit.
+Admitted.  
   
 (*
 Lemma key_valid_when_appears_and_between : forall (X: Type) (b k1 k2 sk: nat) (t: bplustree b X), 

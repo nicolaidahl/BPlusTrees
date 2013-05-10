@@ -27,7 +27,8 @@ Inductive valid_sub_bplustree (b: nat) (X: Type) : bplustree b X -> Prop :=
   | valid_node : forall (kpl: list (nat * bplustree b X)),
                       b <> 0 -> 
                       S b <= length(kpl) -> 
-                      length(kpl) <= S (mult b 2) -> 
+                      length(kpl) <= S (mult b 2) ->
+                      key_at_index 0 kpl = Some 0 -> 
                       all_values (bplustree b X) (valid_sub_bplustree b X) kpl ->
                       all_values_eq_prop (bplustree b X) equal_height kpl ->
                       kvl_sorted kpl ->
@@ -45,7 +46,8 @@ Inductive valid_bplustree (b: nat) (X: Type) : bplustree b X -> Prop :=
   | valid_root_node : forall (kpl: list (nat * bplustree b X)),
                       b <> 0 -> 
                       2 <= length(kpl) -> 
-                      length(kpl) <= S (mult b 2) -> 
+                      length(kpl) <= S (mult b 2) ->
+                      key_at_index 0 kpl = Some 0 -> 
                       all_values (bplustree b X) (valid_sub_bplustree b X) kpl ->
                       all_values_eq_prop (bplustree b X) equal_height kpl ->
                       kvl_sorted kpl ->  
@@ -66,7 +68,8 @@ Example valid_small_tree : valid_bplustree 1 nat root.
 Proof. compute. apply valid_root_node. 
   Case "valid b". omega.
   Case "has enough items". simpl. omega.
-  Case "doesnt have too many items". simpl. omega. 
+  Case "doesnt have too many items". simpl. omega.
+  Case "first key is 0". simpl. reflexivity.
   Case "kvl". apply av_next. apply av_next. apply av_next. apply av_empty.
     apply valid_leaf. omega. simpl. omega.  simpl. omega. apply kvl_sorted_1.
     apply valid_leaf. omega. simpl. omega.  simpl. omega. apply kvl_sorted_1.
@@ -85,7 +88,8 @@ Proof. compute.
   constructor. 
   Case "valid b". omega.
   Case "has enough items". simpl. omega.
-  Case "doesnt have too many items". simpl. omega.  
+  Case "doesnt have too many items". simpl. omega.
+  Case "first key is 0". reflexivity.  
   Case "kvl". repeat constructor. omega. omega. omega.
   Case "valid height". repeat constructor.
   Case "valid sorting". repeat constructor.
