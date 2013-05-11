@@ -93,8 +93,6 @@ Proof.
       omega.
 Qed.    
 
-
-
 Lemma appears_in_known_subtree: forall {X:Type} b n1 k n2 t1 t2 kpl kpl', 
   kpl = bptNode b X ((n1, t1) :: (n2, t2) :: kpl') ->
   n1 <= k < n2 ->
@@ -128,13 +126,6 @@ Proof.
   apply kvl_sorted_key_across_app with (k1:=n)(v1:=t)(k2:=k1)(v2:=v1)(l1:=[])(l2:=(k2, v2)::l) in H0. 
   omega.
 Qed.
-
-
-
-
-  
-
-
 
 Lemma appears_in_tree_two_last: forall {X: Type} b n1 n2 t1 t2 k,
   k >= n2 ->

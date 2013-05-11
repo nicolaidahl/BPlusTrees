@@ -111,6 +111,21 @@ Proof.
   split; intros; omega.
 Qed.
 
+(* 
+ * Proofs about beq_nat and = 
+ *)
+
+Lemma eq_remove_S : forall (n m: nat),
+  n = m -> S n = S m.
+Proof.
+  intros.
+  omega.
+Qed.
+
+
+(*
+ * Proofs about between (ble && ble)
+ *)
 
 Lemma ble_and_blt_true: forall n m k,
   ble_nat n k && blt_nat k m = true ->
@@ -128,18 +143,6 @@ Proof.
   apply ble_nat_true in Heqb. apply blt_nat_false in H. right. omega. 
   symmetry in Heqb. apply ble_nat_false in Heqb. left. omega.
 Qed.
-
-(* 
- * Proofs about beq_nat and = 
- *)
-
-Lemma eq_remove_S : forall (n m: nat),
-  n = m -> S n = S m.
-Proof.
-  intros.
-  omega.
-Qed.
-
 
 (*
  * Proofs about min_nat

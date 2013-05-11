@@ -317,9 +317,6 @@ Proof.
       reflexivity.
 Qed.
 
-
-
-
 Lemma insert_into_list_app : forall (X: Type) (k: nat) (v: X) (kpl kpl': list (nat * X)),
   insert_into_list k v kpl = kpl' ->
   exists l1, exists l2, kpl' = l1 ++ (k,v)::l2.

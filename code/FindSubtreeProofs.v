@@ -42,6 +42,20 @@ Proof.
       apply blt_nat_false in H1. omega.
 Qed.
 
+Lemma find_subtree_finds_a_subtree : forall (X: Type) (b sk: nat) (l: list (nat * bplustree b X)),
+  valid_bplustree b X (bptNode b X l) ->
+  exists key, exists child, find_subtree sk l = Some (key, child).
+Proof.
+  intros.
+  inversion H.
+  destruct l.  simpl in H2. exfalso. omega.
+  destruct p.
+  simpl in H4. inversion H4.
+  apply find_subtree_finds_a_subtree'.
+    assumption.
+    omega.
+Qed.
+
 Lemma find_subtree_before_head_None: forall {X: Type} {b: nat} n k t kpl,
   n > k -> kvl_sorted ((n, t) :: kpl) ->
   @find_subtree X b k ((n, t) :: kpl) = None.
@@ -83,20 +97,6 @@ Lemma find_subtree_one_impl_found: forall {X: Type} b k n t key subtree,
 Proof.
   intros. simpl in H0. destruct (ble_nat n k). inversion H0. split. reflexivity. 
   reflexivity. inversion H0.
-Qed.
-
-Lemma find_subtree_finds_a_subtree : forall (X: Type) (b sk: nat) (l: list (nat * bplustree b X)),
-  valid_bplustree b X (bptNode b X l) ->
-  exists key, exists child, find_subtree sk l = Some (key, child).
-Proof.
-  intros.
-  inversion H.
-  destruct l.  simpl in H2. exfalso. omega.
-  destruct p.
-  simpl in H4. inversion H4.
-  apply find_subtree_finds_a_subtree'.
-    assumption.
-    omega.
 Qed.
 
 Lemma find_subtree_impl_kpl_app : forall (X: Type) (b sk key: nat) (kpl: list (nat * bplustree b X)) (subtree: bplustree b X),
@@ -324,8 +324,6 @@ Qed.
     
 
   
-
-
 
 
 
