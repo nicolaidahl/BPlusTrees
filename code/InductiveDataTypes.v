@@ -15,8 +15,8 @@ Example test := bptLeaf 2 bool [(1, true), (2, false)].
 
 
 Inductive appears_in_kvl {X:Type} (sk: nat) : list (nat * X) -> Prop :=
-  | ai_here : forall v l, appears_in_kvl sk ((sk, v)::l)
-  | ai_later : forall k v l, appears_in_kvl sk l -> appears_in_kvl sk ((k, v)::l).
+  | aik_here : forall v l, appears_in_kvl sk ((sk, v)::l)
+  | aik_later : forall k v l, appears_in_kvl sk l -> appears_in_kvl sk ((k, v)::l).
   
 Inductive appears_in_tree {X:Type} {b: nat} (sk: nat) : bplustree b X -> Prop :=
   | ait_leaf          : forall l,       appears_in_kvl sk l -> appears_in_tree sk (bptLeaf b X l)

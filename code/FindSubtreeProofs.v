@@ -1,6 +1,5 @@
 Require Export InductiveDataTypes.
 Require Export BPlusTree.
-Require Export SfLib.
 Require Export HelperProofs.
 Require Export SortingProofs.
 
@@ -80,9 +79,10 @@ Qed.
 Lemma find_subtree_one_impl_found: forall {X: Type} b k n t key subtree,
   k >= n ->
   @find_subtree X b k [(n, t)] = Some (key, subtree) ->
-  t = subtree.
+  n = key /\ t = subtree.
 Proof.
-  intros. simpl in H0. destruct (ble_nat n k). inversion H0. reflexivity. inversion H0.
+  intros. simpl in H0. destruct (ble_nat n k). inversion H0. split. reflexivity. 
+  reflexivity. inversion H0.
 Qed.
 
 Lemma find_subtree_finds_a_subtree : forall (X: Type) (b sk: nat) (l: list (nat * bplustree b X)),
@@ -242,10 +242,30 @@ Admitted.
         remember 
 *)      
 
-Lemma find_subtree_impl_key_appears : forall (X: Type) (b k key: nat) (kpl: list (nat * bplustree b X)) (subtree: bplustree b X), 
+Lemma find_subtree_impl_key_appears : forall (X: Type) (b k key: nat) 
+                                      (kpl: list (nat * bplustree b X)) (subtree: bplustree b X), 
   find_subtree k kpl = Some (key, subtree) -> 
   appears_in_kvl key kpl.
 Proof.
-  admit.
+  intros. induction kpl. simpl in H. inversion H.
+  destruct a. destruct kpl.
+  Case "kpl = []".
+    apply find_subtree_one_impl_found in H. destruct H. rewrite H.
+    apply aik_here.
+    
 Admitted.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

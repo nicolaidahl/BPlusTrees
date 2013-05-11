@@ -181,7 +181,7 @@ Proof.
 	    apply appears_in_tree_before_kpl_start_false in H0. inversion H0.
 	    assumption. assumption.
 	    apply appears_in_tree_two_last in H0.  apply find_subtree_later in H1. 
-	    apply find_subtree_one_impl_found in H1. rewrite <- H1. assumption.  
+	    apply find_subtree_one_impl_found in H1. destruct H1. rewrite <- H3. assumption.  
 	    assumption. right. assumption. assumption. assumption.
 	  SCase "kpl = p :: kpl".
 	    destruct p.	    
@@ -236,4 +236,6 @@ Proof.
       apply H11.
     admit.
 *) 
+
+
   

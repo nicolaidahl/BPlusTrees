@@ -13,9 +13,9 @@ Lemma element_at_index_impl_appears: forall (X: Type) (b k: nat) (v: X) (l: list
 Proof.
   intro X. induction b; intros; destruct l; inversion H; destruct p.
   Case "b = 0".
-     inversion H. apply ai_here.
+     inversion H. apply aik_here.
   Case "b = S b".
-    apply ai_later. apply IHb with (v:=v). inversion H. reflexivity.
+    apply aik_later. apply IHb with (v:=v). inversion H. reflexivity.
 Qed.
 
 Lemma appears_in_kvl_app : forall (X: Type) (k: nat) (l: list (nat*X)),
@@ -30,8 +30,8 @@ Lemma appears_in_super_set_appears : forall (X: Type) k (x: (nat*X)) (l l': list
   x :: l' = l -> appears_in_kvl k l' -> appears_in_kvl k l.
 Proof.
   intros. generalize dependent l. generalize dependent x. induction H0. intros. 
-  rewrite <- H. destruct x. apply ai_later. apply ai_here.
-  intros. destruct l0. inversion H. inversion H. destruct p. apply ai_later.
+  rewrite <- H. destruct x. apply aik_later. apply aik_here.
+  intros. destruct l0. inversion H. inversion H. destruct p. apply aik_later.
   apply IHappears_in_kvl with (x:= (k0, v)). reflexivity.
 Qed.
 
@@ -42,24 +42,24 @@ Lemma appears_in_kvl_dist_app : forall (X: Type) (k: nat) (l l1 l2: list (nat*X)
   appears_in_kvl k l1 \/ appears_in_kvl k l2.
 Proof.
   intros. generalize dependent l1. induction H0; intros.
-  Case "ai_here".
+  Case "aik_here".
     destruct l1. destruct l2; inversion H. destruct p. simpl in H1.
-    inversion H1. right. apply ai_here.
-    destruct p. inversion H. left. apply ai_here.
-  Case "ai_later".
+    inversion H1. right. apply aik_here.
+    destruct p. inversion H. left. apply aik_here.
+  Case "aik_later".
     destruct l1. simpl in H. right. eapply appears_in_super_set_appears. apply H. assumption.
     inversion H. 
       assert(
         appears_in_kvl k l1 \/ appears_in_kvl k l2 ->
         appears_in_kvl k ((k0, v) :: l1) \/ appears_in_kvl k l2). 
-        intros. destruct H1. left. apply ai_later. assumption. right. assumption. 
+        intros. destruct H1. left. apply aik_later. assumption. right. assumption. 
     apply H1. apply IHappears_in_kvl. apply H3.
 Qed.
 
 Theorem appears_kvl_appears_leaf_tree: forall {X: Type} (b: nat) k l,
   appears_in_kvl k l -> appears_in_tree k (bptLeaf b X l).
 Proof.
-  intros. induction H. apply ait_leaf. apply ai_here. apply ait_leaf.
+  intros. induction H. apply ait_leaf. apply aik_here. apply ait_leaf.
   eapply appears_in_super_set_appears. reflexivity. apply H.
 Qed.
 
@@ -82,7 +82,7 @@ Proof.
   intros.
   induction l.
   Case "l = []".
-    simpl. apply ai_here.
+    simpl. apply aik_here.
   Case "l = a::l".
     destruct a. simpl. 
     remember (ble_nat k n) as klen. 
@@ -90,11 +90,11 @@ Proof.
     SCase "k <= n". remember (beq_nat k n) as keqn. 
       destruct keqn; symmetry in Heqkeqn; [apply beq_nat_true_iff in Heqkeqn | apply beq_nat_false_iff in Heqkeqn].
       SSCase "k = n".
-        apply ai_here.
+        apply aik_here.
       SSCase "k <> n".
-      apply ai_here.
+      apply aik_here.
     SCase "k > n".
-      apply ai_later. apply IHl.
+      apply aik_later. apply IHl.
 Qed.
 
 

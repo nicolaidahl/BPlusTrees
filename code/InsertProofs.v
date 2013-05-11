@@ -22,13 +22,13 @@ Proof.
       destruct keqn; symmetry in Heqkeqn; [apply beq_nat_true_iff in Heqkeqn | apply beq_nat_false_iff in Heqkeqn].
       SSCase "k = n".
         rewrite Heqkeqn in H.
-        apply ex_falso_quodlibet. apply H. apply ai_here.
+        apply ex_falso_quodlibet. apply H. apply aik_here.
       SSCase "k < n".
         simpl. omega.
     SCase "k > n".
       simpl.
       apply n_lt_m__Sn_lt_Sm.
-      apply IHl. unfold not. intro. apply H. apply ai_later. apply H0.
+      apply IHl. unfold not. intro. apply H. apply aik_later. apply H0.
 Qed.
 
 Lemma insert_leaf_not_split_impl_space_left: forall {X: Type} (b: nat) k (v:X) l l',
@@ -119,7 +119,7 @@ Proof.
       SSCase "k = n0".
         subst.
         apply ex_falso_quodlibet.
-        apply H0. apply ai_here.
+        apply H0. apply aik_here.
       SSCase "k < n0".
         simpl. simpl in H1. omega.
     SCase "k > n0".
@@ -130,7 +130,7 @@ Proof.
       unfold not.
       intros.
       apply H0.
-      apply ai_later. apply H2.
+      apply aik_later. apply H2.
       simpl in H1. omega.
 Qed.
 
@@ -153,7 +153,7 @@ Proof.
       SSCase "k = n0".
         subst. simpl.
         apply ex_falso_quodlibet.
-        apply H0. apply ai_here.
+        apply H0. apply aik_here.
       SSCase "k < n0".
         simpl. simpl in H1. omega.
     SCase "k > n0".
@@ -164,7 +164,7 @@ Proof.
       unfold not.
       intros.
       apply H0.
-      apply ai_later. apply H2.
+      apply aik_later. apply H2.
       simpl in H1. omega.
 Qed.
 
