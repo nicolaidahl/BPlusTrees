@@ -380,7 +380,7 @@ Proof.
       remember (beq_nat k3 n) as k3eqn.
       destruct k3eqn; symmetry in Heqk3eqn; [apply beq_nat_true_iff in Heqk3eqn|apply beq_nat_false_iff in Heqk3eqn].
       SSSCase "k3 = n". subst.
-        apply ex_falso_quodlibet. apply H. apply ai_here.
+        apply ex_falso_quodlibet. apply H. apply aik_here.
       SSSCase "k3 < n".
         apply H1.
     SSCase "k3 > n".
@@ -391,7 +391,7 @@ Proof.
       SSSCase "b = S b".
        simpl in H1.
        eapply IHl.
-         unfold not. intro. apply H. apply ai_later. apply H3.
+         unfold not. intro. apply H. apply aik_later. apply H3.
          apply list_tail_is_sorted in H0. apply H0.
          apply H1.
          apply H2.

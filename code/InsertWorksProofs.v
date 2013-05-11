@@ -7,6 +7,7 @@ Require Export AppearsInKVL.
 Require Export AppearsInTree.
 Require Export ElementAtIndexProofs.
 Require Export SplitCutList.
+Require Export FindSubtreeProofs.
 Require Export InsertProofs.
   
 Lemma list_of_length_b_implies_element_at_b : forall (X: Type) (b: nat) (kvl: list (nat* X)),
@@ -48,7 +49,7 @@ Proof.
     remember (beq_nat n k) as neqk.
     destruct neqk; symmetry in Heqneqk; [apply beq_nat_true_iff in Heqneqk|apply beq_nat_false_iff in Heqneqk].
     SCase "n = k".
-      subst. apply ex_falso_quodlibet. apply H1. apply ai_here.
+      subst. apply ex_falso_quodlibet. apply H1. apply aik_here.
     SCase "n <> k".
       remember (ble_nat n k) as nlek.
       destruct nlek; symmetry in Heqnlek; [apply ble_nat_true in Heqnlek|apply ble_nat_false in Heqnlek].
@@ -89,13 +90,13 @@ Proof.
            rewrite <- insert_new_into_list_increases_length with (k := k) (v := v) (l := leaf) in H4.
            simpl. rewrite H4.  omega.
            apply list_tail_is_sorted in H0. assumption.
-           unfold not. intro. apply H1. apply ai_later. assumption.
+           unfold not. intro. apply H1. apply aik_later. assumption.
            reflexivity.
          SSSSCase "appears_in_kvl n kvl".
            assumption.
-         apply ai_later.
+         apply aik_later.
          apply insert_into_list_appears.
-         unfold not. intro. apply H1. apply ai_later. assumption.
+         unfold not. intro. apply H1. apply aik_later. assumption.
        SSSCase "n = k".
          apply ex_falso_quodlibet. apply Heqneqk. apply H6.
       SSCase "n > k".
@@ -175,7 +176,7 @@ Proof.
            rewrite H4. omega.
            apply list_tail_is_sorted in H0. apply H0. 
            unfold not. intro. apply H1.
-           apply ai_later. apply H8.
+           apply aik_later. apply H8.
            reflexivity.
          SSSSCase "left = p::left". 
            destruct p.
@@ -183,7 +184,7 @@ Proof.
            apply appears_in_kvl_dist_app with (k := k) in H11.
            destruct H11.
            SSSSSCase "appears in left".
-             apply ai_later. apply H8.
+             apply aik_later. apply H8.
            SSSSSCase "appears in right".
              (* This case is bogus *)
              symmetry in H7. apply split_list_left_length in H7. 
@@ -220,10 +221,10 @@ Proof.
              rewrite <- insert_new_into_list_increases_length with (k:=k) (v:=v) (l := leaf) in H4.
              simpl. rewrite H4. omega.
              apply list_tail_is_sorted in H0. assumption.
-             unfold not. intro. apply H1. apply ai_later. assumption.
+             unfold not. intro. apply H1. apply aik_later. assumption.
              reflexivity.
            apply insert_into_list_appears.
-           unfold not. intro. apply H1. apply ai_later. assumption.           
+           unfold not. intro. apply H1. apply aik_later. assumption.           
         SSSCase "n = k".
          apply ex_falso_quodlibet. apply Heqneqk. apply H6.
       SSCase "n > k".
@@ -244,7 +245,7 @@ Proof.
               omega.
             SSSCase "left = p::left".
               destruct p.
-              rewrite <- app_comm_cons in Heqsplit. inversion Heqsplit. apply ai_here.
+              rewrite <- app_comm_cons in Heqsplit. inversion Heqsplit. apply aik_here.
               omega.
 Qed.
 
@@ -259,7 +260,7 @@ Proof.
   Case "leaf = []".
     intros.
     destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
-    compute in H3. inversion H3. apply ai_here.
+    compute in H3. inversion H3. apply aik_here.
   Case "leaf = a::leaf".
     intros.
     destruct p.
@@ -267,7 +268,7 @@ Proof.
     destruct neqk; symmetry in Heqneqk; [apply beq_nat_true_iff in Heqneqk|apply beq_nat_false_iff in Heqneqk].
     SCase "n = k".
       rewrite insert_leaf_cons_eq in H3.
-      inversion H3. apply ai_here. apply H. apply H0. 
+      inversion H3. apply aik_here. apply H. apply H0. 
       rewrite Heqneqk. reflexivity.
       simpl. simpl in H2. omega.
     SCase "n <> k".
@@ -277,7 +278,7 @@ Proof.
        apply le_lt_or_eq_iff in Heqnlek. inversion Heqnlek.
        SSSCase "n < k".
          rewrite insert_leaf_cons_gt in H3.
-         inversion H3. apply ai_later.
+         inversion H3. apply aik_later.
          apply insert_into_list_appears.
          apply H.
          apply H0.
@@ -287,7 +288,7 @@ Proof.
          apply ex_falso_quodlibet. apply Heqneqk. apply H4.
       SSCase "n > k".
         rewrite insert_leaf_cons_lt in H3.
-        inversion H3. apply ai_here.
+        inversion H3. apply aik_here.
         apply H.
         apply H0.
         omega.
@@ -472,12 +473,7 @@ Proof.
   rewrite Heqp in H1. apply H1.
 Qed.
 
-Lemma find_subtree_impl_key_appears : forall (X: Type) (b k key: nat) (kpl: list (nat * bplustree b X)) (subtree: bplustree b X), 
-  find_subtree k kpl = Some (key, subtree) -> 
-  appears_in_kvl key kpl.
-Proof.
-  admit.
-Admitted.
+
 
 Theorem insert'_normal : forall {X: Type} {counter b: nat} (kpl: list (nat * bplustree b X)) (tree: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X (bptNode b X kpl) -> 

@@ -111,7 +111,6 @@ Proof.
   split; intros; omega.
 Qed.
 
-
 (* 
  * Proofs about beq_nat and = 
  *)
