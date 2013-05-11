@@ -182,18 +182,42 @@ Proof.
       apply blt_nat_false in H1. omega.
 Qed.
 
+Lemma find_subtree_before_head_None: forall {X: Type} {b: nat} n k t kpl,
+  n > k -> kvl_sorted ((n, t) :: kpl) ->
+  @find_subtree X b k ((n, t) :: kpl) = None.
+Proof.
+  intros. generalize dependent n. generalize dependent t. induction kpl. intros.
+  Case "kpl = []".
+    simpl. assert (ble_nat n k = false). apply ble_nat_false.  omega.
+    rewrite H1. reflexivity.
+  Case "kpl = a :: kpl".
+    intros. destruct a. simpl. 
+    assert (ble_nat n k = false). apply ble_nat_false. omega.
+    rewrite H1. simpl. apply IHkpl.  
+    apply kvl_sorted_key_across_app with (l1:=[])(l2:=kpl) in H0. omega.
+    apply list_tail_is_sorted in H0. assumption.
+Qed.
+  
+
 Lemma find_subtree_later: forall {X: Type} b n1 n2 k t1 t2 kpl key subtree,
   n1 > k \/ k >= n2 ->
   kvl_sorted((n1, t1) :: (n2, t2) :: kpl) ->
   @find_subtree X b k ((n1, t1) :: (n2, t2) :: kpl) = Some (key, subtree) ->
   @find_subtree X b k ((n2, t2) :: kpl) = Some (key, subtree).
 Proof.
-  intros. destruct H. admit.
+  intros. destruct H. 
+  eapply find_subtree_before_head_None in H0. rewrite H0 in H1. inversion H1.
+  assumption.
   simpl in H1. assert (~ (k < n2)). omega. apply blt_nat_false in H2.
   assert (ble_nat n1 k && blt_nat k n2 = false). unfold andb. rewrite H2. 
     destruct (ble_nat n1 k). reflexivity. reflexivity.
    rewrite H3 in H1. apply H1.
 Qed.
+
+
+  
+
+
 
 Lemma appears_in_tree_two_last: forall {X: Type} b n1 n2 t1 t2 k,
   k >= n2 ->
