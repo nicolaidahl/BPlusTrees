@@ -355,8 +355,9 @@ Proof.
         split. reflexivity.
         right. exists n0. exists b1. exists kpl.
         split. reflexivity.
-        symmetry in Heqhere. apply andb_true_iff in Heqhere.
-        inversion Heqhere. apply blt_nat_true in H3. omega.
+        symmetry in Heqhere.
+        apply ble_and_blt_true in Heqhere.
+        omega.
       SSCase "found later".
         apply IHkpl in H.
         do 2 destruct H.

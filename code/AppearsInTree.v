@@ -3,6 +3,7 @@ Require Export InductiveDataTypes.
 Require Export BPlusTree.
 Require Export ValidBPlusTree.
 Require Export SortingProofs.
+Require Export HelperProofs.
 
 Lemma appears_in_split_node_appears_in_lists: forall {X: Type} b k n left right, 
   kvl_sorted (left ++ right) ->
@@ -92,23 +93,6 @@ Proof.
       omega.
 Qed.    
 
-Lemma ble_and_blt_true: forall n m k,
-  ble_nat n k && blt_nat k m = true ->
-  n <= k < m.
-Proof.
-  intros. unfold andb in H. remember (ble_nat n k). destruct b. apply blt_nat_true in H.
-  symmetry in Heqb. apply ble_nat_true in Heqb. omega. inversion H.
-Qed.
-
-Lemma ble_and_blt_false: forall n m k,
-  ble_nat n k && blt_nat k m = false ->
-  n > k \/ k >= m.
-Proof.
-  intros. unfold andb in H. remember (ble_nat n k). destruct b. symmetry in Heqb.
-  apply ble_nat_true in Heqb. apply blt_nat_false in H. right. omega. 
-  symmetry in Heqb. apply ble_nat_false in Heqb. left. omega.
-Qed.
-
 Lemma appears_in_known_subtree: forall {X:Type} b n1 k n2 t1 t2 kpl kpl', 
   kpl = bptNode b X ((n1, t1) :: (n2, t2) :: kpl') ->
   n1 <= k < n2 ->
@@ -174,10 +158,9 @@ Proof.
       destruct here.
       exists k0. exists t0. reflexivity. 
       apply IHl. omega.
-      symmetry in Heqhere. apply andb_false_iff in Heqhere.
-      inversion Heqhere.
-      apply ble_nat_false in H1. exfalso. omega.
-      apply blt_nat_false in H1. omega.
+      symmetry in Heqhere. 
+      apply ble_and_blt_false in Heqhere.
+      inversion Heqhere; [exfalso|]; omega.
 Qed.
 
 Lemma find_subtree_later: forall {X: Type} b n1 n2 k t1 t2 kpl key subtree,

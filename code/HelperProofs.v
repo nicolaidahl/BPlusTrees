@@ -125,6 +125,27 @@ Qed.
 
 
 (*
+ * Proofs about between (ble && ble)
+ *)
+
+Lemma ble_and_blt_true: forall n m k,
+  ble_nat n k && blt_nat k m = true ->
+  n <= k < m.
+Proof.
+  intros. unfold andb in H. remember (ble_nat n k). destruct b. apply blt_nat_true in H.
+  symmetry in Heqb. apply ble_nat_true in Heqb. omega. inversion H.
+Qed.
+
+Lemma ble_and_blt_false: forall n m k,
+  ble_nat n k && blt_nat k m = false ->
+  n > k \/ k >= m.
+Proof.
+  intros. unfold andb in H. remember (ble_nat n k). destruct b. symmetry in Heqb.
+  apply ble_nat_true in Heqb. apply blt_nat_false in H. right. omega. 
+  symmetry in Heqb. apply ble_nat_false in Heqb. left. omega.
+Qed.
+
+(*
  * Proofs about min_nat
  *)
 Theorem min_nat_works : forall (n1 n2: nat),

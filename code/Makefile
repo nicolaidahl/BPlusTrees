@@ -45,7 +45,7 @@ AppearsInKVL.vo: AppearsInKVL.v HelperProofs.vo BPlusTree.vo \
 
 AppearsInTree.vo: AppearsInTree.v ValidBPlusTree.vo \
 									BPlusTree.vo AppearsInKVL.vo InductiveDataTypes.vo \
-									SortingProofs.vo
+									SortingProofs.vo HelperProofs.vo
 	$(COQC) AppearsInTree.v
 
 ElementAtIndexProofs.vo: ElementAtIndexProofs.v HelperFunctions.vo \
