@@ -105,6 +105,20 @@ Proof.
   admit.
 Admitted.  
   
+Lemma appears_in_tree_when_appears_in_subtree_and_found: forall (X: Type) (b k key: nat) (parent subtree: bplustree b X) (kpl: list (nat * bplustree b X)),
+  parent = bptNode b X kpl ->
+  find_subtree k kpl = Some (key, subtree) ->
+  appears_in_tree k subtree ->
+
+  appears_in_tree k parent.
+Proof.
+  (* Informal: We know k appears in the subtree that find_subtree returns, so
+   * when appears_in_tree k parent tries to identify the subtree, it will find
+   * the same as find_subtree, and because it exists in the subtree, it must also
+   * exists in the parent tree *)
+  admit.
+Admitted.
+
 (*
 Lemma key_valid_when_appears_and_between : forall (X: Type) (b k1 k2 sk: nat) (t: bplustree b X), 
   appears_in_tree sk t ->
