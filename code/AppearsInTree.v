@@ -115,7 +115,7 @@ Lemma appears_in_known_subtree: forall {X:Type} b n1 k n2 t1 t2 kpl kpl',
   appears_in_tree k (kpl) ->
   appears_in_tree k t1.
 Proof.
-  intros. induction H1; inversion H; subst; try omega.
+  intros. induction H1; inversion H; subst; try (exfalso; omega).
   Case "ait_here".
     assumption.
 Qed.
@@ -127,11 +127,9 @@ Lemma appears_in_later_subtree: forall {X:Type} b n1 k n2 n3 t1 t2 t3 kpl kpl',
   appears_in_tree k kpl ->
   appears_in_tree k (bptNode b X ((n2, t2) :: (n3, t3) :: kpl')).
 Proof. 
-  intros. induction H2; inversion H; subst. 
-  omega.
+  intros. induction H2; inversion H; subst; try (exfalso; omega).
   assumption.
 Qed.
-
 
 Lemma appears_in_tree_before_kpl_start_false: forall {X:Type} b n k t kpl, 
   n > k ->
@@ -201,7 +199,7 @@ Lemma appears_in_tree_two_last: forall {X: Type} b n1 n2 t1 t2 k,
   appears_in_tree k t2.
 Proof. 
   intros. remember (bptNode b X [(n1, t1), (n2, t2)]). destruct H0. inversion Heqb0.
-  inversion Heqb0. subst. assumption. inversion Heqb0. subst.  omega.
+  inversion Heqb0. subst. assumption. inversion Heqb0. subst. exfalso. omega.
   inversion Heqb0.
 Qed.
   
