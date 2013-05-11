@@ -179,8 +179,18 @@ Lemma override_in_list_app : forall (X: Type) (k: nat) (v1 v2: X) (l1 l2: list (
   kvl_sorted (l1 ++ (k, v1)::l2) -> 
   insert_into_list k v2 (l1 ++ (k, v1)::l2) = l1 ++ (k,v2)::l2.
 Proof.
-  admit.
-Admitted.
+  intros. induction l1. 
+  Case "l1 = []".
+    simpl. rewrite ble_nat_symm. rewrite <- beq_nat_refl. reflexivity.
+  Case "l1 = a :: l1".
+    destruct a. simpl. assert (kvl_sorted (((n, x) :: l1) ++ (k, v1) :: l2)) by assumption. 
+    apply kvl_sorted_key_across_app in H. 
+    assert (ble_nat k n = false).
+      apply ble_nat_false. omega. rewrite H1. apply cons_remove. apply IHl1.
+      apply list_tail_is_sorted in H0. apply H0.
+Qed.
+  
+
 
 Lemma insert_leaf_cons_eq : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
   b <> 0 -> kvl_sorted ((k2, v2)::l) -> 
@@ -250,7 +260,9 @@ Proof.
 Qed.
 
 Lemma insert_leaf_cons_gt : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
-  b <> 0 -> kvl_sorted ((k2,v2)::l) -> k1 > k2 -> length((k2,v2)::l) < mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k2,v2):: insert_into_list k1 v1 l, None).
+  b <> 0 -> kvl_sorted ((k2,v2)::l) -> k1 > k2 -> 
+  length((k2,v2)::l) < mult b 2 -> 
+  insert_leaf b k1 v1 ((k2, v2) :: l) = ((k2,v2):: insert_into_list k1 v1 l, None).
 Proof.
   intros.
   destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
@@ -400,4 +412,54 @@ Proof.
 Qed.
 
 
+
+
+
+Lemma find_subtree_after_replace: forall (X: Type) (b key sk: nat) (t1 t2: bplustree b X) (kpl: list (nat * bplustree b X)),
+  valid_bplustree b X (bptNode b X kpl) ->
+  find_subtree sk kpl = Some (key, t1) ->
+  find_subtree sk (insert_into_list key t2 kpl) = Some (key, t2).
+Proof.
+  intros. 
+  remember (bptNode b X kpl) as node.
+  destruct H. inversion Heqnode.
+  inversion Heqnode. subst. assert (kvl_sorted kpl) by assumption. 
+  apply insert_preserves_sort with (k:=key)(v:=t2) in H6.
+  remember (insert_into_list key t2 kpl) as kpl'. 
+  assert (kpl' = insert_into_list key t2 kpl) by assumption.
+  
+  assert (find_subtree sk kpl = Some (key, t1)) by assumption.
+  
+  apply find_subtree_impl_kpl_app in H0; do 2 destruct H0. destruct H0.
+  rewrite H0 in H9. destruct H11; subst.
+
+  Case "key <= sk ... t2 is last tree t2".
+    apply find_subtree_key_in_last in H10.
+    rewrite override_in_list_app. apply find_subtree_key_in_last.
+    rewrite override_in_list_app in H6. apply H6. assumption. assumption. assumption. assumption.
+  Case "key <= sk < k2 ... is in t2".
+    destruct H11. do 3 destruct H0. subst. 
+    clear H5. clear H7. clear H4. clear H9.
+    
+    apply find_subtree_key_in_middle in H10.
+    rewrite override_in_list_app in H6.  
+     
+    rewrite override_in_list_app.
+    apply find_subtree_key_in_middle; assumption. assumption. apply H8. assumption.
+Qed.
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 

@@ -194,53 +194,9 @@ Admitted.
       apply IHl.
 *)      
 
-Lemma find_subtree_after_replace: forall (X: Type) (b key sk: nat) (t1 t2: bplustree b X) (kpl: list (nat * bplustree b X)),
-  valid_bplustree b X (bptNode b X kpl) ->
-  find_subtree sk kpl = Some (key, t1) ->
-  find_subtree sk (insert_into_list key t2 kpl) = Some (key, t2).
-Proof.
-  admit.
-Admitted.
-(*
-  intros.
-  apply find_subtree_impl_kpl_app in H0.
-  do 2 destruct H0. inversion H0.
-  rewrite H1.
-  rewrite override_in_list_app.
-  destruct H2.
-  Case "t1 appeared at the end of the tree".
-    subst.
-    destruct witness.
-    inversion H. simpl in H3. exfalso. omega.
-    destruct p.
-    rewrite <- app_comm_cons.
-    
+
   
   
-  
-  SearchAbout [find_subtree].
-  
-  induction kpl.
-  Case "kpl = []".
-    simpl. reflexivity.
-  Case "kpl = a::kpl". destruct a.
-    simpl.
-    destruct kpl.
-    inversion H0. rewrite ble_nat_symm. rewrite <- beq_nat_refl.
-    simpl. reflexivity.
-    destruct p.
-    
-    remember (ble_nat key n) as keylen.
-    destruct keylen; symmetry in Heqkeylen; [apply ble_nat_true in Heqkeylen | apply ble_nat_false in Heqkeylen].
-      remember (beq_nat key n) as keyeqn.
-      destruct keyeqn; symmetry in Heqkeyeqn; [apply beq_nat_true_iff in Heqkeyeqn | apply beq_nat_false_iff in Heqkeyeqn].
-      subst.
-      simpl in H0.
-      simpl.
-      remember (ble_nat n sk && blt_nat sk n0) as here.
-      destruct here. reflexivity.
-        remember 
-*)      
 
 Lemma find_subtree_impl_key_appears : forall (X: Type) (b k key: nat) 
                                       (kpl: list (nat * bplustree b X)) (subtree: bplustree b X), 
@@ -250,11 +206,124 @@ Proof.
   intros. induction kpl. simpl in H. inversion H.
   destruct a. destruct kpl.
   Case "kpl = []".
-    apply find_subtree_one_impl_found in H. destruct H. rewrite H.
-    apply aik_here.
-    
-Admitted.
+    simpl in H. remember (ble_nat n k). destruct b1. inversion H. subst. 
+    apply aik_here. inversion H.
+  Case "kpl = a :: kpl".
+    destruct p. simpl in H.
+    remember (ble_nat n k && blt_nat k n0). destruct b2. inversion H. subst.
+    apply aik_here. apply aik_later. apply IHkpl. apply H.
+Qed.
 
+Lemma find_subtree_now_or_later: forall {X: Type} (b:nat) sk k1 k2 t1 t2 
+                                 (l: list(nat*bplustree b X)),
+  kvl_sorted ((k1, t1) :: l) ->
+  find_subtree sk ((k1, t1) :: l) = Some (k2, t2) ->
+  k1 <= k2.
+Proof. Admitted.
+
+Lemma find_subtree_later2: forall {X: Type} (b:nat) sk k1 k2 t1 t2 
+                                 (l1 l2: list(nat*bplustree b X)),
+  find_subtree sk ((k1, t1) :: l1 ++ (k2, t2) :: l2) = Some (k2, t2) ->
+  find_subtree sk (l1 ++ (k2, t2) :: l2) = Some (k2, t2).
+Proof. Admitted.
+
+Lemma find_subtree_later3: forall {X: Type} (b:nat) sk k1 k2 t1 t2
+                           (l1 l2: list(nat*bplustree b X)),
+  kvl_sorted ((k1, t1) :: l1 ++ (k2, t2) :: l2) ->
+  k2 <= sk ->
+  find_subtree sk (l1 ++ (k2, t2) :: l2) = Some (k2, t2) ->
+  find_subtree sk ((k1, t1) :: l1 ++ (k2, t2) :: l2) = Some (k2, t2).
+Proof. Admitted.
+
+Lemma find_subtree_key_in_middle: forall {X: Type} b sk k1 k2 t1 t2 
+                                         (l1 l2: list(nat*bplustree b X)),
+  kvl_sorted (l1 ++ (k1, t1) :: (k2, t2) :: l2) -> 
+  (find_subtree sk (l1 ++ (k1, t1) :: (k2, t2) :: l2) = Some (k1, t1) <->
+  k1 <= sk < k2).
+Proof. 
+  intros. split; intro.
+  Case "->".
+    induction l1. 
+    SCase "l1 = []".
+      simpl in H. simpl in H0. remember (ble_nat k1 sk && blt_nat sk k2).
+      destruct b0. 
+        symmetry in Heqb0. apply ble_and_blt_true in Heqb0. omega.
+        unfold andb in Heqb0.
+        destruct l2.
+        destruct (ble_nat k2 sk). inversion H0. 
+        apply kvl_sorted_key_across_app with (l1:=[])(l2:=[]) in H. omega. inversion H0.
+        destruct p. destruct (ble_nat k2 sk && blt_nat sk n). inversion H0.
+        apply kvl_sorted_key_across_app with (l1:=[]) (l2:=(n, b0):: l2) in H. omega.
+        assert ((k1, t1) :: (k2, t2) :: (n, b0) :: l2 = (k1, t1) :: [(k2, t2)] ++ (n, b0) :: l2).
+          simpl. reflexivity.
+        rewrite H1 in H. 
+        assert (kvl_sorted ((k1, t1) :: [(k2, t2)] ++ (n, b0) :: l2)) by assumption.
+        apply kvl_sorted_key_across_app in H. 
+        apply find_subtree_now_or_later in H0. omega.
+        simpl in H2. do 2 apply list_tail_is_sorted in H2. assumption.
+      SCase "l1 = a :: l1".
+        destruct a. repeat rewrite <- app_comm_cons in H0. apply find_subtree_later2 in H0.
+        apply IHl1. apply list_tail_is_sorted in H. apply H. assumption.
+    Case "<-".
+      induction l1.
+      SCase "l1 = []".
+        simpl. 
+        assert (ble_nat k1 sk && blt_nat sk k2 = true). 
+          unfold andb. assert (ble_nat k1 sk = true). apply ble_nat_true. omega.
+          rewrite H1. apply blt_nat_true. omega.
+        rewrite H1. reflexivity.
+      SCase "l1 = a :: l1".
+        destruct a. repeat rewrite <- app_comm_cons. eapply find_subtree_later3. assumption.
+        omega. apply IHl1. apply list_tail_is_sorted in H. apply H.
+Qed.
+      
+
+Lemma find_subtree_key_in_last: forall {X: Type} b sk t key 
+                                      (l: list(nat*bplustree b X)), 
+  kvl_sorted (l ++ [(key, t)]) -> 
+  (find_subtree sk (l ++ [(key, t)]) = Some (key, t) <->
+  key <= sk).
+Proof.
+  intros. split; intro. 
+  Case "->".
+    induction l. simpl in H. remember (ble_nat key sk). destruct b0; symmetry in Heqb0.
+    apply ble_nat_true in Heqb0. omega. simpl in H0. rewrite Heqb0 in H0. inversion H0.
+    simpl in H. destruct a. assert (kvl_sorted ((n, b0) :: l ++ [(key, t)])) by assumption.
+    apply kvl_sorted_key_across_app in H. 
+    destruct l.
+    SCase "l = []".
+      simpl in H0. destruct (ble_nat n sk && blt_nat sk key). inversion H0. omega.
+      remember (ble_nat key sk). destruct b1; symmetry in Heqb1. apply ble_nat_true in Heqb1.
+      omega. inversion H0.
+    SCase "l = p :: l".
+      destruct p. simpl in H0. destruct (ble_nat n sk && blt_nat sk n0). inversion H0. omega.
+      apply IHl. apply list_tail_is_sorted in H1. assumption. apply H0.
+  Case "<-".
+    induction l. 
+    SCase "l = []".  
+      simpl. assert (ble_nat key sk = true). apply ble_nat_true. omega. rewrite H1.
+      reflexivity.
+    SCase "l = a :: l".
+      destruct a. destruct l. apply kvl_sorted_key_across_app in H. simpl.
+      assert (ble_nat n sk && blt_nat sk key = false). unfold andb.
+        assert (ble_nat n sk = true). apply ble_nat_true. omega.  rewrite H1.
+          apply blt_nat_false. omega.
+      rewrite H1. assert (ble_nat key sk = true). apply ble_nat_true. omega.
+      rewrite H2. reflexivity.
+      destruct p. 
+      assert (kvl_sorted (((n, b0) :: (n0, b1) :: l) ++ [(key, t)])) by assumption.
+      simpl. apply kvl_sorted_key_across_app in H. 
+      assert ( ble_nat n sk && blt_nat sk n0 = false). unfold andb. 
+        assert (ble_nat n sk = true).
+          apply ble_nat_true. omega.
+        rewrite H2. apply list_tail_is_sorted in H1. apply kvl_sorted_key_across_app in H1. 
+        apply blt_nat_false. omega.
+      rewrite H2. apply IHl.
+      apply list_tail_is_sorted in H1. apply H1.
+Qed.
+    
+
+  
 
 
 
