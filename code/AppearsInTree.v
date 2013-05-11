@@ -3,6 +3,7 @@ Require Export InductiveDataTypes.
 Require Export BPlusTree.
 Require Export ValidBPlusTree.
 Require Export SortingProofs.
+Require Export FindSubtreeProofs.
 
 Lemma appears_in_split_node_appears_in_lists: forall {X: Type} b k n left right, 
   kvl_sorted (left ++ right) ->
@@ -92,22 +93,7 @@ Proof.
       omega.
 Qed.    
 
-Lemma ble_and_blt_true: forall n m k,
-  ble_nat n k && blt_nat k m = true ->
-  n <= k < m.
-Proof.
-  intros. unfold andb in H. remember (ble_nat n k). destruct b. apply blt_nat_true in H.
-  symmetry in Heqb. apply ble_nat_true in Heqb. omega. inversion H.
-Qed.
 
-Lemma ble_and_blt_false: forall n m k,
-  ble_nat n k && blt_nat k m = false ->
-  n > k \/ k >= m.
-Proof.
-  intros. unfold andb in H. remember (ble_nat n k). destruct b. symmetry in Heqb.
-  apply ble_nat_true in Heqb. apply blt_nat_false in H. right. omega. 
-  symmetry in Heqb. apply ble_nat_false in Heqb. left. omega.
-Qed.
 
 Lemma appears_in_known_subtree: forall {X:Type} b n1 k n2 t1 t2 kpl kpl', 
   kpl = bptNode b X ((n1, t1) :: (n2, t2) :: kpl') ->
@@ -143,74 +129,7 @@ Proof.
   omega.
 Qed.
 
-Lemma find_subtree_finds_a_subtree' : forall (X: Type) (b sk k0: nat) (t0: bplustree b X) (l: list (nat * bplustree b X)),
-  2 <= length ((k0, t0)::l) ->
-  k0 <= sk ->
-  exists key, exists child, find_subtree sk ((k0, t0)::l) = Some (key, child).
-Proof.
-  intros. generalize dependent k0. generalize dependent t0.
-  induction l.
-  Case "l = []".
-    intros.
-    simpl in H. exfalso. omega.
-  Case "l = a::l".
-    intros.
-    destruct a.
-    destruct l.
-    SCase "l = [_, _]".
-      assert (ble_nat k0 sk = true) by (apply ble_nat_true; assumption).
-      simpl. rewrite H1. simpl.
-      remember (blt_nat sk n).
-      destruct b1. exists k0. exists t0. reflexivity.
-      remember (ble_nat n sk).
-      destruct b1.
-      exists n. exists b0. reflexivity.
-      symmetry in Heqb1. apply blt_nat_false in Heqb1.
-      symmetry in Heqb0. apply ble_nat_false in Heqb0. 
-      exfalso. omega.
-    SCase "l = _::_::p::l".
-      simpl. simpl in IHl.
-      remember (ble_nat k0 sk && blt_nat sk n) as here.
-      destruct here.
-      exists k0. exists t0. reflexivity. 
-      apply IHl. omega.
-      symmetry in Heqhere. apply andb_false_iff in Heqhere.
-      inversion Heqhere.
-      apply ble_nat_false in H1. exfalso. omega.
-      apply blt_nat_false in H1. omega.
-Qed.
 
-Lemma find_subtree_before_head_None: forall {X: Type} {b: nat} n k t kpl,
-  n > k -> kvl_sorted ((n, t) :: kpl) ->
-  @find_subtree X b k ((n, t) :: kpl) = None.
-Proof.
-  intros. generalize dependent n. generalize dependent t. induction kpl. intros.
-  Case "kpl = []".
-    simpl. assert (ble_nat n k = false). apply ble_nat_false.  omega.
-    rewrite H1. reflexivity.
-  Case "kpl = a :: kpl".
-    intros. destruct a. simpl. 
-    assert (ble_nat n k = false). apply ble_nat_false. omega.
-    rewrite H1. simpl. apply IHkpl.  
-    apply kvl_sorted_key_across_app with (l1:=[])(l2:=kpl) in H0. omega.
-    apply list_tail_is_sorted in H0. assumption.
-Qed.
-  
-
-Lemma find_subtree_later: forall {X: Type} b n1 n2 k t1 t2 kpl key subtree,
-  n1 > k \/ k >= n2 ->
-  kvl_sorted((n1, t1) :: (n2, t2) :: kpl) ->
-  @find_subtree X b k ((n1, t1) :: (n2, t2) :: kpl) = Some (key, subtree) ->
-  @find_subtree X b k ((n2, t2) :: kpl) = Some (key, subtree).
-Proof.
-  intros. destruct H. 
-  eapply find_subtree_before_head_None in H0. rewrite H0 in H1. inversion H1.
-  assumption.
-  simpl in H1. assert (~ (k < n2)). omega. apply blt_nat_false in H2.
-  assert (ble_nat n1 k && blt_nat k n2 = false). unfold andb. rewrite H2. 
-    destruct (ble_nat n1 k). reflexivity. reflexivity.
-   rewrite H3 in H1. apply H1.
-Qed.
 
 
   
@@ -228,13 +147,7 @@ Proof.
 Qed.
   
 
-Lemma find_subtree_one_impl_found: forall {X: Type} b k n t key subtree,
-  k >= n ->
-  @find_subtree X b k [(n, t)] = Some (key, subtree) ->
-  t = subtree.
-Proof.
-  intros. simpl in H0. destruct (ble_nat n k). inversion H0. reflexivity. inversion H0.
-Qed.
+
 
 
 (* Informal: We know k appears in the parent tree, and we know that find_subtree
@@ -283,7 +196,10 @@ Qed.
 
 
 
-  
+(* Informal: We know k appears in the subtree that find_subtree returns, so
+   * when appears_in_tree k parent tries to identify the subtree, it will find
+   * the same as find_subtree, and because it exists in the subtree, it must also
+   * exists in the parent tree *)
 Lemma appears_in_tree_when_appears_in_subtree_and_found: forall (X: Type) (b k key: nat) (parent subtree: bplustree b X) (kpl: list (nat * bplustree b X)),
   parent = bptNode b X kpl ->
   find_subtree k kpl = Some (key, subtree) ->
@@ -291,10 +207,7 @@ Lemma appears_in_tree_when_appears_in_subtree_and_found: forall (X: Type) (b k k
 
   appears_in_tree k parent.
 Proof.
-  (* Informal: We know k appears in the subtree that find_subtree returns, so
-   * when appears_in_tree k parent tries to identify the subtree, it will find
-   * the same as find_subtree, and because it exists in the subtree, it must also
-   * exists in the parent tree *)
+  
   admit.
 Admitted.
 

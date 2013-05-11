@@ -7,6 +7,7 @@ Require Export AppearsInKVL.
 Require Export AppearsInTree.
 Require Export ElementAtIndexProofs.
 Require Export SplitCutList.
+Require Export FindSubtreeProofs.
 Require Export InsertProofs.
   
 Lemma list_of_length_b_implies_element_at_b : forall (X: Type) (b: nat) (kvl: list (nat* X)),
@@ -472,12 +473,7 @@ Proof.
   rewrite Heqp in H1. apply H1.
 Qed.
 
-Lemma find_subtree_impl_key_appears : forall (X: Type) (b k key: nat) (kpl: list (nat * bplustree b X)) (subtree: bplustree b X), 
-  find_subtree k kpl = Some (key, subtree) -> 
-  appears_in_kvl key kpl.
-Proof.
-  admit.
-Admitted.
+
 
 Theorem insert'_normal : forall {X: Type} {counter b: nat} (kpl: list (nat * bplustree b X)) (tree: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X (bptNode b X kpl) -> 
