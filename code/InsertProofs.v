@@ -364,44 +364,42 @@ Lemma find_subtree_impl_kpl_app : forall (X: Type) (b sk key: nat) (kpl: list (n
     \/
    exists k2, exists v2, exists l2', l2 = (k2,v2)::l2' /\ sk < k2).
 Proof.
-  admit.
-Admitted.
-
-
-
-(*
   intros.
   induction kpl.
   Case "kpl = []".
     simpl in H. inversion H.
-  Case "kpl = a::kpl".
+  Case "kpl = a::kpl". destruct a.
+    simpl in H.
     destruct kpl.
-    simpl in H. destruct a. inversion H. subst.
     SCase "kpl = [a]".
-      exists []. exists []. reflexivity.
-    SCase "kpl = a::p::kpl".
-      destruct a. destruct p.
-      simpl in H.
+      remember (ble_nat n sk).
+      destruct b1.
+      SSCase "it was the last".
+        inversion H.
+        exists []. exists [].
+        split. reflexivity.
+        left. reflexivity.
+      SSCase "it wasn't the last".
+        inversion H.
+    SCase "kpl = a::p::kpl". destruct p.
       remember (ble_nat n sk && blt_nat sk n0) as here.
       destruct here.
-      SSCase "here".
-        inversion H. subst.
-        exists []. exists ((n0,b1)::kpl). reflexivity.
-      SSCase "not here".
-        simpl in IHkpl.
-        assert ((exists l1 : list (nat * bplustree b X), exists l2 : list (nat * bplustree b X),
-                  (n0, b1) :: kpl = l1 ++ (key, subtree) :: l2) ->
-                (exists l1 : list (nat * bplustree b X), exists l2 : list (nat * bplustree b X),
-                  (n, b0) :: (n0, b1) :: kpl = l1 ++ (key, subtree) :: l2)).
-          intro.
-           do 2 destruct H0.
-           exists ((n, b0)::witness). exists witness0.
-           rewrite <- app_comm_cons. rewrite H0. reflexivity.
-         apply H0.
-         apply IHkpl.
-           apply H.
+      SSCase "found here".
+        inversion H.
+        exists []. exists ((n0,b1)::kpl).
+        split. reflexivity.
+        right. exists n0. exists b1. exists kpl.
+        split. reflexivity.
+        symmetry in Heqhere. apply andb_true_iff in Heqhere.
+        inversion Heqhere. apply blt_nat_true in H3. omega.
+      SSCase "found later".
+        apply IHkpl in H.
+        do 2 destruct H.
+        inversion H.
+        exists ((n,b0)::witness). exists witness0.
+        split. rewrite H0. reflexivity.
+        apply H1.
 Qed.
-*)
 
 Lemma find_subtree_returns_a_bigger_key : forall (X: Type) (b sk key: nat) (child: bplustree b X) (l: list (nat * bplustree b X)),
   2 <= length l ->
