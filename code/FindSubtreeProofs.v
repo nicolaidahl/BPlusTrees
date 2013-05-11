@@ -219,7 +219,18 @@ Lemma find_subtree_now_or_later: forall {X: Type} (b:nat) sk k1 k2 t1 t2
   kvl_sorted ((k1, t1) :: l) ->
   find_subtree sk ((k1, t1) :: l) = Some (k2, t2) ->
   k1 <= k2.
-Proof. Admitted.
+Proof.
+  intros. remember ((k1, t1) :: l) as kpl. induction H. 
+  Case "kvl_sorted_0".
+     simpl in H0. inversion H0.
+  Case "kvl_sorted_1".
+    simpl in H0. destruct (ble_nat n sk). inversion H0. inversion Heqkpl. omega. inversion H0.
+  Case "kvl_sorted_cons".
+    inversion Heqkpl. subst. 
+    simpl in H0. admit.
+Admitted.
+ 
+  
 
 Lemma find_subtree_later2: forall {X: Type} (b:nat) sk k1 k2 t1 t2 
                                  (l1 l2: list(nat*bplustree b X)),
