@@ -62,7 +62,7 @@ Proof.
            omega.
 Qed.
 
-Lemma appears_in_tree_when_appears_in_last_subtree: forall (X: Type) (b k k1 k2: nat) (t1 t2: bplustree b X) (l1 l2: list (nat * bplustree b X)),
+Lemma appears_in_tree_when_appears_in_last_subtree: forall (X: Type) (b k k1 k2: nat) (t1 t2: bplustree b X) (l1: list (nat * bplustree b X)),
   appears_in_tree k t1 -> 
   k1 <= k ->
   kvl_sorted ((k2,t2)::l1 ++ [(k1, t1)]) ->
@@ -192,15 +192,40 @@ Qed.
    * the same as find_subtree, and because it exists in the subtree, it must also
    * exists in the parent tree *)
 Lemma appears_in_tree_when_appears_in_subtree_and_found: forall (X: Type) (b k key: nat) (parent subtree: bplustree b X) (kpl: list (nat * bplustree b X)),
+  2 <= length kpl ->
+  kvl_sorted kpl ->
   parent = bptNode b X kpl ->
   find_subtree k kpl = Some (key, subtree) ->
   appears_in_tree k subtree ->
 
   appears_in_tree k parent.
 Proof.
-  
-  admit.
-Admitted.
+  intros.
+  rewrite H1.
+  assert (key <= k).
+    apply find_subtree_returns_a_lesser_key in H2; assumption.
+  apply find_subtree_impl_kpl_app in H2.
+  do 2 destruct H2.
+  inversion H2. clear H2.
+  destruct witness0.
+  Case "witness0 = []".
+    destruct witness.
+    SCase "witness = []".
+      simpl in H5. rewrite H5 in H. simpl in H. exfalso. omega.
+    SCase "witness = p::witness".
+      destruct p.
+      rewrite <- app_comm_cons in H5.
+      rewrite H5.
+      rewrite H5 in H0.
+      apply appears_in_tree_when_appears_in_last_subtree; assumption.
+  Case "witness = p::witness".
+    destruct p.
+    inversion H6. inversion H2.
+    do 3 destruct H2.
+    inversion H2. clear H2. inversion H7. subst.
+    apply appears_in_tree_when_appears_in_subtree; try assumption.
+      omega.
+Qed.
 
 (*
 Lemma key_valid_when_appears_and_between : forall (X: Type) (b k1 k2 sk: nat) (t: bplustree b X), 

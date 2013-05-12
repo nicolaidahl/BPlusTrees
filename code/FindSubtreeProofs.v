@@ -145,7 +145,7 @@ Proof.
         apply H1.
 Qed.
 
-Lemma find_subtree_returns_a_bigger_key : forall (X: Type) (b sk key: nat) (child: bplustree b X) (l: list (nat * bplustree b X)),
+Lemma find_subtree_returns_a_lesser_key : forall (X: Type) (b sk key: nat) (child: bplustree b X) (l: list (nat * bplustree b X)),
   2 <= length l ->
   kvl_sorted l -> 
   find_subtree sk l = Some (key, child) ->
