@@ -473,7 +473,16 @@ Proof.
   rewrite Heqp in H1. apply H1.
 Qed.
 
-
+Theorem insert'_works : forall {X: Type} (counter b k: nat) (v: X) (kpl: list (nat * bplustree b X)) (left: bplustree b X) (rightOption: option (nat * bplustree b X)),
+  valid_bplustree b X (bptNode b X kpl) -> 
+  not (appears_in_tree k (bptNode b X kpl)) -> 
+  counter = (height (bptNode b X kpl)) ->
+  insert' counter k v (bptNode b X kpl) = (left, rightOption) ->
+  
+  appears_in_tree k left \/ (exists split, exists right, rightOption = Some(split, right) /\ appears_in_tree k right).
+Proof.
+  admit.
+Admitted.
 
 Theorem insert'_normal : forall {X: Type} {counter b: nat} (kpl: list (nat * bplustree b X)) (tree: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X (bptNode b X kpl) -> 
@@ -645,7 +654,32 @@ Proof.
   Case "node". 
     unfold insert in H1.
     remember (insert' (height (bptNode b X kpl)) k v (bptNode b X kpl)).
-    destruct p. destruct o.
+    destruct p. 
+    symmetry in Heqp.
+    apply insert'_works in Heqp; try assumption; try reflexivity.
+    
+    destruct o. 
+    SCase "node overflow".
+      destruct p.
+      inversion Heqp.
+      SSCase "appears in left".
+        subst. 
+        admit.
+      SSCase "appears in right".
+        do 2 destruct H9. inversion H9. clear H9.
+        inversion H10. subst.
+        admit.
+    SCase "node didn't overflow".
+      inversion Heqp.
+      SSCase "appears in left".
+        subst. apply H9.
+      SSCase "appears in right (bogus)".
+        do 2 destruct H9. inversion H9.
+        inversion H10.
+    
+    constructor; try assumption.
+(*    
+    destruct o.
     SCase "node overflow".
       destruct p.
       subst.
@@ -658,6 +692,7 @@ Proof.
         inversion H5. subst. simpl in H2. exfalso. omega.
         subst.
       constructor; try assumption. apply H0. apply H7.
+*)
 Admitted.
     
 
