@@ -547,10 +547,44 @@ Proof.
             inversion H2.
             do 2 destruct H7.
             inversion H7.
-            inversion H11; clear H11; left; split; try reflexivity; inversion H12; clear H12.
+            inversion H11; clear H11; left; split; try reflexivity; 
+              inversion H12; clear H12; 
+              inversion H8; clear H8; clear H14; clear H15.
             SSSSSCase "appears in left subtree".
-              (* H13 is key *)
-              admit.
+              remember (insert_into_list witness witness0 kpl) as kpl'.
+              remember (insert_into_list n b1 kpl') as kpl''.
+              assert (find_subtree k kpl'' = Some (n, b1)).
+                symmetry in Heqo.
+                apply find_subtree_after_inserting_greater_element with (k2:= witness) (t2:= witness0) in Heqo; try assumption.
+                rewrite <- Heqkpl' in Heqo.
+				rewrite Heqkpl''.
+                apply find_subtree_after_replace with (t1 := child); try assumption.
+                rewrite Heqkpl'.
+                apply insert_preserves_sort.
+                inversion H. assumption.
+                inversion H. assumption.
+              assert (kvl_sorted kpl'').
+                rewrite Heqkpl''.
+                apply insert_preserves_sort.
+                rewrite Heqkpl'.
+                apply insert_preserves_sort.
+                inversion H. assumption.
+              assert (2 <= length kpl'').
+                assert (length kpl' <= length kpl'').
+                  rewrite Heqkpl''.
+                  apply insert_into_list_length_gt_iil_length.
+                  rewrite Heqkpl'.
+                  apply insert_preserves_sort.
+                  inversion H.
+                  assumption.
+                assert (length kpl <= length kpl').
+                  rewrite Heqkpl'.
+                  apply insert_into_list_length_gt_iil_length.
+                  inversion H.
+                  assumption.
+                inversion H.
+                omega.
+              apply appears_in_tree_when_appears_in_subtree_and_found with (kpl := kpl'') (subtree := b1) (key := n); try reflexivity; try assumption.
             SSSSSCase "appears in right subtree".
               (* H13 is key *)
               admit.
@@ -567,7 +601,10 @@ Proof.
             assert (find_subtree k kpl' = Some (n, b1)).
               rewrite Heqkpl'.
               symmetry in Heqo.
-              apply find_subtree_after_replace with (t1 := child); try assumption.
+              apply find_subtree_after_replace with (t1 := child).
+              inversion H.
+              assumption.
+              apply Heqo.
             assert (length kpl = length kpl').
               rewrite Heqkpl'.
               apply override_in_list_preserves_length.
@@ -581,12 +618,7 @@ Proof.
               inversion H.
               rewrite Heqkpl'.
               apply insert_preserves_sort; assumption.
-            eapply appears_in_tree_when_appears_in_subtree_and_found with (kpl := kpl') (subtree := b1) in H7.
-              apply H7.
-              apply H12.
-              apply H13.
-              reflexivity.
-              apply H11.
+            apply appears_in_tree_when_appears_in_subtree_and_found with (kpl := kpl') (subtree := b1) (key := n); try reflexivity; try assumption.
           SSSSCase "appears in right subtree (bogus)".
             do 2 destruct H7. inversion H7.
             inversion H8.
