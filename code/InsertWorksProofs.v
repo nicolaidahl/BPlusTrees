@@ -474,14 +474,126 @@ Proof.
 Qed.
 
 Theorem insert'_works : forall {X: Type} (counter b k: nat) (v: X) (kpl: list (nat * bplustree b X)) (left: bplustree b X) (rightOption: option (nat * bplustree b X)),
-  valid_bplustree b X (bptNode b X kpl) -> 
+  valid_bplustree b X (bptNode b X kpl) ->
   not (appears_in_tree k (bptNode b X kpl)) -> 
   counter = (height (bptNode b X kpl)) ->
   insert' counter k v (bptNode b X kpl) = (left, rightOption) ->
   
-  appears_in_tree k left \/ (exists split, exists right, rightOption = Some(split, right) /\ appears_in_tree k right).
+  (rightOption = None /\ appears_in_tree k left)
+    \/
+  (exists split, exists right, rightOption = Some(split, right)
+      /\ ((k < split /\ appears_in_tree k left)
+			\/ (split <= k /\ appears_in_tree k right))).
 Proof.
-  admit.
+  induction counter.
+  Case "counter = 0".
+    intros.
+    inversion H.
+    simpl in H1.
+    destruct kpl. simpl in H5. exfalso. omega.
+    destruct p. inversion H1.
+  Case "counter = S counter".
+    intros.
+    simpl in H2.
+    remember (find_subtree k kpl).
+    destruct o.
+    SCase "find_subtree = Some p".
+      destruct p.
+      remember (insert' counter k v b0).
+      destruct p.
+      symmetry in Heqp.
+      destruct b0.
+      SSCase "child was a leaf".
+        admit.
+      SSCase "child was a node".
+        remember (bptNode b X l) as child.
+        assert (counter = height child).
+          symmetry in Heqo.
+          apply find_subtree_impl_kpl_app in Heqo.
+          destruct Heqo. destruct H3. inversion H3.
+          inversion H.
+          apply height_of_parent_one_bigger with (k:=n)(v:=child)(l1:=witness)(l2:=witness0) in H12;
+            try assumption.
+          rewrite <- H12 in H1.
+          omega.
+        assert (valid_bplustree b X child).
+          symmetry in Heqo.
+          apply find_subtree_impl_kpl_app in Heqo.
+          destruct Heqo. destruct H4. inversion H4.
+          inversion H.
+          rewrite H5 in H12.
+          apply all_values_single in H12.
+          apply valid_sub_bplustree_impl_valid_bplustree in H12.
+          apply H12.
+        assert (~appears_in_tree k child).
+          unfold not. intro.
+          apply H0.
+          inversion H. symmetry in Heqo.
+          apply appears_in_tree_when_appears_in_subtree_and_found with (key := n) (subtree := child) (kpl := kpl);
+            try assumption; try reflexivity.
+        rewrite Heqchild in Heqp.
+        assert (insert' counter k v (bptNode b X l) = (b1, o)) by assumption.
+        apply IHcounter in Heqp; try (rewrite <- Heqchild; assumption).
+
+        (*
+        destruct o.
+        SSSCase "child overflowed".
+          destruct p.
+          remember (ble_nat (length (insert_into_list n b1 (insert_into_list n0 b0 kpl))) (b * 2 + 1)) as fits_here.
+          destruct fits_here.
+          SSSSCase "overflow fit on this level".
+            inversion H2.
+            inversion Heqp.
+            SSSSSCase "appears in left subtree".
+              left.
+              ( H7 is key )
+              admit.
+            SSSSSCase "apperas in right subtree".
+              do 2 destruct H7.
+              inversion H7. inversion H10. clear H13. clear H14.
+              left.
+              ( H11 is key )
+              admit.
+          SSSSCase "overflow didn't fit on this level".
+            admit.
+        SSSCase "child didn't overflow".
+          inversion Heqp.
+          SSSSCase "appears in left subtree".
+            inversion H2.
+            left.
+            remember (insert_into_list n b1 kpl) as kpl'.
+            assert (find_subtree k kpl' = Some (n, b1)).
+              rewrite Heqkpl'.
+              symmetry in Heqo.
+              apply find_subtree_after_replace with (t1 := child); try assumption.
+            assert (length kpl = length kpl').
+              rewrite Heqkpl'.
+              apply override_in_list_preserves_length.
+              symmetry in Heqo.
+              apply find_subtree_impl_key_appears in Heqo.
+              apply Heqo.
+            assert (2 <= length kpl').
+              inversion H. rewrite H11 in H14.
+              apply H14.
+            assert (kvl_sorted kpl').
+              inversion H.
+              rewrite Heqkpl'.
+              apply insert_preserves_sort; assumption.
+            eapply appears_in_tree_when_appears_in_subtree_and_found with (kpl := kpl') (subtree := b1) in H7.
+              apply H7.
+              apply H12.
+              apply H13.
+              reflexivity.
+              apply H8.
+          SSSSCase "appears in right subtree (bogus)".
+            do 2 destruct H7. inversion H7.
+            inversion H8.
+         *)
+         admit.
+
+    SCase "find_subtree = None".
+      apply find_subtree_finds_a_subtree with (sk := k) in H.
+      do 2 destruct H. rewrite H in Heqo. inversion Heqo.
 Admitted.
 
 Theorem insert'_normal : forall {X: Type} {counter b: nat} (kpl: list (nat * bplustree b X)) (tree: bplustree b X) (k: nat) (v: X),
