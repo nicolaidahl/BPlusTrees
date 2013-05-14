@@ -225,28 +225,70 @@ Proof.
       apply list_tail_is_sorted in H0. apply H0.
 Qed.
   
+Lemma insert_into_list_prepend_first: forall {X: Type} k n (x: X) v l,
+  n < k ->
+  insert_into_list k v ((n, x) :: l) = (n, x) :: insert_into_list k v l.
+Proof.
+  intros. simpl. remember (ble_nat k n). destruct b. remember (beq_nat k n). destruct b;
+  (symmetry in Heqb; apply ble_nat_true in Heqb; omega).
+  reflexivity.
+Qed.
+  
 Lemma insert_into_list_middle : forall (X: Type) (k1 k2 new_key: nat) (v1 v2 new_value: X) (l1 l2: list (nat * X)), 
   k1 < new_key < k2 ->
   kvl_sorted (l1++(k1, v1)::(k2, v2)::l2) ->
   insert_into_list new_key new_value (l1++(k1, v1)::(k2, v2)::l2) = (l1++(k1, v1)::(new_key, new_value)::(k2, v2)::l2).
 Proof.
-  admit.
-Admitted.
+  intros. induction l1. simpl.
+  Case "l1 = []".  
+    assert (ble_nat new_key k1 = false).
+      apply ble_nat_false. omega.
+    rewrite H1. 
+    assert (ble_nat new_key k2 = true).
+      apply ble_nat_true. omega.
+    rewrite H2. 
+    assert (beq_nat new_key k2 = false).
+      apply beq_nat_false_iff. omega. rewrite H3. reflexivity.
+  Case "l1 = a l1".
+    destruct a. repeat rewrite <- app_comm_cons in H0.
+    repeat rewrite <- app_comm_cons.
+    rewrite insert_into_list_prepend_first. apply cons_remove.
+    apply IHl1. apply list_tail_is_sorted in H0. assumption.
+    apply kvl_sorted_key_across_app in H0. omega.
+Qed.
 
 Lemma insert_into_list_last : forall (X: Type) (k1 new_key: nat) (v1 new_value: X) (l1: list (nat * X)), 
   k1 < new_key ->
   kvl_sorted (l1++[(k1, v1)]) ->
   insert_into_list new_key new_value (l1++[(k1, v1)]) = l1++[(k1, v1), (new_key, new_value)].
 Proof.
-  admit.
+  intros. induction l1. simpl.
+  Case "l1 = []".
+    assert (ble_nat new_key k1 = false). apply ble_nat_false. omega.
+    rewrite H1. reflexivity.
+  Case "l1 = a :: l1".
+    destruct a. repeat rewrite <- app_comm_cons. rewrite insert_into_list_prepend_first.
+    apply cons_remove. apply IHl1.
+    repeat rewrite <- app_comm_cons in H0. apply list_tail_is_sorted in H0. assumption.
+    apply kvl_sorted_key_across_app in H0. omega.
 Admitted.
+
 
 Lemma insert_into_list_override : forall (X: Type) (k: nat) (v1 v2: X) (l1 l2: list (nat * X)),
   kvl_sorted (l1++(k, v1)::l2) ->
   insert_into_list k v2 (l1++(k, v1)::l2) = (l1++(k, v2)::l2).
 Proof.
-  admit.
-Admitted.
+  intros. induction l1.
+  Case "l1 = []". 
+    simpl. rewrite ble_nat_symm. rewrite <- beq_nat_refl. reflexivity.
+  Case "l1 = a l1".
+    repeat rewrite <- app_comm_cons in H.
+    destruct a. 
+    repeat rewrite <- app_comm_cons. rewrite insert_into_list_prepend_first. apply cons_remove.
+    apply IHl1. apply list_tail_is_sorted in H. assumption.
+    apply kvl_sorted_key_across_app in H. omega.
+Qed.
+    
 
 
 Lemma insert_into_list_last_twice : forall (X: Type) (k1 k2: nat) (t1 t1' t2: X) (l: list (nat * X)),
