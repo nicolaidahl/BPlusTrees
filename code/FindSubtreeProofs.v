@@ -234,7 +234,7 @@ Proof.
 	  destruct p. simpl in H0. remember (ble_nat k1 sk). destruct b1. remember (blt_nat sk k2). destruct b1.
 	  simpl in H0. inversion H0. 
 	  symmetry in Heqb1. symmetry in Heqb0. apply ble_nat_true in Heqb1. apply blt_nat_true in Heqb0.
-	  omega. simpl in H0. 
+	  exfalso. omega. simpl in H0. 
 	  simpl in H.
 	  remember (ble_nat k2 sk). destruct b1. remember (blt_nat sk n). destruct b1. simpl in H0.
 	  simpl. rewrite <- Heqb2. rewrite <- Heqb3. simpl. reflexivity. simpl.
@@ -248,7 +248,7 @@ Proof.
 	apply list_tail_is_sorted in H.
 	apply kvl_sorted_key_across_app in H. simpl in H1.
 	remember (ble_nat k1 sk). destruct b1. remember (blt_nat sk n). destruct b1.
-	simpl in H1. inversion H1. subst. symmetry in Heqb0.apply blt_nat_true in Heqb0. omega.
+	simpl in H1. inversion H1. subst. symmetry in Heqb0. apply blt_nat_true in Heqb0. exfalso. omega.
 	simpl in H1. apply H1. simpl. simpl in H1. apply H1. simpl. omega. assumption.
 Qed.
 	  
@@ -264,13 +264,13 @@ Proof.
   intros. destruct l1.
   Case "l1 = []".
     simpl. remember (ble_nat k1 sk). destruct b0. remember (blt_nat sk k2). destruct b0.
-    simpl. symmetry in Heqb1. apply blt_nat_true in Heqb1.  omega. simpl.
+    simpl. symmetry in Heqb1. apply blt_nat_true in Heqb1. exfalso. omega. simpl.
     simpl in H1. apply H1. simpl. apply H1.
   Case "l1 = p :: l1".
     destruct p. simpl. 
     remember (ble_nat k1 sk). destruct b1. remember (blt_nat sk n). destruct b1. simpl.
     apply list_tail_is_sorted in H. apply kvl_sorted_key_across_app in H.
-    symmetry in Heqb0. apply blt_nat_true in Heqb0. omega.
+    symmetry in Heqb0. apply blt_nat_true in Heqb0. exfalso. omega.
     simpl. apply H1. simpl. apply H1.
 Qed.
     
@@ -305,7 +305,7 @@ Proof.
         simpl in H2. do 2 apply list_tail_is_sorted in H2. assumption.
       SCase "l1 = a :: l1".
         destruct a. repeat rewrite <- app_comm_cons in H0. apply find_subtree_later2 in H0.
-        apply IHl1. apply list_tail_is_sorted in H. apply H. assumption.
+        apply IHl1. apply list_tail_is_sorted in H. apply H. assumption. assumption.
     Case "<-".
       induction l1.
       SCase "l1 = []".
