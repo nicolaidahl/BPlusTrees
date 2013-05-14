@@ -173,7 +173,7 @@ Proof.
 	    assumption. assumption.
 	    apply appears_in_tree_two_last in H0.  apply find_subtree_later in H1. 
 	    apply find_subtree_one_impl_found in H1. destruct H1. rewrite <- H3. assumption.  
-	    assumption. right. assumption. assumption. assumption.
+	    right. assumption. right. assumption. assumption. assumption.
 	  SCase "kpl = p :: kpl".
 	    destruct p.	    
 	    apply IHkpl. apply list_tail_is_sorted in H. assumption. 
@@ -203,7 +203,8 @@ Proof.
   intros.
   rewrite H1.
   assert (key <= k).
-    apply find_subtree_returns_a_lesser_key in H2; assumption.
+    apply find_subtree_returns_a_lesser_key in H2. assumption. omega.
+  assumption.
   apply find_subtree_impl_kpl_app in H2.
   do 2 destruct H2.
   inversion H2. clear H2.

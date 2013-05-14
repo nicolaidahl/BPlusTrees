@@ -271,7 +271,7 @@ Proof.
     apply cons_remove. apply IHl1.
     repeat rewrite <- app_comm_cons in H0. apply list_tail_is_sorted in H0. assumption.
     apply kvl_sorted_key_across_app in H0. omega.
-Admitted.
+Qed.
 
 
 Lemma insert_into_list_override : forall (X: Type) (k: nat) (v1 v2: X) (l1 l2: list (nat * X)),
@@ -543,14 +543,56 @@ Proof.
     apply find_subtree_key_in_middle; assumption. assumption. apply H1. assumption.
 Qed.
 
+Lemma find_subtree_insert_into_list_remove_inner_cons: forall {X: Type} b k1 k2 k3 k4 t1 t2 t3 t4 sk
+    (l: list(nat * bplustree b X)),
+  k2 <= k3 ->
+  find_subtree sk (insert_into_list k3 t3 ((k2, t2) :: l)) = Some (k4, t4) ->
+  find_subtree sk ((k1, t1) :: insert_into_list k3 t3 ((k2, t2) :: l)) = Some (k4, t4).
+Proof. Admitted.
+
 Lemma find_subtree_after_inserting_greater_element: forall (X: Type) (b k1 k2 sk: nat) (t1 t2: bplustree b X) (kpl: list (nat * bplustree b X)),
+  1 <= length kpl ->
   kvl_sorted kpl ->
   find_subtree sk kpl = Some (k1, t1) ->
   sk < k2 ->
   find_subtree sk (insert_into_list k2 t2 kpl) = Some (k1, t1).
 Proof.
-  admit.
-Admitted.
+  intros.
+  assert (find_subtree sk kpl = Some (k1, t1)) by assumption.
+  apply find_subtree_returns_a_lesser_key in H3.
+  induction H0.
+  Case "kvl_sorted_0".
+    inversion H.
+  Case "kvl_sorted_1".
+    apply find_subtree_one_impl_found in H1. destruct H1. subst. simpl.
+    assert (ble_nat k2 k1 = false).
+      apply ble_nat_false. omega.
+    rewrite H0. simpl.
+    assert (ble_nat k1 sk = true).
+      apply ble_nat_true. omega.
+    assert (blt_nat sk k2 = true).
+      apply blt_nat_true. omega.
+    rewrite H1. rewrite H4. simpl. reflexivity. left. omega.
+  Case "kvl_sorted_cons".
+    remember (ble_nat n2 k2). destruct b0.
+    SCase "n2 <= k2".
+      rewrite insert_into_list_prepend_first. 
+      remember (ble_nat n2 k1). destruct b0.
+      SSCase "n2 <= k1".
+        apply find_subtree_later in H1. apply IHkvl_sorted in H1. 
+        apply find_subtree_insert_into_list_remove_inner_cons.
+        symmetry in Heqb0. apply ble_nat_true in Heqb0. omega. assumption.
+        simpl. omega.
+        symmetry in Heqb0. apply ble_nat_true in Heqb0. apply blt_nat_true in H4. right.
+        symmetry in Heqb1. apply ble_nat_true in Heqb1. omega.
+        eapply kvl_sorted_cons in H0. apply H0. assumption.
+      SSCase "n2 > k1".
+        admit. admit.
+    SCase "n2 > k2".
+      admit.
+      
+  assumption. assumption.
+Qed.
 
 
 
