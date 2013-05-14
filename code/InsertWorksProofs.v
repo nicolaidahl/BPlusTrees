@@ -692,6 +692,7 @@ Proof.
             apply find_subtree_impl_key_appears in H5.
             apply override_in_list_preserves_length with (k := n) (v := b1) in H5.
             rewrite <- Heqkpl' in H5. apply H5.
+            inversion H. assumption.
           assert (kvl_sorted kpl').
             inversion H.
             apply insert_preserves_sort with (k := n) (v := b1) in H19. 
@@ -804,16 +805,15 @@ Proof.
     destruct o. 
     SCase "node overflow".
       destruct p.
-      inversion Heqp.
+      inversion Heqp. destruct H9.  inversion H9. do 3 destruct H9.
+      inversion H9. subst. destruct H10.
       SSCase "appears in left".
-        subst. 
-        admit.
+        apply ait_node_here. destruct H1. assumption. omega.
       SSCase "appears in right".
-        do 2 destruct H9. inversion H9. clear H9.
-        inversion H10. subst.
-        admit.
+		destruct H1.
+		apply ait_node_last. assumption. omega.
     SCase "node didn't overflow".
-      inversion Heqp.
+      inversion Heqp. 
       SSCase "appears in left".
         subst. apply H9.
       SSCase "appears in right (bogus)".
@@ -821,24 +821,8 @@ Proof.
         inversion H10.
     
     constructor; try assumption.
-(*    
-    destruct o.
-    SCase "node overflow".
-      destruct p.
-      subst.
-      admit.
-    SCase "node normal".
-      subst.
-      symmetry in Heqp. apply insert'_normal in Heqp; try assumption.
-      constructor; try assumption.
-      eapply insert'_not_split_impl_space_left in Heqp. apply Heqp. 
-        inversion H5. subst. simpl in H2. exfalso. omega.
-        subst.
-      constructor; try assumption. apply H0. apply H7.
-*)
-Admitted.
+Qed.
     
-
 
 
 

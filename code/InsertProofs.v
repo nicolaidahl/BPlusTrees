@@ -191,11 +191,24 @@ Proof.
 Qed.
 
 Lemma override_in_list_preserves_length : forall (X: Type) (k: nat) (v: X) (kpl: list (nat * X)),
+  kvl_sorted kpl ->
   appears_in_kvl k kpl ->
   length kpl = length (insert_into_list k v kpl).
 Proof.
-  admit.
-Admitted.
+  intros. induction H0. 
+  Case "aik_here".
+    simpl. rewrite ble_nat_symm. rewrite <- beq_nat_refl. reflexivity.
+  Case "aik_later".
+    apply appears_in_kvl_app in H0. do 3 destruct H0.  subst. 
+    remember ((k0, v0) :: witness ++ (k, witness1) :: witness0). rewrite Heql in H.
+    assert (kvl_sorted (witness ++ (k, witness1) :: witness0)).
+      apply list_tail_is_sorted in H. assumption.
+    apply kvl_sorted_key_across_app in H. subst. simpl.
+    assert (ble_nat k k0 = false).
+      apply ble_nat_false. omega.
+    rewrite H1. simpl. apply eq_remove_S. apply IHappears_in_kvl. assumption.
+Qed.
+    
 
 Lemma override_in_list_app : forall (X: Type) (k: nat) (v1 v2: X) (l1 l2: list (nat * X)),
   kvl_sorted (l1 ++ (k, v1)::l2) -> 
@@ -255,7 +268,9 @@ Proof.
 Qed.
 
 Lemma insert_leaf_cons_lt : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
-  b <> 0 -> kvl_sorted ((k2,v2)::l) -> k1 < k2 -> length((k2,v2)::l) < mult b 2 -> insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::(k2,v2)::l, None).
+  b <> 0 -> kvl_sorted ((k2,v2)::l) -> k1 < k2 -> 
+  length((k2,v2)::l) < mult b 2 -> 
+  insert_leaf b k1 v1 ((k2, v2) :: l) = ((k1,v1)::(k2,v2)::l, None).
 Proof.
   intros.
   destruct b. apply ex_falso_quodlibet. apply H. reflexivity.
