@@ -248,7 +248,7 @@ Proof.
 	apply list_tail_is_sorted in H.
 	apply kvl_sorted_key_across_app in H. simpl in H1.
 	remember (ble_nat k1 sk). destruct b1. remember (blt_nat sk n). destruct b1.
-	simpl in H1. inversion H1. subst. symmetry in Heqb0.apply blt_nat_true in Heqb0. omega.
+	simpl in H1. inversion H1. subst. symmetry in Heqb0. apply blt_nat_true in Heqb0. omega.
 	simpl in H1. apply H1. simpl. simpl in H1. apply H1. simpl. omega. assumption.
 Qed.
 	  
@@ -305,7 +305,7 @@ Proof.
         simpl in H2. do 2 apply list_tail_is_sorted in H2. assumption.
       SCase "l1 = a :: l1".
         destruct a. repeat rewrite <- app_comm_cons in H0. apply find_subtree_later2 in H0.
-        apply IHl1. apply list_tail_is_sorted in H. apply H. assumption.
+        apply IHl1. apply list_tail_is_sorted in H. apply H. assumption. assumption.
     Case "<-".
       induction l1.
       SCase "l1 = []".
