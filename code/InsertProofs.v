@@ -230,7 +230,7 @@ Lemma insert_into_list_prepend_first: forall {X: Type} k n (x: X) v l,
   insert_into_list k v ((n, x) :: l) = (n, x) :: insert_into_list k v l.
 Proof.
   intros. simpl. remember (ble_nat k n). destruct b. remember (beq_nat k n). destruct b;
-  (symmetry in Heqb; apply ble_nat_true in Heqb; omega).
+  (symmetry in Heqb; apply ble_nat_true in Heqb; exfalso; omega).
   reflexivity.
 Qed.
   
