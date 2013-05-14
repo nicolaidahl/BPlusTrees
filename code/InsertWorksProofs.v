@@ -534,25 +534,59 @@ Proof.
         rewrite Heqchild in Heqp.
         assert (insert' counter k v (bptNode b X l) = (b1, o)) by assumption.
         apply IHcounter in Heqp; try (rewrite <- Heqchild; assumption).
-
-        (*
+        clear IHcounter.
+        
         destruct o.
         SSSCase "child overflowed".
           destruct p.
+          inversion Heqp.
+          inversion H7. inversion H8. 
           remember (ble_nat (length (insert_into_list n b1 (insert_into_list n0 b0 kpl))) (b * 2 + 1)) as fits_here.
           destruct fits_here.
           SSSSCase "overflow fit on this level".
             inversion H2.
-            inversion Heqp.
+            do 2 destruct H7.
+            inversion H7.
+            inversion H11; clear H11; left; split; try reflexivity; 
+              inversion H12; clear H12; 
+              inversion H8; clear H8; clear H14; clear H15.
             SSSSSCase "appears in left subtree".
-              left.
-              ( H7 is key )
-              admit.
-            SSSSSCase "apperas in right subtree".
-              do 2 destruct H7.
-              inversion H7. inversion H10. clear H13. clear H14.
-              left.
-              ( H11 is key )
+              remember (insert_into_list witness witness0 kpl) as kpl'.
+              remember (insert_into_list n b1 kpl') as kpl''.
+              assert (find_subtree k kpl'' = Some (n, b1)).
+                symmetry in Heqo.
+                apply find_subtree_after_inserting_greater_element with (k2:= witness) (t2:= witness0) in Heqo; try assumption.
+                rewrite <- Heqkpl' in Heqo.
+				rewrite Heqkpl''.
+                apply find_subtree_after_replace with (t1 := child); try assumption.
+                rewrite Heqkpl'.
+                apply insert_preserves_sort.
+                inversion H. assumption.
+                inversion H. assumption.
+              assert (kvl_sorted kpl'').
+                rewrite Heqkpl''.
+                apply insert_preserves_sort.
+                rewrite Heqkpl'.
+                apply insert_preserves_sort.
+                inversion H. assumption.
+              assert (2 <= length kpl'').
+                assert (length kpl' <= length kpl'').
+                  rewrite Heqkpl''.
+                  apply insert_into_list_length_gt_iil_length.
+                  rewrite Heqkpl'.
+                  apply insert_preserves_sort.
+                  inversion H.
+                  assumption.
+                assert (length kpl <= length kpl').
+                  rewrite Heqkpl'.
+                  apply insert_into_list_length_gt_iil_length.
+                  inversion H.
+                  assumption.
+                inversion H.
+                omega.
+              apply appears_in_tree_when_appears_in_subtree_and_found with (kpl := kpl'') (subtree := b1) (key := n); try reflexivity; try assumption.
+            SSSSSCase "appears in right subtree".
+              (* H13 is key *)
               admit.
           SSSSCase "overflow didn't fit on this level".
             admit.
@@ -560,12 +594,17 @@ Proof.
           inversion Heqp.
           SSSSCase "appears in left subtree".
             inversion H2.
+            inversion H7. clear H7. clear H8.
             left.
+            split. reflexivity.
             remember (insert_into_list n b1 kpl) as kpl'.
             assert (find_subtree k kpl' = Some (n, b1)).
               rewrite Heqkpl'.
               symmetry in Heqo.
-              apply find_subtree_after_replace with (t1 := child); try assumption.
+              apply find_subtree_after_replace with (t1 := child).
+              inversion H.
+              assumption.
+              apply Heqo.
             assert (length kpl = length kpl').
               rewrite Heqkpl'.
               apply override_in_list_preserves_length.
@@ -573,24 +612,16 @@ Proof.
               apply find_subtree_impl_key_appears in Heqo.
               apply Heqo.
             assert (2 <= length kpl').
-              inversion H. rewrite H11 in H14.
+              inversion H. rewrite H8 in H14.
               apply H14.
             assert (kvl_sorted kpl').
               inversion H.
               rewrite Heqkpl'.
               apply insert_preserves_sort; assumption.
-            eapply appears_in_tree_when_appears_in_subtree_and_found with (kpl := kpl') (subtree := b1) in H7.
-              apply H7.
-              apply H12.
-              apply H13.
-              reflexivity.
-              apply H8.
+            apply appears_in_tree_when_appears_in_subtree_and_found with (kpl := kpl') (subtree := b1) (key := n); try reflexivity; try assumption.
           SSSSCase "appears in right subtree (bogus)".
             do 2 destruct H7. inversion H7.
             inversion H8.
-         *)
-         admit.
-
     SCase "find_subtree = None".
       apply find_subtree_finds_a_subtree with (sk := k) in H.
       do 2 destruct H. rewrite H in Heqo. inversion Heqo.
