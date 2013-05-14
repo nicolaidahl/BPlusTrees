@@ -212,7 +212,28 @@ Proof.
       apply list_tail_is_sorted in H0. apply H0.
 Qed.
   
+Lemma insert_into_list_middle : forall (X: Type) (k1 k2 new_key: nat) (v1 v2 new_value: X) (l1 l2: list (nat * X)), 
+  k1 < new_key < k2 ->
+  kvl_sorted (l1++(k1, v1)::(k2, v2)::l2) ->
+  insert_into_list new_key new_value (l1++(k1, v1)::(k2, v2)::l2) = (l1++(k1, v1)::(new_key, new_value)::(k2, v2)::l2).
+Proof.
+  admit.
+Admitted.
 
+Lemma insert_into_list_last : forall (X: Type) (k1 new_key: nat) (v1 new_value: X) (l1: list (nat * X)), 
+  k1 < new_key ->
+  kvl_sorted (l1++[(k1, v1)]) ->
+  insert_into_list new_key new_value (l1++[(k1, v1)]) = l1++[(k1, v1), (new_key, new_value)].
+Proof.
+  admit.
+Admitted.
+
+Lemma insert_into_list_override : forall (X: Type) (k: nat) (v1 v2: X) (l1 l2: list (nat * X)),
+  kvl_sorted (l1++(k, v1)::l2) ->
+  insert_into_list k v2 (l1++(k, v1)::l2) = (l1++(k, v2)::l2).
+Proof.
+  admit.
+Admitted.
 
 Lemma insert_leaf_cons_eq : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
   b <> 0 -> kvl_sorted ((k2, v2)::l) -> 
