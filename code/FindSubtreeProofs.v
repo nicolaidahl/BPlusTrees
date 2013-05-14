@@ -2,6 +2,7 @@ Require Export InductiveDataTypes.
 Require Export BPlusTree.
 Require Export HelperProofs.
 Require Export SortingProofs.
+Require Export AppearsInKVL.
 
 
 
@@ -196,21 +197,38 @@ Proof.
     apply aik_here. apply aik_later. apply IHkpl. apply H.
 Qed.
 
+Lemma kvl_sorted_k1_k2_impl_k2_later: forall {X: Type} (b:nat) k1 t1 k2 (l: list (nat*bplustree b X)),
+  kvl_sorted ((k1, t1) :: l) ->
+  appears_in_kvl k2 ((k1, t1) :: l) ->
+  k1 <= k2.
+Proof.
+  intros. remember ((k1, t1) ::l) as kvl.
+  induction H0.
+    inversion Heqkvl.
+    omega.
+    inversion Heqkvl. subst.
+    apply appears_in_kvl_app in H0.
+    do 3 (destruct H0).
+    rewrite H0 in H. 
+    apply kvl_sorted_key_across_app in H.
+    omega.
+Qed.
+
 Lemma find_subtree_now_or_later: forall {X: Type} (b:nat) sk k1 k2 t1 t2 
                                  (l: list(nat*bplustree b X)),
   kvl_sorted ((k1, t1) :: l) ->
   find_subtree sk ((k1, t1) :: l) = Some (k2, t2) ->
   k1 <= k2.
 Proof.
-  intros. remember ((k1, t1) :: l) as kpl. induction H. 
-  Case "kvl_sorted_0".
-     simpl in H0. inversion H0.
-  Case "kvl_sorted_1".
-    simpl in H0. destruct (ble_nat n sk). inversion H0. inversion Heqkpl. omega. inversion H0.
-  Case "kvl_sorted_cons".
-     
-Admitted.
- 
+  intros. remember ((k1, t1) :: l) as kpl.
+  destruct kpl.
+  Case "kpl = []".
+    inversion Heqkpl.
+  Case "kpl = a :: kpl".
+    destruct p. inversion Heqkpl.
+    apply find_subtree_impl_key_appears in H0. rewrite <- H2.
+    eapply kvl_sorted_k1_k2_impl_k2_later. apply H. apply H0. 
+Qed.
   
 
 Lemma find_subtree_later2: forall {X: Type} (b:nat) sk k1 k2 t1 t2 
