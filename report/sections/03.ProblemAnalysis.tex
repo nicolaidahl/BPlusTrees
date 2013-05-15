@@ -107,9 +107,9 @@ The following must hold for a root node to be a valid B+ tree:
 \item $b \neq 0$ --- The branching must not be 0.
 \item $2 \leq length\ kpl$ and $length\ kpl \leq S\ (b \times 2)$ --- These satisfy the conditions for branching stated in Section \ref{subsec:Background_Bplus_tree}.
 \item $key\_at\_index\ 0\ kpl = Some\ 0$ --- As mentioned above, we must know that the first key is always 0. This assures that this is the case.
-\item $all\_values (bplustree\ b\ X) (valid\_sub\_bplustree b X) kpl$ --- All the values stored in the node (the pointers) must be valid subtrees. As mentioned in Section \ref{subsec:Background_Bplus_tree}, the constraints for the root are slightly different. The constraints for internal leaves and nodes will be covered below.
-\item $all\_values\_eq\_prop (bplustree\ b\ X) equal\_height kpl$ --- All subtrees must have the same height.
-\item $kvl\_sorted kpl$ --- The keys in the node must be sorted.
+\item $all\_values (bplustree\ b\ X)\ (valid\_sub\_bplustree\ b\ X)\ kpl$ --- All the values stored in the node (the pointers) must be valid subtrees. As mentioned in Section \ref{subsec:Background_Bplus_tree}, the constraints for the root are slightly different. The constraints for internal leaves and nodes will be covered below.
+\item $all\_values\_eq\_prop (bplustree\ b\ X)\ equal\_height\ kpl$ --- All subtrees must have the same height.
+\item $kvl\_sorted\ kpl$ --- The keys in the node must be sorted.
 \item $valid\_splits\ b \ X\ kpl$ --- All the splits are correct, i.e. all the keys in a subtree are between the keys of its siblings.
 \end{itemize}
 
