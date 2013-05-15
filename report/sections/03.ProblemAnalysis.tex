@@ -35,7 +35,16 @@ To implement B+ trees in Gallina, several different components have to be implem
 \end{figure}
 
 \paragraph{}
-This data type says that a $bplustree$ is parameterized by $b$, the fanout, and $X$, the type of the values in the tree. Further, a tree can be either a leaf or a node. A leaf is list of pairs of the types $nat$ and $X$, while a node is a list of pairs with the types $nat$ and $bplustree$. Now that we have a inductive data type for B+ trees, we can start working on proofs. For this project, our focus will be on proving our implementations of the $insert$ function and the $search$ function.
+This data type says that a $bplustree$ is parameterized by $b$, the fanout, and $X$, the type of the values in the tree. Further, a tree can be either a leaf or a node. A leaf is a list of pairs of the types $nat$ and $X$, while a node is a list of pairs with the types $nat$ and $bplustree$. 
+
+\begin{figure}
+ \centering
+   \includegraphics[width=90mm]{diagrams/BPlusTreeImpl.pdf}
+ \caption{The same B+ tree as in Figure \ref{fig:bplustree} but with our specific list implementation.}
+ \label{fig:bplustreeImpl}
+\end{figure}
+
+Figure \ref{fig:bplustree} correctly shows that for each node with $n$ keys there are $n+1$ pointers to sub trees. As it can be seen from both Figure \ref{fig:inductive_data_type} and \ref{fig:bplustreeImpl} we have chosen to deal with this asymmetry by always having a $0$ key in the beginning of each key-pointer list such that every node has $n+1$ key-pointer paris. Another way to represent a node would be to have $n$ key-pointer pairs as well as a start pointer of the type \begin{coqdoccode}\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}\end{coqdoccode}. However, that would give us unnecessary complexity both when writing our primary functions but also when proving theorems about these functions. Even though it is more strongly typed with such a definition we would always have to take care of a start pointer corner case when proving anything about our B+ trees. With our current solution we add a couple of assumptions to our notion of what a valid B+ tree is, to ensure the start pointer is properly handled. This will be explained in the following section. \todo{insert ref}
 
 \paragraph{}
 \todo{Write about valid bplus}
