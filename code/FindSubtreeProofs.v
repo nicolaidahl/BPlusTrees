@@ -92,7 +92,7 @@ Qed.
 
 
 Lemma find_subtree_one_impl_found: forall {X: Type} b k n t key subtree,
-  k >= n ->
+  key <= k \/ n <= k ->
   @find_subtree X b k [(n, t)] = Some (key, subtree) ->
   n = key /\ t = subtree.
 Proof.
@@ -147,7 +147,7 @@ Proof.
 Qed.
 
 Lemma find_subtree_returns_a_lesser_key : forall (X: Type) (b sk key: nat) (child: bplustree b X) (l: list (nat * bplustree b X)),
-  2 <= length l ->
+  1 <= length l ->
   kvl_sorted l -> 
   find_subtree sk l = Some (key, child) ->
   key <= sk.
@@ -156,7 +156,8 @@ Proof.
   Case "kvl_sorted_0".
     inversion H.
   Case "kvl_sorted_1".
-    compute in H. omega.
+    compute in H. simpl in H1. remember (ble_nat n sk). destruct b0. inversion H1. subst.
+    symmetry in Heqb0. apply ble_nat_true in Heqb0. omega. inversion H1.
   Case "kvl_sorted_cons".
     destruct lst.
     SCase "lst = []".
