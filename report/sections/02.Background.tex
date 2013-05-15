@@ -12,30 +12,25 @@
 %     - Running time out of scope
 
 \subsection{Gallina}
-Gallina is a purely functional specification language\todo{ref}, which is used by the Coq interactive proof assistant. It is very lean, and does not include non-functional data structures, such as arrays\todo{ref}. 
+Gallina is a purely functional language\todo{ref}, which is used by the Coq interactive proof assistant. It is very lean, and does not include non-functional data structures, such as arrays\todo{ref}.
 
 \subsection{B+ tree}
-The B+ tree is a n-ary, self-balancing, tree data structure\todo{ref}, similar to a B-tree\todo{ref}. It is composed of a root, nodes, and leaves. The root may be a leaf or a node. Nodes hold pairs of keys and pointers, $(k, p)$. $p$ points to either a node or leaf that holds the values over $k$, but below the key of the next pair. Leaves hold pairs of keys and values, $(k, v)$. In this project keys are always natural numbers, while values can have any type, denoted by $X$. 
+The B+ tree is a n-ary, self-balancing, tree data structure\todo{ref}, similar to a B-tree\todo{ref}. It is composed of a root, nodes, and leaves. The root may be a leaf or a node. Nodes hold pairs of keys and pointers, $(k, p)$. $p$ points to either a node or leaf that holds the values over $k$, but below the key of the next pair. Leaves hold pairs of keys and values, $(k, v)$. In this project keys are always natural numbers, while values can have any type, denoted by $X$. In this project duplicate keys are not allowed.
 
 \begin{figure}
  \centering
    \includegraphics[width=90mm]{diagrams/BPlusTree.pdf}
- \caption{An example of a B+ tree with $b=2$. The bottom row contains leaves, with values, in this case characters, in the dashed boxes.}
+ \caption{An example of a B+ tree with $b=1$. The bottom row contains leaves, with values, in this case characters, in the dashed boxes.}
  \label{fig:bplustree}
 \end{figure}
 
-For a given B+ tree, a branching factor $b$ determines the capacity of nodes and
-leaves\todo{ref}. A node must have at least $b/2$ children, and at most $b$. A
-leaf must have between $b/2$ and $b$ values. This rule is relaxed for the root
-node, which must have between 2 and $b$ children. \todo{For nodes and 0 - 2*b for leaves}
+For a given B+ tree, a branching factor $b$ determines the capacity of nodes and leaves\todo{ref}. A node must have at least $b+1$ children, and at most $2b+1$. A leaf must have between $b$ and $2b$ values. This rule is relaxed for the root node, which must have between 2 and $2b+1$ children. If the root is a leaf, it must have between 0 and $2b$ values.
+
 \paragraph{}
-In our implementation, a node is a list of key-pointer $(k, p)$ pairs where $p$ points to a child tree. A leaf is a list of key-value $(k, v)$. We support three operations, which we will refer to as our primary operations. These are: insert, search and height. Furthermore, we have implemented a simple in-order traversal, which we will not cover in this report.
-
-\subsubsection{Height}
-
-
-\subsubsection{Insertion}
-Since Gallina does not support arrays, the only way to get lookups faster than $O(n)$ is through a tree structure, such as a B+ tree. This would add a large degree of complexity to our proofs, and since running time is not an objective of this project, it has been deemed out of scope.
+In our implementation, a node is a list of key-pointer $(k, p)$ pairs where $p$ points to a child tree. A leaf is a list of key-value $(k, v)$ pairs. We support three operations, which we will refer to as our primary operations. These are: insert, search and height. The theory behind the height function is trivial, and will not be explained in this section, but the theory behind the insertion and search functions require some explanation. Beyond these primary operations, we have also implemented a simple in-order traversal, which we will not cover in this report.
 
 \subsubsection{Search}
+The search function takes two arguments: a search key $sk$, and a tree $t$, to search in. Tree can be either a node or a leaf. If the the tree is a node, the function recurses through the $(k, p)$ list, until it finds the pair $(k, p)$, value where $k \le sk$, and $sk < k1$, where $k1$ is the following pair $(k1, p1)$ in the list. The function then recursively calls itself with the subtree $p$. Once the function reaches a leaf, the $(k, v)$ list is searched, often by doing a binary search.
 
+\subsubsection{Insert}
+The insert function two arguments: a key-value pair $(k, v)$ and a tree $t$ to insert the pair into. The function starts at the root of the tree, and recursive. The pair is then inserted into the leaf at the correct position. If the insertion results in the leaf having more than $2b$ values, the leaf must be split. This is done by splitting the leaf in half, and inserting a pointer to the new leaf in the parent node. If the parent node now has more than $2b+1$ children, it most also be split, following the same pattern. This can continue all the way to the root, which in turn can be split. If this happens, a new root node is created, as a parent to the old root, and the height of the tree increases. Thus, a B+ tree can be seen to grow up from the leaves.

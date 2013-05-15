@@ -230,7 +230,7 @@ Lemma insert_into_list_prepend_first: forall {X: Type} k n (x: X) v l,
   insert_into_list k v ((n, x) :: l) = (n, x) :: insert_into_list k v l.
 Proof.
   intros. simpl. remember (ble_nat k n). destruct b. remember (beq_nat k n). destruct b;
-  (symmetry in Heqb; apply ble_nat_true in Heqb; omega).
+  (symmetry in Heqb; apply ble_nat_true in Heqb; exfalso; omega).
   reflexivity.
 Qed.
   
@@ -289,6 +289,41 @@ Proof.
     apply kvl_sorted_key_across_app in H. omega.
 Qed.
     
+
+
+Lemma insert_into_list_last_twice : forall (X: Type) (k1 k2: nat) (t1 t1' t2: X) (l: list (nat * X)),
+  kvl_sorted (l ++ [(k1, t1)]) ->
+  k1 < k2 ->
+  insert_into_list k1 t1' (insert_into_list k2 t2 (l ++ [(k1, t1)])) = l ++ [(k1, t1'), (k2, t2)].
+Proof.
+  intros.
+  assert (kvl_sorted (insert_into_list k2 t2 (l ++ [(k1, t1)]))).
+    apply insert_preserves_sort.
+    assumption.
+  assert (kvl_sorted(insert_into_list k1 t1' (insert_into_list k2 t2 (l ++ [(k1, t1)])))).
+    apply insert_preserves_sort. apply insert_preserves_sort.
+    assumption.
+  rewrite insert_into_list_last in *; try assumption.
+  rewrite insert_into_list_override in *; try assumption.
+  reflexivity.
+Qed.
+
+Lemma insert_into_list_middle_twice : forall (X: Type) (k1 k2 k3: nat) (t1 t1' t2 t3: X) (l1 l2: list (nat * X)),
+  kvl_sorted (l1 ++ (k1, t1)::(k3, t3)::l2) ->
+  k1 < k2 < k3 ->
+  insert_into_list k1 t1' (insert_into_list k2 t2 (l1 ++ (k1, t1)::(k3, t3)::l2)) = l1 ++ (k1, t1')::(k2, t2)::(k3, t3)::l2.
+Proof.
+  intros.
+  assert (kvl_sorted(insert_into_list k2 t2 (l1 ++ (k1, t1) :: (k3, t3) :: l2))).
+    apply insert_preserves_sort.
+    assumption.
+  assert (kvl_sorted(insert_into_list k1 t1' (insert_into_list k2 t2 (l1 ++ (k1, t1) :: (k3, t3) :: l2)))).
+    apply insert_preserves_sort. apply insert_preserves_sort.
+    assumption.
+  rewrite insert_into_list_middle in *; try assumption.
+  rewrite insert_into_list_override in *; try assumption.
+  reflexivity.
+Qed.
 
 Lemma insert_leaf_cons_eq : forall (X: Type) (b k1 k2: nat) (v1 v2: X) (l: list (nat * X)),
   b <> 0 -> kvl_sorted ((k2, v2)::l) -> 
@@ -639,7 +674,21 @@ Proof.
 	      symmetry in Heqb2. apply ble_nat_false in Heqb2. omega.
 Qed.
 
-
+Lemma child_is_valid_bplustree : forall (X: Type) (b k key: nat) (child: bplustree b X) (kpl: list (nat * bplustree b X)),
+  valid_bplustree b X (bptNode b X kpl) ->
+  find_subtree k kpl = Some(key, child) ->
+  valid_bplustree b X child.
+Proof.
+  intros.
+  apply find_subtree_impl_kpl_app in H0.
+  do 2 destruct H0.
+  inversion H0. clear H0.
+  rewrite H1 in H.
+  inversion H.
+  apply all_values_single in H7.
+  apply valid_sub_bplustree_impl_valid_bplustree in H7.
+  assumption.
+Qed.
 
 
   

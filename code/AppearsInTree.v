@@ -183,10 +183,6 @@ Proof.
 	    eapply find_subtree_later in Heqloc. apply Heqloc. apply H. apply H1.
 Qed.
   
-
-
-
-
 (* Informal: We know k appears in the subtree that find_subtree returns, so
    * when appears_in_tree k parent tries to identify the subtree, it will find
    * the same as find_subtree, and because it exists in the subtree, it must also
@@ -226,6 +222,21 @@ Proof.
     inversion H2. clear H2. inversion H7. subst.
     apply appears_in_tree_when_appears_in_subtree; try assumption.
       omega.
+Qed.
+
+Lemma not_appears_in_subtree_when_not_appears_in_tree_and_found : forall (X: Type) (b k key: nat) (child: bplustree b X) (kpl: list (nat * bplustree b X)),
+  valid_bplustree b X (bptNode b X kpl) ->
+  ~appears_in_tree k (bptNode b X kpl) ->
+  find_subtree k kpl = Some(key, child) ->
+  ~appears_in_tree k child.
+Proof.
+  intros.
+  inversion H.
+  unfold not.
+  intro.
+  apply H0.
+  apply appears_in_tree_when_appears_in_subtree_and_found with (key := key) (subtree := child) (kpl := kpl);
+            try assumption; try reflexivity.
 Qed.
 
 (*

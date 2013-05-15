@@ -35,9 +35,13 @@ To implement B+ trees in Gallina, several different components have to be implem
 \end{figure}
 
 \paragraph{}
-Now that we have a inductive data type for B+ trees, we can start working on proofs. For this project, our focus will be on proving our implementations of the $insert$ function and the $search$ function.
+This data type says that a $bplustree$ is parameterized by $b$, the fanout, and $X$, the type of the values in the tree. Further, a tree can be either a leaf or a node. A leaf is list of pairs of the types $nat$ and $X$, while a node is a list of pairs with the types $nat$ and $bplustree$. Now that we have a inductive data type for B+ trees, we can start working on proofs. For this project, our focus will be on proving our implementations of the $insert$ function and the $search$ function.
 
 \subsubsection{Insert}
+Since Gallina does not support arrays, the only way to get lookups faster than $O(n)$ is through a tree structure, such as a B+ tree. This would add a large degree of complexity to our proofs, and since running time is not an objective of this project, it has been deemed out of scope.
+
+\paragraph{}
+\todo{Write about counter}
 
 \paragraph{}
 \todo{Write about valid bplus}
@@ -48,4 +52,5 @@ Now that we have a inductive data type for B+ trees, we can start working on pro
 \paragraph{}
 
 \subsubsection{Search}
+Our implementation of search does not stray far from the prototypical version described in the background (Section \ref{sec:Background}). It is implemented through 3 functions: $search'$, $find_subtree$, and $search_leaf$. 
 \todo{Write about sorted}
