@@ -18,12 +18,12 @@ Inductive valid_splits (b: nat) (X: Type) : list (nat * bplustree b X) -> Prop :
 
 (* Prop for determining if a subtree is a valid subtree *)
 Inductive valid_sub_bplustree (b: nat) (X: Type) : bplustree b X -> Prop :=
-  | valid_leaf :      forall (l: list (nat * X)), 
+  | valid_leaf :      forall (kvl: list (nat * X)), 
                       b <> 0 ->
-                      b <= length(l) -> 
-                      length(l) <= mult b 2 ->
-                      kvl_sorted l ->  
-                      valid_sub_bplustree b X (bptLeaf b X l)
+                      b <= length kvl -> 
+                      length kvl <= b * 2 ->
+                      kvl_sorted kvl ->  
+                      valid_sub_bplustree b X (bptLeaf b X kvl)
   | valid_node :      forall (kpl: list (nat * bplustree b X)),
                       b <> 0 -> 
                       S b <= length kpl -> 
