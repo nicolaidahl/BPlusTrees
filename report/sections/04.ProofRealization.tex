@@ -11,3 +11,87 @@
 %   - Kopitiam cannot handle large proof assumptions
 %   -counter
 In this section, 
+
+
+\subsubsection{Reasoning about contents}
+To verify that our solution can search and insert into both leafs and entire trees, we designed two propositions that allows us to reason about the content of leafs and trees. The two propositions can be seen represented in figure \ref{fig:aik_and_ait}. 
+
+\begin{figure}
+\centering
+\begin{coqdoccode}
+  \coqdockw{Inductive} \coqdef{InductiveDataTypes.appears in kvl}{appears\_in\_kvl}{\coqdocinductive{appears\_in\_kvl}} \{\coqdocvar{X}:\coqdockw{Type}\} (\coqdocvar{sk}: \coqdocinductive{nat}) : \coqdocinductive{list} (\coqdocinductive{nat} \coqdocnotation{\ensuremath{\times}} \coqdocvar{X}) \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{|} \coqdef{InductiveDataTypes.aik here}{aik\_here}{\coqdocconstructor{aik\_here}}: \coqdockw{\ensuremath{\forall}} \coqdocvar{v} \coqdocvar{l},		\coqref{InductiveDataTypes.appears in kvl}{\coqdocinductive{appears\_in\_kvl}} \coqdocvar{sk} (\coqdocnotation{(}\coqdocvar{sk}\coqdocnotation{,} \coqdocvar{v}\coqdocnotation{)}\coqdocnotation{::}\coqdocvar{l})\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{|} \coqdef{InductiveDataTypes.aik later}{aik\_later}{\coqdocconstructor{aik\_later}}: \coqdockw{\ensuremath{\forall}} \coqdocvar{k} \coqdocvar{v} \coqdocvar{l},	\coqdocvar{appears\_in\_kvl} \coqdocvar{sk} \coqdocvar{l} \ensuremath{\rightarrow} \coqdocvar{appears\_in\_kvl} \coqdocvar{sk} ((\coqdocnotation{k}, \coqdocnotation{v})\coqdocnotation{:}\coqdocnotation{:}\coqdocnotation{l}).\coqdoceol
+  \coqdocemptyline
+  \coqdocnoindent
+  \coqdockw{Inductive} \coqdocvar{appears\_in\_tree} \{\coqdocvar{X}:\coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\coqdocinductive{\}} (\coqdocvar{sk}: \coqdocvar{nat}\coqdocinductive{)} : \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X} \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{|} \coqdocvar{ait\_leaf}\coqdef{InductiveDataTypes.ait leaf}{:}{\coqdocconstructor{:}} \coqdockw{\ensuremath{\forall}} \coqdocvar{l},	\coqdocvar{appears\_in\_kvl} \coqdocvar{sk} \coqref{InductiveDataTypes.appears in kvl}{\coqdocinductive{l}} \coqref{InductiveDataTypes.appears in kvl}{\coqdocinductive{\ensuremath{\rightarrow}}} \coqref{InductiveDataTypes.appears in kvl}{\coqdocinductive{appears\_in\_tree}} \coqdocvar{sk} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{(}}\coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{bptLeaf}} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{b}} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{X}} \coqdocvar{l})\coqdoceol
+  \coqdocindent{1.00em}
+  \coqref{InductiveDataTypes.bptLeaf}{\coqdocconstructor{\ensuremath{|}}} \coqref{InductiveDataTypes.bptLeaf}{\coqdocconstructor{ait\_node\_last}}: \coqdockw{\ensuremath{\forall}} \coqdef{InductiveDataTypes.ait node last}{k1}{\coqdocconstructor{k1}} \coqdef{InductiveDataTypes.ait node last}{k2}{\coqdocconstructor{k2}} \coqdef{InductiveDataTypes.ait node last}{v1}{\coqdocconstructor{v1}} \coqdocvar{v2}, \coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{appears\_in\_tree} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{sk}} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{v2}} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{\ensuremath{\rightarrow}}} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{k2}} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{\ensuremath{\le}}} \coqdocvar{sk} \ensuremath{\rightarrow}\coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{appears\_in\_tree} \coqdocvar{sk} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} [(\coqdocvar{k1}, \coqdocvar{v1}), (\coqdocvar{k2}, \coqdocvar{v2}\coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{)])}}\coqdoceol
+  \coqdocindent{1.00em}
+  \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{\ensuremath{|}}} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{ait\_node\_here}}\coqref{InductiveDataTypes.bptNode}{\coqdocconstructor{:}} \coqref{InductiveDataTypes.bptNode}{\coqdocconstructor{\ensuremath{\forall}}} \coqdocvar{k1} \coqdocnotation{k2} \coqdocnotation{v1} \coqdocvar{v2} \coqdocnotation{l}\coqdocnotation{,} \coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{appears\_in\_tree} \coqdef{InductiveDataTypes.ait node here}{sk}{\coqdocconstructor{sk}} \coqdef{InductiveDataTypes.ait node here}{v1}{\coqdocconstructor{v1}} \coqdef{InductiveDataTypes.ait node here}{-}{\coqdocconstructor{-}}> \coqdocvar{k1} \ensuremath{\le} \coqdocvar{sk} \ensuremath{\land} \coqdocvar{sk} < \coqdocvar{k2} \ensuremath{\rightarrow}\coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{appears\_in\_tree} \coqdocvar{sk} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} ((\coqdocvar{k1}, \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{v1}}\coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{)::(}}\coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{k2}}\coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{,}} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{v2}}\coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{):}}:\coqdocvar{l}))\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{|} \coqdocvar{ait\_node\_later}: \coqdocnotation{\ensuremath{\forall}} \coqdocvar{x} \coqdocvar{k1} \coqdocvar{k2} \coqdocvar{v1} \coqdocvar{v2} \coqdocvar{l},\coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{appears\_in\_tree} \coqdocvar{sk} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{(}}\coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{bptNode}} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{b}} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{X}} ((\coqdocvar{k1}, \coqref{InductiveDataTypes.bptNode}{\coqdocconstructor{v1}}\coqref{InductiveDataTypes.bptNode}{\coqdocconstructor{)::(}}\coqdocvar{k2}, \coqdocvar{v2}\coqdocnotation{)}::\coqdocnotation{l}\coqdocnotation{)}) \coqdocnotation{-}\coqdocnotation{>} \coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{k1} \coqdocnotation{\ensuremath{\le}} \coqdocvar{sk} \ensuremath{\rightarrow}\coqdoceol
+  \coqdocindent{8.00em}
+  \coqdef{InductiveDataTypes.ait node later}{appears\_in\_tree}{\coqdocconstructor{appears\_in\_tree}} \coqdocvar{sk} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} (\coqdocvar{x}::(\coqdocvar{k1}, \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{v1}}\coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{)::(}}\coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{k2}}\coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{,}} \coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{v2}}\coqref{InductiveDataTypes.appears in tree}{\coqdocinductive{):}}:\coqdocvar{l})).\coqdoceol
+\end{coqdoccode}
+\caption{Inductive propositions for reasoning about contents}
+\label{fig:aik_and_ait}
+\end{figure}
+
+We can reason about leafs using the $appears\_in\_kvl$ proposition on the leafs key-value pairs. If a key is present in the list, then the proposition holds. Likewise the list can not contain a given key if the proposition does not hold. We use this property in our proofs of that $search\_leaf$ and $insert\_leaf$. To proof that $search\_leaf$ works, we must simply prove that \begin{coqdoccode} 
+  \coqdocvar{appears\_in\_kvl} \coqdocvar{k} \coqdocvar{kvl}
+  \ensuremath{\rightarrow} \coqdocvar{\ensuremath{\exists}} \coqdocvar{v}, 
+  \coqdocvar{search\_leaf} \coqdocvar{k} \coqdocvar{kvl} = \coqdocvar{Some} 
+  \coqdocvar{v}
+\end{coqdoccode} holds. Or to paraphrase, if a given key exists in the key-value list, then there must exists a value that $search\_leaf$ finds if we search for that key. In reality we must also know that the key-value list is sorted, so the actual proof also reflects this requirement.
+
+Similarly the proof for ensuring that $insert\_leaf$ can be seen as \begin{coqdoccode}
+\ensuremath{\lnot} \coqdocvar{appears\_in\_kvl} \coqdocvar{k} \coqdocvar{kvl} \ensuremath{\rightarrow} \coqdocvar{appears\_in\_kvl} \coqdocvar{k} (\coqdocvar{insert\_leaf} \coqdocvar{k} \coqdocvar{v} \coqdocvar{kvl})
+\end{coqdoccode}. But because calling $insert\_leaf$ can overflow the leaf, the return type of $insert\_leaf$ is not $list(nat * X)$, but rather $(list (nat * X) * option (list (nat * X)))$. So it $insert\_leaf$ returns a key-value list and a option for the portion of the key-value list that overflowed. So the actual lemma is a disjunction stating that they key must appear in one of the two returned key-value lists.
+
+\paragraph{}
+To reason about entire trees, we have the the proposition $appears\_in\_tree$. The proposition has a single constructor for when the tree is a leaf, where the only requirement is that $appears\_in\_kvl$ must hold for the leafs key-value list. When the tree is a node, we have three different constructors. We have two constructors ($ait\_node\_last$ and $ait\_node\_here$) for when the the key should appear in a specific subtree, and one ($ait\_node\_later$) that allows you to add subtrees that should not contain the search-key.
+
+Like with leafs, we use $appears\_in\_kvl$ on the key-pointer list and then prove properties about $search$ and $insert$. The two theorems can be seen reproduced in figure \ref{fig:search_and_insert_works}.
+
+
+\begin{figure}
+  \begin{coqdoccode}
+  \coqdocnoindent
+  \coqdockw{Theorem} \coqdocvar{appears\_search\_works} : \coqdockw{\ensuremath{\forall}} (\coqdocvar{b}: \coqdocvar{nat}) (\coqdocvar{X}: \coqdockw{Type}) (\coqdocvar{t}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) (\coqdocvar{k}: \coqdocvar{nat}),\coqdoceol
+  \coqdocindent{1.00em}
+  \coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
+  \coqdocindent{1.00em}
+  \coqdocvar{appears\_in\_tree} \coqdocvar{k} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
+  \coqdocindent{1.00em}
+  \coqdocvar{\ensuremath{\exists}} \coqdocvar{v}, \coqdocvar{search} \coqdocvar{k} \coqdocvar{t} = \coqdocvar{Some}(\coqdocvar{v}).\coqdoceol
+  \coqdocemptyline
+  \coqdocnoindent
+  \coqdockw{Theorem} \coqdocvar{insert\_works} : \coqdockw{\ensuremath{\forall}} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{t}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) (\coqdocvar{k}: \coqdocvar{nat}) (\coqdocvar{v}: \coqdocvar{X}),\coqdoceol
+  \coqdocindent{1.00em}
+  \coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{\lnot}\coqdocvar{appears\_in\_tree} \coqdocvar{k} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
+  \coqdocindent{1.00em}
+  \coqdocvar{appears\_in\_tree} \coqdocvar{k} (\coqdocvar{insert} \coqdocvar{k} \coqdocvar{v} \coqdocvar{t}).\coqdoceol
+  \coqdocemptyline
+  \end{coqdoccode}
+  \caption{The theorems that claim that $search$ and $insert$ works.}
+  \label{fig:search_and_insert_works}
+\end{figure}
