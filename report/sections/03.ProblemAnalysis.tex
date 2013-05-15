@@ -46,6 +46,8 @@ This data type says that a $bplustree$ is parameterized by $b$, the fanout, and 
 
 Figure \ref{fig:bplustree} correctly shows that for each node with $n$ keys there are $n+1$ pointers to sub trees. As it can be seen from both Figure \ref{fig:inductive_data_type} and \ref{fig:bplustreeImpl} we have chosen to deal with this asymmetry by always having a $0$ key in the beginning of each key-pointer list such that every node has $n+1$ key-pointer paris. Another way to represent a node would be to have $n$ key-pointer pairs as well as a start pointer of the type \begin{coqdoccode}\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}\end{coqdoccode}. However, that would give us unnecessary complexity both when writing our primary functions but also when proving theorems about these functions. Even though it is more strongly typed with such a definition we would always have to take care of a start pointer corner case when proving anything about our B+ trees. With our current solution we add a couple of assumptions to our notion of what a valid B+ tree is, to ensure the start pointer is properly handled. This will be explained in the following section. \todo{insert ref}
 
+\todo{Pointers are not actually pointers - but a regular instance of a bplustree as a value}
+
 \subsection{Valid B+ tree}
 \label{subsec:Valid_bplustree}
 Although this data type can represent a B+ tree, it says nothing about the validity of a tree. To make statements about a B+ tree's validity, we need a proposition that states what must hold for a B+ tree to be valid. This proposition is called $valid\_bplustree$, and can be seen in Figure \ref{fig:inductive_valid_bplustree}.
@@ -117,6 +119,7 @@ The following must hold for a root node to be a valid B+ tree:
 Since $valid\_bplustree$ only holds for the root leaf or node, a different proposition is needed for internal leaves and nodes, or subtrees. This is implemented in the $valid\_sub\_bplustree$ proposition. In the interest of brevity, only the differences will be listed here:
 
 \paragraph{Internal leaf}
+\todo{Shouldn't be called internal leaf as leafs are never internal.}
 \begin{itemize}
 \item $b \leq length\ kvl$ --- The number of key-value pairs in the leaf must be at least $b$.
 \end{itemize}
@@ -125,6 +128,8 @@ Since $valid\_bplustree$ only holds for the root leaf or node, a different propo
 \begin{itemize}
 \item $2 \leq length\ kpl$ changed to $S\ b \leq length\ kpl$ --- The number of key-pointer pairs must be at least $b+1$.
 \end{itemize}
+
+\todo{Needs some binding text before we go on with implementation.}
 
 \subsection{Search}
 \label{subsec:search}
@@ -152,3 +157,8 @@ Out of the three central $insert$, $insert'$ and $insert\_leaf$ functions the si
 \todo{insert this somewhere else: Since Gallina does not support arrays, the only way to get lookups faster than $O(n)$ is through a tree structure, such as a B+ tree. This would add a large degree of complexity to our proofs, and since running time is not an objective of this project, it has been deemed out of scope.}
 
 \paragraph{}
+\subsection{Limitations}
+\todo{Fill in...}
+
+\subsection{Elements of a Complete Proof of Correctness}
+\todo{Needs a section on what we means when we say that insert and search works}
