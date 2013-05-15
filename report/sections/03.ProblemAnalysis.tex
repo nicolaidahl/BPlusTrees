@@ -35,7 +35,7 @@ To implement B+ trees in Gallina, several different components have to be implem
 \end{figure}
 
 \paragraph{}
-This data type says that a $bplustree$ is parameterized by $b$, the fanout, and $X$, the type of the values in the tree. Further, a tree can be either a leaf or a node. A leaf is a list of pairs of the types $nat$ and $X$, while a node is a list of pairs with the types $nat$ and $bplustree$. 
+This data type says that a $bplustree$ is parameterized by $b$, the fanout, and $X$, the type of the values in the tree. Further, a tree can be either a leaf or a node. A leaf is a list of key-value pairs of the types $nat$ and $X$, while a node is a list of key-pointer pairs with the types $nat$ and $bplustree$. Note that we use the term pointer in this report only for easy distinction between the two types of lists. There are, in fact, no an actual pointers between trees in the internal Gallina representation, and \begin{coqdoccode}\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}\end{coqdoccode} is just as much a value as \begin{coqdoccode} \coqdocvar{X}\end{coqdoccode}.
 
 \begin{figure}
  \centering
@@ -44,9 +44,11 @@ This data type says that a $bplustree$ is parameterized by $b$, the fanout, and 
  \label{fig:bplustreeImpl}
 \end{figure}
 
-Figure \ref{fig:bplustree} correctly shows that for each node with $n$ keys there are $n+1$ pointers to sub trees. As it can be seen from both Figure \ref{fig:inductive_data_type} and \ref{fig:bplustreeImpl} we have chosen to deal with this asymmetry by always having a $0$ key in the beginning of each key-pointer list such that every node has $n+1$ key-pointer paris. Another way to represent a node would be to have $n$ key-pointer pairs as well as a start pointer of the type \begin{coqdoccode}\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}\end{coqdoccode}. However, that would give us unnecessary complexity both when writing our primary functions but also when proving theorems about these functions. Even though it is more strongly typed with such a definition we would always have to take care of a start pointer corner case when proving anything about our B+ trees. With our current solution we add a couple of assumptions to our notion of what a valid B+ tree is, to ensure the start pointer is properly handled. This will be explained in the following section. \todo{insert ref}
+Figure \ref{fig:bplustree} correctly shows that for each node with $n$ keys there are $n+1$ pointers to sub trees. As it can be seen from both Figure \ref{fig:inductive_data_type} and \ref{fig:bplustreeImpl} we have chosen to deal with this asymmetry by always having a $0$ key in the beginning of each key-pointer list such that every node has $n+1$ key-pointer pairs. Another way to represent a node would be to have $n$ key-pointer pairs as well as a start pointer of the type \begin{coqdoccode}\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}\end{coqdoccode}. However, that would give us unnecessary complexity both when writing our primary functions but also when proving theorems about these functions. Even though it is more strongly typed with such a definition we would always have to take care of a start pointer corner case when proving anything about our B+ trees. With our current solution we add a couple of assumptions to our notion of what a valid B+ tree is, to ensure the start pointer is properly handled. This will be explained in Section \ref{subsec:Valid_bplustree}.
+\paragraph{}
+This functional implementation of B+ trees, which is an inherently imperative data structure, does have some implications. A popular implementation of nodes and leafs entails representing the key-pointer and key-value pairs as an array as it enables the fast binary search which runs in $O(log(n))$. Since Gallina does not support arrays, the only way to get lookups in key-pointer and key-value faster than $O(n)$ is through a tree structure, such as a B+ tree. This would add a large degree of complexity to our proofs, and since running time is not an objective of this project, it has been deemed out of scope.
 
-\todo{Pointers are not actually pointers - but a regular instance of a bplustree as a value}
+
 
 \subsection{Valid B+ tree}
 \label{subsec:Valid_bplustree}
@@ -154,11 +156,19 @@ The $insert$ function calls the $insert'$ function to insert into a tree. First 
 \paragraph{}
 Out of the three central $insert$, $insert'$ and $insert\_leaf$ functions the significant is $insert'$. It uses $find\_subtree$ to figure out which subtree it should recurse into and $insert\_node$ to handle overflowing subtrees. Where $insert'$ handles overflowing leafs, $insert\_node$ takes care of overflowing (non-root) nodes.
 
-\todo{insert this somewhere else: Since Gallina does not support arrays, the only way to get lookups faster than $O(n)$ is through a tree structure, such as a B+ tree. This would add a large degree of complexity to our proofs, and since running time is not an objective of this project, it has been deemed out of scope.}
-
-\paragraph{}
-\subsection{Limitations}
-\todo{Fill in...}
-
 \subsection{Elements of a Complete Proof of Correctness}
-\todo{Needs a section on what we means when we say that insert and search works}
+
+Needs a section on what we means when we say that insert and search works
+
+
+
+
+
+
+
+
+
+
+
+
+

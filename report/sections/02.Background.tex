@@ -31,7 +31,22 @@ For a given B+ tree, a branching factor $b$ determines the capacity of nodes and
 In our implementation, a node is a list of key-pointer $(k, p)$ pairs where $p$ points to a child tree. A leaf is a list of key-value $(k, v)$ pairs. We support three operations, which we will refer to as our primary operations. These are: insert, search and height. The theory behind the height function is trivial, and will not be explained in this section, but the theory behind the insertion and search functions require some explanation. Beyond these primary operations, we have also implemented a simple in-order traversal, for which it is worth noting that pointers between leafs for a speed-up in sequential access (range queries), which some implementations of B+ trees include, has not been implemented. The in-order traversal will not be mentioned further in this report.
 
 \subsubsection{Search}
-The search function takes two arguments: a search key $sk$, and a tree $t$, to search in. Tree can be either a node or a leaf. If the the tree is a node, the function recurses through the $(k, p)$ list, until it finds the pair $(k, p)$, value where $k \le sk$, and $sk < k1$, where $k1$ is the following pair $(k1, p1)$ in the list. The function then recursively calls itself with the subtree $p$. Once the function reaches a leaf, the $(k, v)$ list is searched, often by doing a binary search.
+\label{subsec:Search}
+\todo{Mention running time of this operation}
+The search function takes two arguments: a search key $sk$, and a tree $t$, to search in. Tree can be either a node or a leaf. If the the tree is a node, the function finds the pointer $p$ in the node for which it holds that
+\begin{itemize}
+	\item $p$ is the start pointer of the node and there exists a key $k$ that immediately succeeds $p$, where $sk < k$ OR
+	\item There exists keys $k1$ and $k2$ on each side of $p$ and $k1 <= sk < k2$ OR
+	\item $p$ is the end pointer of the node and for all keys $k$ in the node $k <= sk$
+\end{itemize}
+The function then recursively calls itself with the subtree $p$. Once the function reaches a leaf, the function searches for the key-value pair. This is often implemented as binary search in an array. 
 
 \subsubsection{Insert}
-The insert function takes two arguments: a key-value pair $(k, v)$ and a tree $t$ to insert the pair into. The function starts at the root of the tree, and recursive. The pair is then inserted into the leaf at the correct position. If the insertion results in the leaf having more than $2b$ values, the leaf must be split. This is called overflow. This is done by splitting the leaf in half, and inserting a pointer to the new leaf in the parent node. If the parent node now has more than $2b+1$ children, it most also be split, following the same pattern. This can continue all the way to the root, which in turn can be split. If this happens, a new root node is created, as a parent to the old root, and the height of the tree increases. Thus, a B+ tree can be seen to grow up from the leaves.
+\todo{Mention running time of this operation}
+The insert function takes two arguments: a key-value pair $(k, v)$ and a tree $t$ to insert the pair into. The function starts at the root of the tree, and recursively searches for the leaf to insert into. It does this search in the same way the Search operation does it. The pair is then inserted into the leaf at the correct position. If the insertion results in the leaf having more than $2b$ values, the leaf must be split. This is called a leaf overflow. This is handled by splitting the leaf in half, and inserting a pointer to the new leaf in the parent node. If the parent node now has more than $2b$ children, it most also be split, following the same pattern. This can continue all the way to the root, which in turn can be split into two. If this happens, a new root node is created, as a parent to two split halves of the old root, and the height of the tree increases by one. Thus, a B+ tree can be seen to grow up from the leaves and is always in perfect balance.
+
+
+
+
+
+
