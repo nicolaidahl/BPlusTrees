@@ -46,8 +46,85 @@ This data type says that a $bplustree$ is parameterized by $b$, the fanout, and 
 
 Figure \ref{fig:bplustree} correctly shows that for each node with $n$ keys there are $n+1$ pointers to sub trees. As it can be seen from both Figure \ref{fig:inductive_data_type} and \ref{fig:bplustreeImpl} we have chosen to deal with this asymmetry by always having a $0$ key in the beginning of each key-pointer list such that every node has $n+1$ key-pointer paris. Another way to represent a node would be to have $n$ key-pointer pairs as well as a start pointer of the type \begin{coqdoccode}\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}\end{coqdoccode}. However, that would give us unnecessary complexity both when writing our primary functions but also when proving theorems about these functions. Even though it is more strongly typed with such a definition we would always have to take care of a start pointer corner case when proving anything about our B+ trees. With our current solution we add a couple of assumptions to our notion of what a valid B+ tree is, to ensure the start pointer is properly handled. This will be explained in the following section. \todo{insert ref}
 
+\subsection{Valid B+ tree}
+\label{subsec:Valid_bplustree}
+Although this data type can represent a B+ tree, it says nothing about the validity of a tree. To make statements about a B+ tree's validity, we need a proposition that states what must hold for a B+ tree to be valid. This proposition is called $valid\_bplustree$, and can be seen in Figure \ref{fig:inductive_valid_bplustree}.
+
+\begin{figure}
+\centering
+\begin{coqdoccode}
+\coqdockw{Inductive} \coqdocvar{valid\_bplustree} (\coqdocvar{b}: \coqdocvar{nat}) (\coqdocvar{X}: \coqdockw{Type}) : \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X} \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{root\_is\_a\_leaf}  : \coqdockw{\ensuremath{\forall}} (\coqdocvar{kvl}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X})), \coqdoceol
+\coqdocindent{11.00em}
+\coqdocvar{b} \ensuremath{\not=} 0 \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{11.00em}
+\coqdocvar{length} \coqdocvar{kvl} \ensuremath{\le} \coqdocvar{b} \ensuremath{\times} 2 \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{11.00em}
+\coqdocvar{kvl\_sorted} \coqdocvar{kvl} \ensuremath{\rightarrow}  \coqdoceol
+\coqdocindent{11.00em}
+\coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} (\coqdocvar{bptLeaf} \coqdocvar{b} \coqdocvar{X} \coqdocvar{kvl})\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{valid\_root\_node} : \coqdockw{\ensuremath{\forall}} (\coqdocvar{kpl}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})),\coqdoceol
+\coqdocindent{11.00em}
+\coqdocvar{b} \ensuremath{\not=} 0 \ensuremath{\rightarrow} \coqdoceol
+\coqdocindent{11.00em}
+2 \ensuremath{\le} \coqdocvar{length} \coqdocvar{kpl} \ensuremath{\rightarrow} \coqdoceol
+\coqdocindent{11.00em}
+\coqdocvar{length} \coqdocvar{kpl} \ensuremath{\le} \coqdocvar{S} (\coqdocvar{b} \ensuremath{\times} 2) \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{11.00em}
+\coqdocvar{key\_at\_index} 0 \coqdocvar{kpl} = \coqdocvar{Some} 0 \ensuremath{\rightarrow} \coqdoceol
+\coqdocindent{11.00em}
+\coqdocvar{all\_values} (\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) (\coqdocvar{valid\_sub\_bplustree} \coqdocvar{b} \coqdocvar{X}) \coqdocvar{kpl} \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{11.00em}
+\coqdocvar{all\_values\_eq\_prop} (\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) \coqdocvar{equal\_height} \coqdocvar{kpl} \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{11.00em}
+\coqdocvar{kvl\_sorted} \coqdocvar{kpl} \ensuremath{\rightarrow}  \coqdoceol
+\coqdocindent{11.00em}
+\coqdocvar{valid\_splits} \coqdocvar{b} \coqdocvar{X} \coqdocvar{kpl} \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{11.00em}
+\coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} \coqdocvar{kpl})   \coqdoceol
+\end{coqdoccode}
+\caption{Inductive data type for a valid B+ tree.}
+\label{fig:inductive_valid_bplustree}
+\end{figure}
+
+This proposition is only valid when examining the root of a tree, as there are different constraints for subtrees (See Section \ref{subsec:Background_Bplus_tree}). $valid\_bplustree$ has two cases, the first holds when the root of the B+ tree is a leaf, and the second holds when the root is a node. The various properties that must hold are explained below.
+
+\paragraph{Root is a leaf}
+The following must hold for a root leaf to be a valid B+ tree:
+\label{valid_root_is_a_leaf}
+\begin{itemize}
+\item $b \neq 0$ --- The branching must not be 0. Since we are working with natural numbers, this means $b > 0$.
+\item $length\ kvl \leq b \times 2 $ --- The leaf must have at most $2b$ elements.
+\item $kvl\_sorted\ kvl$ --- The keys in the leaf must be sorted.
+\end{itemize}
+
+\paragraph{Root is a node}
+The following must hold for a root node to be a valid B+ tree:
+\label{valid_root_is_a_node}
+\begin{itemize}
+\item $b \neq 0$ --- The branching must not be 0.
+\item $2 \leq length\ kpl$ and $length\ kpl \leq S\ (b \times 2)$ --- These satisfy the conditions for branching stated in Section \ref{subsec:Background_Bplus_tree}.
+\item $key\_at\_index\ 0\ kpl = Some\ 0$ --- As mentioned above, we must know that the first key is always 0. This assures that this is the case.
+\item $all\_values (bplustree\ b\ X) (valid\_sub\_bplustree b X) kpl$ --- All the values stored in the node (the pointers) must be valid subtrees. As mentioned in Section \ref{subsec:Background_Bplus_tree}, the constraints for the root are slightly different. The constraints for internal leaves and nodes will be covered below.
+\item $all\_values\_eq\_prop (bplustree\ b\ X) equal\_height kpl$ --- All subtrees must have the same height.
+\item $kvl\_sorted kpl$ --- The keys in the node must be sorted.
+\item $valid\_splits\ b \ X\ kpl$ --- All the splits are correct, i.e. all the keys in a subtree are between the keys of its siblings.
+\end{itemize}
+
 \paragraph{}
-\todo{Write about valid bplus}
+Since $valid\_bplustree$ only holds for the root leaf or node, a different proposition is needed for internal leaves and nodes, or subtrees. This is implemented in the $valid\_sub\_bplustree$ proposition. In the interest of brevity, only the differences will be listed here:
+
+\paragraph{Internal leaf}
+\begin{itemize}
+\item $b \leq length\ kvl$ --- The number of key-value pairs in the leaf must be at least $b$.
+\end{itemize}
+
+\paragraph{Internal node}
+\begin{itemize}
+\item $2 \leq length\ kpl$ changed to $S\ b \leq length\ kpl$ --- The number of key-pointer pairs must be at least $b+1$.
+\end{itemize}
 
 \subsection{Search}
 \label{subsec:search}
