@@ -50,7 +50,7 @@ Figure \ref{fig:bplustree} correctly shows that for each node with $n$ keys ther
 
 \subsection{Valid B+ tree}
 \label{subsec:Valid_bplustree}
-Although this data type can represent a B+ tree, it says nothing about the validity of a tree. To make statements about a B+ tree's validity, we need a proposition that states what must hold for a B+ tree to be valid. This proposition is called $valid\_bplustree$, and can be seen in Figure \ref{fig:inductive_valid_bplustree}.
+Although the inductive data type can represent a B+ tree, it says nothing about the validity of a tree. It is entirely possible to build B+ trees that break the constraints from Section \ref{subsec:Background_Bplus_tree} using the $bplustree$ data type. To make statements about a B+ tree's validity, and to be sure that the trees we are working with are valid, we need a proposition that states what must hold for a B+ tree to be valid. This proposition is called $valid\_bplustree$, and can be seen in Figure \ref{fig:inductive_valid_bplustree}.
 
 \begin{figure}
 \centering
@@ -116,20 +116,19 @@ The following must hold for a root node to be a valid B+ tree:
 \end{itemize}
 
 \paragraph{}
-Since $valid\_bplustree$ only holds for the root leaf or node, a different proposition is needed for internal leaves and nodes, or subtrees. This is implemented in the $valid\_sub\_bplustree$ proposition. In the interest of brevity, only the differences will be listed here:
+Since $valid\_bplustree$ only holds for the root leaf or node, a different proposition is needed for non-root leaves and nodes, or subtrees. This is implemented in the $valid\_sub\_bplustree$ proposition. In the interest of brevity, only the differences will be listed here:
 
-\paragraph{Internal leaf}
-\todo{Shouldn't be called internal leaf as leafs are never internal.}
+\paragraph{Non-root leaf}
 \begin{itemize}
 \item $b \leq length\ kvl$ --- The number of key-value pairs in the leaf must be at least $b$.
 \end{itemize}
 
-\paragraph{Internal node}
+\paragraph{Non-root node}
 \begin{itemize}
 \item $2 \leq length\ kpl$ changed to $S\ b \leq length\ kpl$ --- The number of key-pointer pairs must be at least $b+1$.
 \end{itemize}
 
-\todo{Needs some binding text before we go on with implementation.}
+Now both a data type for B+ trees, and a way to reason about their validity have been defined. With the the $bplustree$ data type we can start implementing the search and insert functions, and $valid\_bplustree$ gives us the assumptions that are needed for proving facts about these functions.
 
 \subsection{Search}
 \label{subsec:search}
