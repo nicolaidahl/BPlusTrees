@@ -621,8 +621,9 @@ Proof.
                 apply H17.
             assert (n <= k).
               inversion H.
-              eapply find_subtree_returns_a_lesser_key.
-                apply H13.
+              assert (1 <= length kpl) by omega.
+              eapply find_subtree_returns_a_lesser_key. 
+                apply H20.
                 apply H18.
                 apply Heqo.
             apply find_subtree_impl_kpl_app in Heqo. 
@@ -726,7 +727,9 @@ Proof.
                 apply find_subtree_after_replace with (t1 := child); try assumption.
                 rewrite Heqkpl'.
                 apply insert_preserves_sort.
+                
                 inversion H. assumption.
+                inversion H. assert (1 <= length kpl) by omega. assumption.
                 inversion H. assumption.
               assert (kvl_sorted kpl'').
                 rewrite Heqkpl''.
@@ -749,6 +752,7 @@ Proof.
                   assumption.
                 inversion H.
                 omega.
+              
               apply appears_in_tree_when_appears_in_subtree_and_found with (kpl := kpl'') (subtree := b1) (key := n); try reflexivity; try assumption.
             SSSSSCase "appears in right subtree".
               symmetry in Heqo.
@@ -757,6 +761,7 @@ Proof.
               do 2 destruct H7. inversion H7. clear H7.
               assert (n <= k).
                 inversion H.
+                assert (1 <= length kpl) by omega.
                 apply find_subtree_returns_a_lesser_key in Heqo; assumption.
               assert (n < witness).
                 rewrite H3 in H6. rewrite H13 in H6. rewrite H14 in H6.
