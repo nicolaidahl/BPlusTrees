@@ -991,16 +991,16 @@ Proof.
   intros.
   induction H.
   Case "leaf".
-	unfold insert in H1.  unfold insert' in H1. simpl in H1. remember (insert_leaf b k v l) as il. 
+	unfold insert in H1.  unfold insert' in H1. simpl in H1. remember (insert_leaf b k v kvl) as il. 
 	destruct il. destruct o.
 	SCase "insert split".
-	  assert ((l0, Some l1) = insert_leaf b k v l) by assumption.
+	  assert ((l, Some l0) = insert_leaf b k v kvl) by assumption.
 	  apply insert_leaf_split_never_empty  in H4.
-	  destruct l1. 
+	  destruct l0. 
 	    inversion H4. exfalso. apply H6. reflexivity.
 	  destruct p.
 	    
-	  symmetry in Heqil. assert (insert_leaf b k v l = (l0, Some ((n,x)::l1))) by assumption.
+	  symmetry in Heqil. assert (insert_leaf b k v kvl = (l, Some ((n,x)::l0))) by assumption.
 	  apply insert_leaf_works in Heqil; try assumption.
 	    rewrite <- H1. apply appears_in_split_node_appears_in_lists. destruct Heqil. 
 	    apply insert_leaf_preserves_sort in H5; assumption; assumption.
