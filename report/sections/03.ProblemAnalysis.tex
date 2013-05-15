@@ -40,9 +40,6 @@ This data type says that a $bplustree$ is parameterized by $b$, the fanout, and 
 \paragraph{}
 \todo{Write about valid bplus}
 
-\paragraph{}
-\todo{Write about appears in...}
-
 \subsubsection{Search}
 Our implementation of search does not stray far from the prototypical version described in the background (Section \ref{sec:Background}). It is implemented through 3 functions: $search'$, $find\_subtree$, and $search\_leaf$. 
 \todo{Write about sorted}
@@ -56,7 +53,7 @@ The reason why initializing the counter to the height of the tree will guarantee
 A key part of both insertion and searching in our implementation is the function $find\_subtree$. This function, when given a list of key-pointer pair, and a search-key, will identify the key-pointer pair whose range contains the search-key. The pointer in the identified key-pointer pair is the subtree that, in a valid B+ tree, must contain the search-key if the tree contains the key.
 
 \paragraph{}
-The main function that performs search is $search'$, that as mentioned above is recursively defined over a natural number counter. It uses $find\_subtree$ to identify which subtree to recurse into, and when it reaches a leaf it calls $find\_leaf$. $find\_leaf$ performs a simple linear search through the key-value pairs to identify if the search-key exists within the tree.
+The main function that performs search is $search'$, that as mentioned above is recursively defined over a natural number counter. It uses $find\_subtree$ to identify which subtree to recurse into, and when it reaches a leaf it calls $search\_leaf$. $search\_leaf$ performs a simple linear search through the key-value pairs to identify if the search-key exists within the tree.
 
 To ensure that the counter is always initialized to the height of the tree to search, we have added a definition of $search$ that simply calls $search'$ with the $counter = height(tree)$.
 
