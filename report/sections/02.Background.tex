@@ -15,6 +15,7 @@
 Gallina is a purely functional language\todo{ref}, which is used by the Coq interactive proof assistant. It is very lean, and does not include non-functional data structures, such as arrays\todo{ref}.
 
 \subsection{B+ tree}
+\label{subsec:Background_Bplus_tree}
 The B+ tree is a n-ary, self-balancing, tree data structure\todo{ref}, similar to a B-tree\todo{ref}. It is composed of a root, nodes, and leaves. The root may be a leaf or a node. Nodes hold pairs of keys and pointers, $(k, p)$. $p$ points to either a node or leaf that holds the values over $k$, but below the key of the next pair. Leaves hold pairs of keys and values, $(k, v)$. In this project keys are always natural numbers, while values can have any type, denoted by $X$. In this project duplicate keys are not allowed.
 
 \begin{figure}
