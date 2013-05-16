@@ -169,8 +169,9 @@ $valid\_bplustree~b~X~t \leftarrow \forall~sk, \exists~subtree, find\_subtree~ s
 Identifying a subtree is a matter of finding the two consecutive keys where the search-key falls within the range of those two keys, that is $k_i \le sk < k_{i+1}$. In a text-book implementation implementation of of B+ trees you also have the two cases $sk < k_0$ and $k_{n} \le sk$ where n is the number of keys. This ensures that no matter what keys exists, you can always use one of the 3 cases to find the range belonging to a subtree. But because we have simplified the data type for nodes, where we have a key for the first pointer as well, we can no longer use the the rule $sk < k_0$. So if a list key-pointer pair where the first key is bigger than the search-key were to be allowed, $find\_subtree$ can fail to find a subtree. This is why $valid\_bplustree$ states that the first key in all key-pointer lists must be 0. This serves to introduce the equivalent to the rule $sk < k_0$, because we now have $k_0 = 0 \le sk < k_1$. With this, we were able to prove that $find_subtree$ will always find a subtree to recurse into, and thus that $insert$ can traverse down to the leaf and find the key in question.
 
 \subsection{Proving that insertion implies $kw\_appears\_in\_tree$}
+\label{sec:proving_insert_appears}
 
-In order to use our model where we use a intermediate proposition in our proofs, we must be able to prove that the $kw\_appears\_in\_tree$ proposition holds after inserting a key-value pair into any given, valid, tree. The theorem can be seen reproduced in Figure \ref{insert_works}.
+In order to use our model where we use a intermediate proposition in our proofs, we must be able to prove that the $kw\_appears\_in\_tree$ proposition holds after inserting a key-value pair into any given, valid, tree. The theorem can be seen reproduced in Figure \ref{insert_appears}.
 
 \begin{figure}
   \begin{coqdoccode}
@@ -184,7 +185,7 @@ In order to use our model where we use a intermediate proposition in our proofs,
   \coqdocvar{kw\_appears\_in\_tree} \coqdocvar{k} \coqdocvar{v} (\coqdocvar{insert} \coqdocvar{k} \coqdocvar{v} \coqdocvar{t}).\coqdoceol
   \end{coqdoccode}
   \caption{The theorems stating that $insert$ implies $kw\_appears\_in\_tree$}
-  \label{fig:insert_works}
+  \label{fig:insert_appears}
 \end{figure}
 
 Just like with $search$, our definition of $insert$ is simple definition that calls $insert'$. To prove $insert'$ we again use the tactic of performing induction on our introduced $counter$ argument. Once we have identified the the subtree where the insertion must happen, we can use the induction hypothesis to prove that the value was correctly inserted into the child. But the task of proving that the child is correctly updated in the tree, and that this implies that the value now exists in the parent is non-trivial. The reason why is that there are multiple different cases that can happen. 
@@ -219,4 +220,22 @@ When we only know that the item was correctly inserted into a child that may or 
 A lot of the cases are very similar, and we can see that 2.(a).ii and 2.(b).ii are identical. It was hence possible to construct some lemmas that allows reuse between cases but despite this the sheer amount of cases made the theorem rather complicated and incomprehensible. 
 
 \subsection{Tying it together}
-Fill me in.
+
+With the knowledge that $insert$ will give us the property $kw\_appears\_in\_tree$, and if the property holds for a tree $search$ will find it, we can construct one of our final theorems: If you search a tree that is the result of a insert, you can find the inserted value. The theorem can be seen reproduced in Figure \ref{fig:insert_works}.
+
+\begin{figure}
+  \begin{coqdoccode}
+  \coqdocnoindent
+  \coqdockw{Theorem} \coqdocvar{insert\_words}: \coqdockw{\ensuremath{\forall}} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{k}: \coqdocvar{nat}) (\coqdocvar{v}: \coqdocvar{X}) (\coqdocvar{t}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}),\coqdoceol
+  \coqdocindent{1.00em}
+  \coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} \coqdocvar{t} \ensuremath{\rightarrow}\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{\lnot} \coqdocvar{appears\_in\_tree} \coqdocvar{k} \coqdocvar{t} \ensuremath{\rightarrow}\coqdoceol
+  \coqdocindent{1.00em}
+  \coqdocvar{search} \coqdocvar{k} (\coqdocvar{insert} \coqdocvar{k} \coqdocvar{v} \coqdocvar{t}) = \coqdocvar{Some} (\coqdocvar{v}).\coqdoceol
+  \end{coqdoccode}
+  \caption{Final theorem to prove that you can find an item after insertion}
+  \label{fig:insert_works}
+\end{figure}
+
+The formal proof for $insert\_works$ is only a handful of lines long, because it utilizes the proofs to and from our intermediate proposition. However, because we have not formally proven that insertion preserves our $valid\_bplustree$ proposition the theorem relies on a admitted theorem.
