@@ -10,14 +10,10 @@ clean:
 SfLib.vo: SfLib.v
 	$(COQC) SfLib.v
 
-LowLevelHelperProofs.vo: LowLevelHelperProofs.v SfLib.vo
-	$(COQC) LowLevelHelperProofs.v
-
 HelperFunctions.vo: HelperFunctions.v SfLib.vo
 	$(COQC) HelperFunctions.v
 
-SplitCutList.vo: SplitCutList.v SfLib.vo LowLevelHelperProofs.vo \
-								 HelperFunctions.vo
+SplitCutList.vo: SplitCutList.v SfLib.vo HelperFunctions.vo
 	$(COQC) SplitCutList.v
 
 InductiveDataTypes.vo: InductiveDataTypes.v \
@@ -39,8 +35,8 @@ SortingProofs.vo: SortingProofs.v ValidBPlusTree.vo BPlusTree.vo \
 									HelperProofs.vo 
 	$(COQC) SortingProofs.v
 
-AppearsInKVL.vo: AppearsInKVL.v HelperProofs.vo BPlusTree.vo \
-								 LowLevelHelperProofs.vo InductiveDataTypes.vo \
+AppearsInKVL.vo: AppearsInKVL.v HelperProofs.vo BPlusTree.vo SfLib.vo \
+								 InductiveDataTypes.vo \
 								 HelperFunctions.vo SortingProofs.vo
 	$(COQC) AppearsInKVL.v
 
