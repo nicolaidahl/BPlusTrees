@@ -5,7 +5,7 @@ Formally verifying a non-trivial (and inherently imperative) data type like B+ t
 \subsubsection{Insert Into Leaf}
 When working on the $insert\_impl\_appears$ proof we started by proving the base case, insertion into leaves. The reasoning was that if we could prove insertion into leafs for the cases of overflow as well as the normal case (without overflow) we would be able to bundle all these lemmas into one that would be applicable in any proof obligation about insertion into leaves. This lemma is called $insert\_leaf\_impl\_appears$ and has the problem that it does not provide enough meta data about where a split happens.
 \subsubsection{Unnecessary Assumption}
-$~appears\_in\_kvl$ should not have been used for our $insert_leaf_impl_appears$. It should have been doable without this assumption, which bubbles up into the main proof.
+$\lnot appears\_in\_kvl$ should not have been used for our $insert\_leaf\_impl\_appears$. It should have been doable without this assumption, which bubbles up into the main proof.
 \subsubsection{Higher Priority for Validity Preservation Proof}
 With a better overview we might have chosen to prove $insert_preserves_validity$ first.
 \subsubsection{The Use of Booleans}
