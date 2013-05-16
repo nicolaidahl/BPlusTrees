@@ -6,7 +6,7 @@ Require Export HeightProofs.
 Require Export InsertProofs.
 Require Export KvAppearsInTree.
 
-Theorem search_leaf_works_app : forall (X: Type) (k: nat) (v: X) (l1 l2: list (nat * X)), 
+Theorem appears_leaf_impl_search_found_app : forall (X: Type) (k: nat) (v: X) (l1 l2: list (nat * X)), 
   kvl_sorted (l1 ++ (k, v) :: l2) ->
   search_leaf k (l1 ++ (k, v) :: l2) = Some v.
 Proof.
@@ -31,7 +31,7 @@ Proof.
       assumption.
 Qed.
 
-Theorem search_leaf_works : forall (X: Type) (k: nat) (v: X) (kvl: list (nat * X)),
+Theorem appears_leaf_impl_search_found : forall (X: Type) (k: nat) (v: X) (kvl: list (nat * X)),
   kvl_sorted kvl ->
   kv_appears_in_kvl k v kvl -> search_leaf k kvl = Some v.
 Proof.
@@ -39,13 +39,13 @@ Proof.
   apply kv_appears_in_kvl_app in H0.
   do 2 destruct H0.
   rewrite H0.
-  apply search_leaf_works_app.
+  apply appears_leaf_impl_search_found_app.
   rewrite <- H0.
   assumption.
 Qed.
 
 
-Theorem appears_search'_works : forall (X: Type) (counter b sk: nat) (sv: X) (t: bplustree b X),
+Theorem appears_impl_search'_found : forall (X: Type) (counter b sk: nat) (sv: X) (t: bplustree b X),
   valid_bplustree b X t ->
   kv_appears_in_tree sk sv t ->
   counter = (height t) ->
@@ -57,7 +57,7 @@ Proof.
     inversion H. 
     SCase "bptLeaf". 
       subst. inversion H0.
-      apply search_leaf_works; assumption.
+      apply appears_leaf_impl_search_found; assumption.
     SCase "bptNode".
       subst. simpl in H1.
       destruct kpl.
@@ -104,7 +104,7 @@ Proof.
         inversion Heqo.
 Qed.
     
-Theorem appears_search_works : forall (b: nat) (X: Type) (v: X) (t: bplustree b X) (k: nat),
+Theorem appears_impl_search_found : forall (b: nat) (X: Type) (v: X) (t: bplustree b X) (k: nat),
   valid_bplustree b X t -> 
   kv_appears_in_tree k v t -> 
   search k t = Some(v).
@@ -112,12 +112,12 @@ Proof.
   intros.
   unfold search.
   remember (height t) as counter.
-  apply appears_search'_works; assumption.
+  apply appears_impl_search'_found; assumption.
 Qed.
 
 
 
-Theorem not_appears_search_works: forall (b: nat) (X: Type) (t: bplustree b X) (k: nat),
+Theorem not_appears_impl_search_not_found: forall (b: nat) (X: Type) (t: bplustree b X) (k: nat),
   valid_bplustree b X t -> 
   ~ appears_in_tree k t -> 
   search k t = None.

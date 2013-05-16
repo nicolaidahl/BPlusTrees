@@ -11,31 +11,16 @@ Require Export FindSubtreeProofs.
 Require Export InsertProofs.
 Require Export KvAppearsInTree.
   
-Lemma list_of_length_b_implies_element_at_b : forall (X: Type) (b: nat) (kvl: list (nat* X)),
-  kvl <> [] -> b < length kvl -> 
-  exists k, exists v, element_at_index b kvl = Some(k, v).
-Proof.
-  intros. 
-  generalize dependent b.
-  induction kvl.
-  Case "kvl = 0". 
-    apply ex_falso_quodlibet. apply H. reflexivity. 
-    intros.
-    destruct b.
-      simpl. destruct a. exists n. exists x. reflexivity.
-      simpl. simpl in H0. 
-      assert (kvl <> []).
-        destruct kvl. simpl in H0. inversion H0. inversion H2.
-        unfold not. intro. inversion H1.
-      apply IHkvl.
-        apply H1.
-        omega.
-Qed.
 
-Theorem split_insert_right : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k kb: nat) (v vb: X),
-  b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index (pred b) leaf = Some (kb, vb) -> 
+
+Theorem insert_leaf_impl_appears_split_right : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k kb: nat) (v vb: X),
+  b <> 0 -> 
+  kvl_sorted leaf -> 
+  ~ (appears_in_kvl k leaf) -> 
+  element_at_index (pred b) leaf = Some (kb, vb) -> 
   kb < k -> length leaf = mult b 2 -> 
-  insert_leaf b k v leaf = (left, Some kvl) -> kv_appears_in_kvl k v kvl.
+  insert_leaf b k v leaf = (left, Some kvl) -> 
+  kv_appears_in_kvl k v kvl.
 Proof.
   intros. 
   
@@ -129,7 +114,7 @@ Qed.
 
 
 
-Theorem split_insert_left : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k kb: nat) (v vb: X),
+Theorem insert_leaf_impl_appears_split_left : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k kb: nat) (v vb: X),
   b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> element_at_index (pred b) leaf = Some (kb, vb) -> 
   k < kb -> length leaf = mult b 2 ->
   insert_leaf b k v leaf = (left, Some kvl) -> kv_appears_in_kvl k v left.
@@ -251,9 +236,12 @@ Proof.
 Qed.
 
 
-Theorem insert_leaf_normal : forall {X: Type} {b: nat} (leaf left: list (nat * X)) (k: nat) (v: X),
-  b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> length leaf < mult b 2 ->
-  insert_leaf b k v leaf = (left, None) -> kv_appears_in_kvl k v left.
+Theorem insert_leaf_impl_appears_normal : forall {X: Type} {b: nat} (leaf left: list (nat * X)) (k: nat) (v: X),
+  b <> 0 -> kvl_sorted leaf -> 
+  ~ (appears_in_kvl k leaf) -> 
+  length leaf < mult b 2 ->
+  insert_leaf b k v leaf = (left, None) -> 
+  kv_appears_in_kvl k v left.
 Proof.
   intros. 
   
@@ -296,8 +284,9 @@ Proof.
         simpl in H2. simpl. omega.
 Qed.
 
-Theorem insert_leaf_works : forall {X: Type} {b: nat} (k: nat) (v: X) (leaf left: list (nat * X)) (rightOption: option (list (nat * X))),
-  b <> 0 -> kvl_sorted leaf -> not (appears_in_kvl k leaf) -> 
+Theorem insert_leaf_impl_appears : forall {X: Type} {b: nat} (k: nat) (v: X) (leaf left: list (nat * X)) (rightOption: option (list (nat * X))),
+  b <> 0 -> kvl_sorted leaf ->
+  ~ (appears_in_kvl k leaf) -> 
   length leaf <= mult b 2 ->
   insert_leaf b k v leaf = (left, rightOption) ->
   kv_appears_in_kvl k v left \/ (exists right, rightOption = Some(right) /\ kv_appears_in_kvl k v right).
@@ -317,7 +306,7 @@ Proof.
       apply ex_falso_quodlibet. apply Heqtl.
       apply insert_new_into_list_increases_length_lt with (k := k) (v := v) in Heqblt_length_b; try assumption.
     SCase "rightOption = None".  
-      eapply insert_leaf_normal. 
+      eapply insert_leaf_impl_appears_normal. 
         apply H.
         apply H0.
         apply H1.
@@ -346,7 +335,7 @@ Proof.
           SSSCase "right = right".
             reflexivity.
           SSSCase "appears in".
-            eapply split_insert_right.
+            eapply insert_leaf_impl_appears_split_right.
               apply H.
               apply H0.
               apply H1.
@@ -360,7 +349,7 @@ Proof.
           apply ex_falso_quodlibet. apply H1. apply H6.   
       SSCase "split left".
         left.
-        eapply split_insert_left.
+        eapply insert_leaf_impl_appears_split_left.
           apply H.
           apply H0.
           apply H1.
@@ -407,7 +396,7 @@ Proof.
   admit.
 Admitted.
 
-Lemma insert'_works_normal : forall (X: Type) (b k n: nat) (v: X) (t1 t2: bplustree b X) (kpl: list (nat * bplustree b X)),
+Lemma insert'_impl_appears_normal : forall (X: Type) (b k n: nat) (v: X) (t1 t2: bplustree b X) (kpl: list (nat * bplustree b X)),
   valid_bplustree b X (bptNode b X kpl) ->
   kv_appears_in_tree k v t2 ->
   find_subtree k kpl = Some (n, t1) ->
@@ -460,7 +449,7 @@ Proof.
 Qed.
 
 
-Theorem insert'_works : forall {X: Type} (counter b k: nat) (v: X) (kpl: list (nat * bplustree b X)) (left: bplustree b X) (rightOption: option (nat * bplustree b X)),
+Theorem insert'_impl_appears : forall {X: Type} (counter b k: nat) (v: X) (kpl: list (nat * bplustree b X)) (left: bplustree b X) (rightOption: option (nat * bplustree b X)),
   valid_bplustree b X (bptNode b X kpl) ->
   not (appears_in_tree k (bptNode b X kpl)) -> 
   counter = (height (bptNode b X kpl)) ->
@@ -533,7 +522,7 @@ Proof.
             destruct l1. exfalso. apply H2. reflexivity.
             destruct p. clear H2.
             symmetry in Heqp0.
-            apply insert_leaf_works in Heqp0; try (inversion H; rewrite Heqchild in H4; inversion H4; assumption).
+            apply insert_leaf_impl_appears in Heqp0; try (inversion H; rewrite Heqchild in H4; inversion H4; assumption).
             inversion Heqp.
             
             assert (n < n0).
@@ -607,12 +596,12 @@ Proof.
               apply H6.
             constructor.
             symmetry in Heqp0.
-            apply insert_leaf_normal in Heqp0; try assumption.
+            apply insert_leaf_impl_appears_normal in Heqp0; try assumption.
 
           inversion H2.
           split. reflexivity.
           rewrite H8 in H7.
-          eapply insert'_works_normal; try assumption.
+          eapply insert'_impl_appears_normal; try assumption.
             symmetry in Heqo. apply Heqo.
             assumption.
       SSCase "child was a node".
@@ -765,7 +754,7 @@ Proof.
             inversion H2. clear H10.
             inversion H7. clear H7. clear H8.
             left. split. reflexivity.
-            eapply insert'_works_normal; try assumption.
+            eapply insert'_impl_appears_normal; try assumption.
               symmetry in Heqo. apply Heqo.
               assumption.
           SSSSCase "appears in right subtree (bogus)".
@@ -776,7 +765,7 @@ Proof.
       do 2 destruct H. rewrite H in Heqo. inversion Heqo.
 Admitted.
 
-Theorem insert_works : forall {X: Type} {b: nat} (t t1: bplustree b X) (k: nat) (v: X),
+Theorem insert_impl_appears : forall {X: Type} {b: nat} (t t1: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X t -> 
   ~appears_in_tree k t -> 
   insert k v t = t1 -> 
@@ -795,7 +784,7 @@ Proof.
 	  destruct p.
 	    
 	  symmetry in Heqil. assert (insert_leaf b k v kvl = (l, Some ((n,x)::l0))) by assumption.
-	  apply insert_leaf_works in Heqil; try assumption.
+	  apply insert_leaf_impl_appears in Heqil; try assumption.
 	    rewrite <- H1. apply kv_appears_in_split_node_appears_in_lists. destruct Heqil. 
 	    apply insert_leaf_preserves_sort in H5; assumption; assumption.
 	    apply insert_leaf_preserves_sort in H5; assumption; assumption.
@@ -805,7 +794,7 @@ Proof.
 	    unfold not. intro. apply H0. apply ait_leaf. apply H6.
 	    assumption.
 	SCase "insert_normal".
-	  symmetry in Heqil. apply insert_leaf_normal in Heqil; try assumption. rewrite <- H1. 
+	  symmetry in Heqil. apply insert_leaf_impl_appears_normal in Heqil; try assumption. rewrite <- H1. 
 	  apply kv_ait_leaf; try assumption. unfold not. intro. unfold not in H0.
 	  eapply appears_kvl_appears_leaf_tree in H4. apply H0. apply H4. 
 	  apply insert_leaf_not_split_impl_space_left in Heqil. assumption.
@@ -815,7 +804,7 @@ Proof.
     remember (insert' (height (bptNode b X kpl)) k v (bptNode b X kpl)).
     destruct p. 
     symmetry in Heqp.
-    apply insert'_works in Heqp; try assumption; try reflexivity.
+    apply insert'_impl_appears in Heqp; try assumption; try reflexivity.
     
     destruct o. 
     SCase "node overflow".
