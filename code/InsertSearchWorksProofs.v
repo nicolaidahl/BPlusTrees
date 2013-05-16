@@ -1,5 +1,21 @@
 Require Export BPlusTree.
 Require Export SortingProofs.
+Require Export ValidBPlusTree.
+Require Export InsertWorksProofs.
+Require Export SearchWorksProofs.
+
+Theorem insert_words: forall {X: Type} {b: nat} (k: nat) (v: X) (t: bplustree b X),
+  valid_bplustree b X t ->
+  ~ appears_in_tree k t ->
+  search k (insert k v t) = Some (v).
+Proof.
+  intros. remember (insert k v t). symmetry in Heqb0. apply insert_works in Heqb0.
+  Case "Search in tree finds some element".
+    apply appears_search_works in Heqb0. destruct Heqb0. 
+    admit.
+    admit.
+  assumption. assumption.
+Admitted.
 
 Theorem insert_into_list_works : forall (X: Type) (l: list (nat * X)) (k: nat) (v: X),
   kvl_sorted l -> search_leaf k (insert_into_list k v l) = Some v. 

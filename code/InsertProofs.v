@@ -636,9 +636,25 @@ Proof.
           symmetry in Heqb5. apply blt_nat_false in Heqb5. omega.
           apply find_subtree_before_head_None with (k:=sk) in H5. rewrite H5 in H1. inversion H1.
           symmetry in Heqb4. apply ble_nat_false in Heqb4. omega.
-          admit. admit.
+          remember (ble_nat n1 sk). destruct b0. remember (blt_nat sk k2). destruct b0.
+          simpl. simpl in H1.
+          symmetry in Heqb2. apply ble_nat_true in Heqb2. assert (n2 = k2). omega.
+          rewrite H6 in H1. rewrite <- Heqb5 in H1. rewrite <- Heqb4 in H1. simpl in H1.
+          assumption.
+          symmetry in Heqb5. apply blt_nat_false in Heqb5. omega.
+          symmetry in Heqb4. apply ble_nat_false in Heqb4. symmetry in Heqb2. apply ble_nat_true in Heqb2.
+          apply ble_nat_false in Heqb1. symmetry in Heqb3. apply beq_nat_false_iff in Heqb3. omega.
         SSSCase "k2 > n2".
-          admit.
+          remember (ble_nat n1 sk). destruct b0. 
+          remember (blt_nat sk n2). destruct b0. simpl. simpl in H1.
+          symmetry in Heqb2. apply ble_nat_false in Heqb2. rewrite <- Heqb3 in H1. 
+          assert (blt_nat sk n2 = true). admit.
+          rewrite H6 in H1. simpl in H1. assumption.
+          rewrite ble_nat_false in Heqb1. symmetry in Heqb2.  apply ble_nat_false in Heqb2. 
+          symmetry in Heqb3. apply ble_nat_true in Heqb3. symmetry in Heqb4. apply blt_nat_false in Heqb4.
+          apply blt_nat_true in H4.
+          admit. admit. admit. 
+
     SCase "n2 > k2".
       apply blt_nat_true in H4.
       symmetry in Heqb0. apply ble_nat_false in Heqb0.
