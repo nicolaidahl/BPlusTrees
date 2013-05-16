@@ -19,7 +19,8 @@ A vital aspect of B+ trees is that all of the key-point and key-value lists in n
   \begin{coqdoccode}
   \coqdocnoindent
   \coqdockw{Inductive} \coqdocvar{kvl\_sorted} \{\coqdocvar{X}: \coqdockw{Type}\}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X}) \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
-  \coqdocindent{2.00em}
+  \coqdocindent{1.00em}
+  \ensuremath{|}
   \coqdocvar{kvl\_sorted\_0}: \coqdocvar{kvl\_sorted} []\coqdoceol
   \coqdocindent{1.00em}
   \ensuremath{|} \coqdocvar{kvl\_sorted\_1}: \coqdockw{\ensuremath{\forall}} (\coqdocvar{n}: \coqdocvar{nat}) (\coqdocvar{x}: \coqdocvar{X}), \coqdoceol
@@ -115,32 +116,13 @@ To verify that our solution can search and insert into both leafs and entire tre
 
 We can reason about leafs using the $appears\_in\_kvl$ proposition on the leafs key-value pairs. If a key is present in the list, then the proposition holds. Likewise the list can not contain a given key if the proposition does not hold. $appears\_in\_tree$ conveys the same properties for entire B+ trees -- if and only if a key is present the tree, the proposition holds.
 
-$appears\_in\_kvl$ is a inductively defined over the key-value lists and has just two constructors: Either the key must appear at the head of the list or the key must appear later in the list.
+$appears\_in\_kvl$ is inductively defined over the key-value lists and has just two constructors: Either the key must appear at the head of the list or the key must appear later in the list.
 
 Because of the nature of B+ trees, the $appears\_in\_tree$ proposition is somewhat more complicated. It has a single constructor for leafs that simply requires that the $appears\_in\_kvl$ must hold for the leaf. For nodes, however, we must have 3 different constructors to ensure that the proposition only holds if the proposition also holds for the correct subtree.
-% 
-% 
-% We use this property in our proofs of that $search\_leaf$ and $insert\_leaf$. To proof that $search\_leaf$ works, we must simply prove that \begin{coqdoccode} 
-%   \coqdocvar{appears\_in\_kvl} \coqdocvar{k} \coqdocvar{kvl}
-%   \ensuremath{\rightarrow} \coqdocvar{\ensuremath{\exists}} \coqdocvar{v}, 
-%   \coqdocvar{search\_leaf} \coqdocvar{k} \coqdocvar{kvl} = \coqdocvar{Some} 
-%   \coqdocvar{v}
-% \end{coqdoccode} holds. Or to paraphrase, if a given key exists in the key-value list, then there must exists a value that $search\_leaf$ finds if we search for that key. In reality we must also know that the key-value list is sorted, so the actual proof also reflects this requirement.
-% 
-% Similarly the proof for ensuring that $insert\_leaf$ can be seen as \begin{coqdoccode}
-% \ensuremath{\lnot} \coqdocvar{appears\_in\_kvl} \coqdocvar{k} \coqdocvar{kvl} \ensuremath{\rightarrow} \coqdocvar{appears\_in\_kvl} \coqdocvar{k} (\coqdocvar{insert\_leaf} \coqdocvar{k} \coqdocvar{v} \coqdocvar{kvl})
-% \end{coqdoccode}. But because calling $insert\_leaf$ can overflow the leaf, the return type of $insert\_leaf$ is not $list(nat * X)$, but rather $(list (nat * X) * option (list (nat * X)))$. So it $insert\_leaf$ returns a key-value list and a option for the portion of the key-value list that overflowed. So the actual lemma is a disjunction stating that they key must appear in one of the two returned key-value lists.
-% 
-% \paragraph{}
-% To reason about entire trees, we have the the proposition $appears\_in\_tree$. The proposition has a single constructor for when the tree is a leaf, where the only requirement is that $appears\_in\_kvl$ must hold for the leafs key-value list. When the tree is a node, we have three different constructors. We have two constructors ($ait\_node\_last$ and $ait\_node\_here$) for when the the key should appear in a specific subtree, and one ($ait\_node\_later$) that allows you to add subtrees that should not contain the search-key.
-% 
-% Like with leafs, we use $appears\_in\_kvl$ on the key-pointer list and then prove properties about $search$ and $insert$. The two theorems can be seen reproduced in figure \ref{fig:search_works} and \ref{fig:insert_works}.
-% 
-% 
 
 \subsection{Reasoning about search}
 We want to prove that $search$ actually performs like we expect it to. So if a key is present in a tree, we expect $search$ to find a value. Likewise we expect $search$ to not find anything when the key is not present in the tree.
-some of the above should be moved here. Put more succinctly, we must prove that $appears\_in\_tree~k~tree \rightarrow \exists v, search~k~tree = Some~v$ and $\lnot appears\_in\_tree~k~tree \rightarrow search~k~tree = None$.
+Put more succinctly, we must prove that $appears\_in\_tree~k~tree \rightarrow \exists~v, search~k~tree = Some~v$ and $\lnot appears\_in\_tree~k~tree \rightarrow search~k~tree = None$.
 
 \begin{figure}
   \begin{coqdoccode}
@@ -153,9 +135,20 @@ some of the above should be moved here. Put more succinctly, we must prove that 
   \coqdocindent{1.00em}
   \coqdocvar{\ensuremath{\exists}} \coqdocvar{v}, \coqdocvar{search} \coqdocvar{k} \coqdocvar{t} = \coqdocvar{Some}(\coqdocvar{v}).\coqdoceol
   \end{coqdoccode}
-  \caption{The theorems that claim that $search$.}
+  \caption{The theorem that states how $search$ must find a item that appears in the tree.}
   \label{fig:search_works}
 \end{figure}
+
+To prove the theorem shown in figure \ref{fig:search_works} we first proved that our implementation could find items in a leaf using the $appears\_in\_kvl$ proposition. Because $appears\_in\_kvl$ is defined inductively over the same list that $search\_leaf$ is recursively defined over, this proof is trivial.
+
+For proving the $appears\_search\_works$, we needed to argue that $search'$ has the same properties that we want $search$ to have. Because the definition of $search$ is a simple call to $search'$, the interesting proof is $appears\_search'\_works$. Like mentioned in the problem analysis, a induction over the counter argument of $search'$ it is equivalent to performing a induction over the height of the tree. By isolating the the subtree that $find\_subtree$ finds and applying the induction hypothesis on this subtree, we know that $search'$ will find the key in the subtree. Since $search'$ does not perform any modifications we can conclude that if it works for the subtree that $find\_subtree$, it works for the parent too. 
+
+\subsubsection{A subtree must be found}
+
+A important aspect of our recursion over the height of the subtree, is that we use $find\_subtree$ to identify which subtree to recurse into. So if $find\_subtree$ doesn't find a subtree, we have nothing to apply the induction hypothesis on, and we can not prove the theorem. Hence we must require that
+$valid\_bplustree~b~X~t \leftarrow \forall~sk, \exists~subtree, find\_subtree~ sk~t = Some~subtree$.
+
+Identifying a subtree is a matter of finding the two consecutive keys where the search-key falls within the range of those two keys, that is $k_i \le sk < k_{i+1}$. In a text-book implementation implementation of of B+ trees you also have the two cases $sk < k_0$ and $k_{n} \le sk$ where n is the number of keys. This ensures that no matter what keys exists, you can always use one of the 3 cases to find the range belonging to a subtree. But because we have simplified the datatype for nodes, where we have a key for the first pointer as well, we can no longer use the the rule $sk < k_0$. So if a list key-pointer pair where the first key is bigger than the search-key were to be allowed, $find\_subtree$ can fail to find a subtree. This is why $valid\_bplustree$ states that the first key in all key-pointer lists must be 0. This serves to introduce the equivalent to the rule $sk < k_0$, because we now have $k_0 = 0 \le sk < k_1$. With this, we were able to prove that $find_subtree$ will always find a subtree to recurse into, and thus that $insert$ can traverse down to the leaf and find the key in question.
 
 \subsection{Insert impl. appears}
 some of the above should be moved here and find\_subtree must always find a subtree
