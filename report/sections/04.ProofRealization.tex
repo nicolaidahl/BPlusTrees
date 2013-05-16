@@ -133,11 +133,7 @@ We can reason about leaves using the $kw\_appears\_in\_kvl$ proposition on the l
 \paragraph{}
 $kw\_appears\_in\_kvl$ is inductively defined over the key-value lists and has just two constructors: Either the key must appear at the head of the list or the key must appear later in the list.
 
-<<<<<<< HEAD
-
-=======
 \paragraph{}
->>>>>>> b4f015ab061d8359866ed1a668999478a176260c
 Because of the nature of B+ trees, the $kw\_appears\_in\_tree$ proposition is somewhat more complicated. It has a single constructor for leaves that simply requires that the $kw\_appears\_in\_kvl$ must hold for the leaf. For nodes, however, we must have 3 different constructors to ensure that the proposition only holds if the proposition also holds for the correct subtree.
 
 \subsection{Reasoning about search}
