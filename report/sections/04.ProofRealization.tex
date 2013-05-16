@@ -69,7 +69,7 @@ Because almost all of our proofs entails manipulating sorted list, we first buil
 
 \subsection{Intermediate proposition}
 
-We have chosen to prove the correctness of our implementation using a added level of indirection. Instead of directly proving that $search k (insert k v tree) = Some v$, we are instead proving after inserting into a tree, we know that the tree has a certain property -- that it contains the inserted key --. Likewise we prove that if this proposition holds for a tree, then $search$ can retrieve the item.
+We have chosen to prove the correctness of our implementation using a added level of indirection. Instead of directly proving that $search~k~(insert~k~v~ tree) = Some~v$, we are instead proving after inserting into a tree, we know that the tree has a certain property: that it contains the inserted key. Likewise we prove that if this property holds for a tree, then $search$ can retrieve the item.
 
 \subsubsection{Reasoning about contents}
 To verify that our solution can search and insert into both leafs and entire trees, we designed two propositions that allows us to reason about the content of leafs and trees. The two propositions can be seen represented in figure \ref{fig:aik_and_ait}. 
@@ -113,27 +113,30 @@ To verify that our solution can search and insert into both leafs and entire tre
 \label{fig:aik_and_ait}
 \end{figure}
 
-We can reason about leafs using the $appears\_in\_kvl$ proposition on the leafs key-value pairs. If a key is present in the list, then the proposition holds. Likewise the list can not contain a given key if the proposition does not hold. We use this property in our proofs of that $search\_leaf$ and $insert\_leaf$. To proof that $search\_leaf$ works, we must simply prove that \begin{coqdoccode} 
-  \coqdocvar{appears\_in\_kvl} \coqdocvar{k} \coqdocvar{kvl}
-  \ensuremath{\rightarrow} \coqdocvar{\ensuremath{\exists}} \coqdocvar{v}, 
-  \coqdocvar{search\_leaf} \coqdocvar{k} \coqdocvar{kvl} = \coqdocvar{Some} 
-  \coqdocvar{v}
-\end{coqdoccode} holds. Or to paraphrase, if a given key exists in the key-value list, then there must exists a value that $search\_leaf$ finds if we search for that key. In reality we must also know that the key-value list is sorted, so the actual proof also reflects this requirement.
+We can reason about leafs using the $appears\_in\_kvl$ proposition on the leafs key-value pairs. If a key is present in the list, then the proposition holds. Likewise the list can not contain a given key if the proposition does not hold. $appears\_in\_tree$ conveys the same properties for entire B+ trees -- if and only if a key is present the tree, the proposition holds.
 
-Similarly the proof for ensuring that $insert\_leaf$ can be seen as \begin{coqdoccode}
-\ensuremath{\lnot} \coqdocvar{appears\_in\_kvl} \coqdocvar{k} \coqdocvar{kvl} \ensuremath{\rightarrow} \coqdocvar{appears\_in\_kvl} \coqdocvar{k} (\coqdocvar{insert\_leaf} \coqdocvar{k} \coqdocvar{v} \coqdocvar{kvl})
-\end{coqdoccode}. But because calling $insert\_leaf$ can overflow the leaf, the return type of $insert\_leaf$ is not $list(nat * X)$, but rather $(list (nat * X) * option (list (nat * X)))$. So it $insert\_leaf$ returns a key-value list and a option for the portion of the key-value list that overflowed. So the actual lemma is a disjunction stating that they key must appear in one of the two returned key-value lists.
+$appears\_in\_kvl$ is a inductively defined over the key-value lists and has just two constructors: Either the key must appear at the head of the list or the key must appear later in the list.
 
-\paragraph{}
-To reason about entire trees, we have the the proposition $appears\_in\_tree$. The proposition has a single constructor for when the tree is a leaf, where the only requirement is that $appears\_in\_kvl$ must hold for the leafs key-value list. When the tree is a node, we have three different constructors. We have two constructors ($ait\_node\_last$ and $ait\_node\_here$) for when the the key should appear in a specific subtree, and one ($ait\_node\_later$) that allows you to add subtrees that should not contain the search-key.
-
-Like with leafs, we use $appears\_in\_kvl$ on the key-pointer list and then prove properties about $search$ and $insert$. The two theorems can be seen reproduced in figure \ref{fig:search_works} and \ref{fig:insert_works}.
-
-
-
-
-
-
+Because of the nature of B+ trees, the $appears\_in\_tree$ proposition is somewhat more complicated. It has a single constructor for leafs that simply requires that the $appears\_in\_kvl$ must hold for the leaf. For nodes, however, we must have 3 different constructors to ensure that the proposition only holds if the proposition also holds for the correct subtree.
+% 
+% 
+% We use this property in our proofs of that $search\_leaf$ and $insert\_leaf$. To proof that $search\_leaf$ works, we must simply prove that \begin{coqdoccode} 
+%   \coqdocvar{appears\_in\_kvl} \coqdocvar{k} \coqdocvar{kvl}
+%   \ensuremath{\rightarrow} \coqdocvar{\ensuremath{\exists}} \coqdocvar{v}, 
+%   \coqdocvar{search\_leaf} \coqdocvar{k} \coqdocvar{kvl} = \coqdocvar{Some} 
+%   \coqdocvar{v}
+% \end{coqdoccode} holds. Or to paraphrase, if a given key exists in the key-value list, then there must exists a value that $search\_leaf$ finds if we search for that key. In reality we must also know that the key-value list is sorted, so the actual proof also reflects this requirement.
+% 
+% Similarly the proof for ensuring that $insert\_leaf$ can be seen as \begin{coqdoccode}
+% \ensuremath{\lnot} \coqdocvar{appears\_in\_kvl} \coqdocvar{k} \coqdocvar{kvl} \ensuremath{\rightarrow} \coqdocvar{appears\_in\_kvl} \coqdocvar{k} (\coqdocvar{insert\_leaf} \coqdocvar{k} \coqdocvar{v} \coqdocvar{kvl})
+% \end{coqdoccode}. But because calling $insert\_leaf$ can overflow the leaf, the return type of $insert\_leaf$ is not $list(nat * X)$, but rather $(list (nat * X) * option (list (nat * X)))$. So it $insert\_leaf$ returns a key-value list and a option for the portion of the key-value list that overflowed. So the actual lemma is a disjunction stating that they key must appear in one of the two returned key-value lists.
+% 
+% \paragraph{}
+% To reason about entire trees, we have the the proposition $appears\_in\_tree$. The proposition has a single constructor for when the tree is a leaf, where the only requirement is that $appears\_in\_kvl$ must hold for the leafs key-value list. When the tree is a node, we have three different constructors. We have two constructors ($ait\_node\_last$ and $ait\_node\_here$) for when the the key should appear in a specific subtree, and one ($ait\_node\_later$) that allows you to add subtrees that should not contain the search-key.
+% 
+% Like with leafs, we use $appears\_in\_kvl$ on the key-pointer list and then prove properties about $search$ and $insert$. The two theorems can be seen reproduced in figure \ref{fig:search_works} and \ref{fig:insert_works}.
+% 
+% 
 
 \subsection{Reasoning about search}
 We want to prove that $search$ actually performs like we expect it to. So if a key is present in a tree, we expect $search$ to find a value. Likewise we expect $search$ to not find anything when the key is not present in the tree.
