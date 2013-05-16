@@ -748,7 +748,55 @@ Proof.
 				  apply H24.
 				  apply H12.
           SSSSCase "overflow didn't fit on this level".
-            admit.
+            right.
+            do 2 destruct H7. inversion H7. clear H7. inversion H8. clear H8.
+            rewrite H10 in *. clear H10. clear n0.
+            rewrite H11 in *. clear H11. clear b0.
+            remember (insert_into_list n b1 (insert_into_list witness witness0 kpl)) as kpl'.
+            inversion H9; clear H9; inversion H7; clear H7.
+            SSSSSCase "insert happened in the normal child".
+              assert (find_subtree k kpl = Some (n, child)) by (symmetry in Heqo; assumption).
+              apply find_subtree_impl_kpl_app in H7.
+              do 2 destruct H7. inversion H7. clear H7.
+              assert (n <= k).
+                inversion H.
+                assert (1 <= length kpl) by omega.
+                symmetry in Heqo.
+                apply find_subtree_returns_a_lesser_key in Heqo; assumption.
+              assert (n < witness).
+                rewrite H3 in H6. rewrite <- Heqchild in H6. 
+                eapply insert'_overflow_impl_greater_key.
+                  symmetry in Heqo. apply Heqo.
+                  apply H6. inversion H; assumption.
+              symmetry in Heqfits_here. apply ble_nat_false in Heqfits_here. 
+              assert (length kpl' > b + 1) by omega.
+              apply cut_right_not_nil in H13.
+              remember (cut_list_right (b + 1) kpl') as right.
+              destruct right. exfalso. apply H13. reflexivity.
+              destruct p.
+              exists n0. exists (bptNode b X ((0, b0) :: right)).
+              assert (kvl_sorted(witness1 ++ (n, child) :: witness2)) by (rewrite H10 in H; inversion H; assumption).
+              inversion H2.
+              split. reflexivity.
+              destruct witness2.
+              SSSSSSCase "subtree was in the end of the kpl".
+                inversion H2.
+                right.
+                rewrite H10 in Heqkpl'.
+                assert (kvl_sorted (insert_into_list n b1 (insert_into_list witness witness0 (witness1 ++ [(n, child)])))).
+                  apply insert_preserves_sort. apply insert_preserves_sort.
+                  assumption.
+                rewrite insert_into_list_last_twice in *; try assumption.
+                rewrite Heqkpl' in Heqright.
+                (* The key is Heqright and Heqfits_here, which gives us that
+                 * right must be exists l, l ++ [(n, b1), (witness, witness0)]
+                 * and then destructing on l will give us two cases, that both should
+                 * be proveable. *)
+                admit.
+              SSSSSSCase "subtree was in the middle of the kpl".
+                admit.
+            SSSSSCase "insert happened in the overflow child".
+              admit.
         SSSCase "child didn't overflow".
           inversion Heqp.
           SSSSCase "appears in left subtree".
