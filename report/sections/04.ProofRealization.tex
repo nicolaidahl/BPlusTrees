@@ -2,7 +2,7 @@
 \section{Proof Realization}
 \label{sec:ProofRealization}
 % Notes:
-% bplustree inductive datatype
+% bplustree inductive data type
 %   - Why not have a start pointer/end pointer?
 % insert/search
 %   - Use appears_in instead of search(insert)
@@ -10,10 +10,10 @@
 %   - mutually recursive
 %   - Kopitiam cannot handle large proof assumptions
 %   -counter
-In this section we will examine how the proof of InsertSearchWorks was realized. Firstly, we give an overview of the supporting inductive data types as well as the overall strategy we have used to approach this proof obligation. Secondly, we break the problem down into the proof obligations related to search and insert respectively. \todo{Maybe rewrite this little intro}
+In this section we will examine how the proof of InsertSearchWorks was realized. Firstly, we give an overview of the supporting inductive data types as well as the overall strategy we have used to approach this proof obligation. Secondly, we break the problem down into the proof obligations related to search and insert, respectively. \todo{Maybe rewrite this little intro}
 
-\subsection{Proofs about sortedness}
-A vital aspect of B+ trees is that all of the key-point and key-value lists in nodes and leafs are sorted by key. So the first proposition we defined was $kvl\_sorted$ that is only applicable to such sorted lists. The proposition can be seen reproduced in figure \ref{fig:kvl_sorted}.
+\subsection{Proofs about sorting}
+A vital aspect of B+ trees is that all of the key-point and key-value lists in nodes and leaves are sorted by the key. So the first proposition we defined was $kvl\_sorted$, which is only applicable to such sorted lists. The proposition is reproduced in Figure \ref{fig:kvl_sorted}.
 
 \begin{figure}
   \begin{coqdoccode}
@@ -39,7 +39,8 @@ A vital aspect of B+ trees is that all of the key-point and key-value lists in n
   \label{fig:kvl_sorted}
 \end{figure}
 
-Because almost all of our proofs entails manipulating sorted list, we first built up a extensive set of lemmas and theorems detailing how the proposition behaves when the list is changed -- e.g. if you remove the head of the list, the remainder is still sorted. We have reproduced a few of these behaviors in figure \ref{fig:key_sorting_lemmas}. The theorem $insert\_preserves\_sort$ is probably the one with most direct impact to the rest of the proofs. This is the lemma that allows us to insert new items into a key-value or key-pointer list and know that the list continues to be sorted. $sort\_ignores\_values$ simply confirms that our sorting is only concerned with the keys in the list, as we can swab out one key for another without impacting the validity of the proposition. $list\_tail\_is\_sorted$ is a very handy lemma when dealing with induction over lists, because it quickly allows us to pop the head element off a list and still know that the resulting list is sorted.
+\paragraph{}
+Because almost all of our proofs entails manipulating sorted list, we first built up a extensive set of lemmas and theorems detailing how the proposition behaves when the list is changed --- e.g. if you remove the head of the list, the remainder is still sorted. We have reproduced a few of these behaviors in Figure \ref{fig:key_sorting_lemmas}. The theorem $insert\_preserves\_sort$ is probably the one with most direct impact to the rest of the proofs. This is the lemma that allows us to insert new items into a key-value or key-pointer list and know that the list continues to be sorted. $sort\_ignores\_values$ simply confirms that our sorting is only concerned with the keys in the list, as we can swap out one key for another without impacting the validity of the proposition. $list\_tail\_is\_sorted$ is a very useful lemma when dealing with induction over lists, because it quickly allows us to pop the head element of a list and still know that the resulting list is sorted.
 
 \begin{figure}
   \begin{coqdoccode}
@@ -69,60 +70,75 @@ Because almost all of our proofs entails manipulating sorted list, we first buil
 \end{figure}
 
 \subsection{Intermediate proposition}
+\label{intermediate_prop}
 
-We have chosen to prove the correctness of our implementation using a added level of indirection. Instead of directly proving that $search~k~(insert~k~v~ tree) = Some~v$, we are instead proving after inserting into a tree, we know that the tree has a certain property: that it contains the inserted key. Likewise we prove that if this property holds for a tree, then $search$ can retrieve the item.
+We have chosen to prove the correctness of our implementation using a added level of indirection. Instead of directly proving that $search~k~(insert~k~v~ tree) = Some~v$, we are instead proving after inserting into a tree, we know that the tree has a certain property: that it contains the inserted key. Likewise we prove that if this property holds for a tree, then $search$ can retrieve the item. The implications that must hold using our intermediate propositions can be seen in Equation \ref{intermediate_model}.
+
+\begin{equation}
+  insert~k~v~t = t' \rightarrow kw\_appears\_in\_tree~k~v~t' \rightarrow search~k~t' = Some~v
+  \label{intermediate_model}
+\end{equation}
+
+This indirection allows us to prove that $search$ works independently from proving that $insert$ works.
 
 \subsubsection{Reasoning about contents}
-To verify that our solution can search and insert into both leafs and entire trees, we designed two propositions that allows us to reason about the content of leafs and trees. The two propositions can be seen represented in figure \ref{fig:aik_and_ait}. 
+To verify that our solution can search and insert into both leaves and entire trees, we designed two propositions that allows us to reason about the content of leaves and trees. The two propositions can be seen represented in Figure \ref{fig:aik_and_ait}. 
 
 \begin{figure}
-\centering
 \begin{coqdoccode}
   \coqdocnoindent
-  \coqdockw{Inductive} \coqdocvar{appears\_in\_kvl} \{\coqdocvar{X}:\coqdockw{Type}\} (\coqdocvar{sk}: \coqdocvar{nat}) : \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X}) \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
+  \coqdockw{Inductive} \coqdocvar{kv\_appears\_in\_kvl} \{\coqdocvar{X}:\coqdockw{Type}\} (\coqdocvar{sk}: \coqdocvar{nat}) (\coqdocvar{sv}: \coqdocvar{X}) : \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X}) \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
   \coqdocindent{1.00em}
-  \ensuremath{|} \coqdocvar{aik\_here}: \coqdockw{\ensuremath{\forall}} \coqdocvar{v} \coqdocvar{l},		~~~\coqdocvar{appears\_in\_kvl} \coqdocvar{sk} ((\coqdocvar{sk}, \coqdocvar{v})::\coqdocvar{l})\coqdoceol
+  \ensuremath{|} \coqdocvar{kv\_aik\_here}: \coqdockw{\ensuremath{\forall}} \coqdocvar{l}, ~~~~~~\coqdocvar{kv\_appears\_in\_kvl} \coqdocvar{sk} \coqdocvar{sv} ((\coqdocvar{sk}, \coqdocvar{sv})::\coqdocvar{l})\coqdoceol
   \coqdocindent{1.00em}
-  \ensuremath{|} \coqdocvar{aik\_later}: \coqdockw{\ensuremath{\forall}} \coqdocvar{k} \coqdocvar{v} \coqdocvar{l},	\coqdocvar{appears\_in\_kvl} \coqdocvar{sk} \coqdocvar{l} \ensuremath{\rightarrow} \coqdocvar{appears\_in\_kvl} \coqdocvar{sk} ((\coqdocvar{k}, \coqdocvar{v})::\coqdocvar{l}).\coqdoceol
+  \ensuremath{|} \coqdocvar{kv\_aik\_later}: \coqdockw{\ensuremath{\forall}} \coqdocvar{k} \coqdocvar{v} \coqdocvar{l},	\coqdocvar{kv\_appears\_in\_kvl} \coqdocvar{sk} \coqdocvar{sv} \coqdocvar{l} \ensuremath{\rightarrow} \coqdoceol
+  \coqdocindent{11em} \coqdocvar{kv\_appears\_in\_kvl} \coqdocvar{sk} \coqdocvar{sv} ((\coqdocvar{k}, \coqdocvar{v})::\coqdocvar{l}).\coqdoceol
   \coqdocemptyline
   \coqdocnoindent
-  \coqdockw{Inductive} \coqdocvar{appears\_in\_tree} \{\coqdocvar{X}:\coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{sk}: \coqdocvar{nat}) : \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X} \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
+  \coqdockw{Inductive} \coqdocvar{kv\_appears\_in\_tree} \{\coqdocvar{X}:\coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{sk}: \coqdocvar{nat}) (\coqdocvar{sv}: \coqdocvar{X}) : \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X} \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
   \coqdocindent{1.00em}
-  \ensuremath{|} \coqdocvar{ait\_leaf}: \coqdockw{\ensuremath{\forall}} \coqdocvar{l},	~~\coqdocvar{appears\_in\_kvl} \coqdocvar{sk} \coqdocvar{l} \ensuremath{\rightarrow} \coqdocvar{appears\_in\_tree} \coqdocvar{sk} (\coqdocvar{bptLeaf} \coqdocvar{b} \coqdocvar{X} \coqdocvar{l})\coqdoceol
+  \ensuremath{|} \coqdocvar{kv\_ait\_leaf}: \coqdockw{\ensuremath{\forall}} \coqdocvar{l},\coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{kv\_appears\_in\_kvl} \coqdocvar{sk} \coqdocvar{sv} \coqdocvar{l} \ensuremath{\rightarrow} \coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} (\coqdocvar{bptLeaf} \coqdocvar{b} \coqdocvar{X} \coqdocvar{l})\coqdoceol
   \coqdocindent{1.00em}
-  \ensuremath{|} \coqdocvar{ait\_node\_last}: \coqdockw{\ensuremath{\forall}} \coqdocvar{k1} \coqdocvar{k2} \coqdocvar{v1} \coqdocvar{v2}, \coqdoceol
+  \ensuremath{|} \coqdocvar{kv\_ait\_node\_last}: \coqdockw{\ensuremath{\forall}} \coqdocvar{k1} \coqdocvar{k2} \coqdocvar{v1} \coqdocvar{v2}, \coqdoceol
   \coqdocindent{8.00em}
-  \coqdocvar{appears\_in\_tree} \coqdocvar{sk} \coqdocvar{v2} \ensuremath{\rightarrow} \coqdocvar{k2} \ensuremath{\le} \coqdocvar{sk} \ensuremath{\rightarrow}\coqdoceol
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} \coqdocvar{v2} \ensuremath{\rightarrow} \coqdocvar{k2} \ensuremath{\le} \coqdocvar{sk} \ensuremath{\rightarrow}\coqdoceol
   \coqdocindent{8.00em}
-  \coqdocvar{appears\_in\_tree} \coqdocvar{sk} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} [(\coqdocvar{k1}, \coqdocvar{v1}), (\coqdocvar{k2}, \coqdocvar{v2})])\coqdoceol
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} [(\coqdocvar{k1}, \coqdocvar{v1}), (\coqdocvar{k2}, \coqdocvar{v2})])\coqdoceol
   \coqdocindent{1.00em}
-  \ensuremath{|} \coqdocvar{ait\_node\_here}: \coqdockw{\ensuremath{\forall}} \coqdocvar{k1} \coqdocvar{k2} \coqdocvar{v1} \coqdocvar{v2} \coqdocvar{l}, \coqdoceol
+  \ensuremath{|} \coqdocvar{kv\_ait\_node\_here}: \coqdockw{\ensuremath{\forall}} \coqdocvar{k1} \coqdocvar{k2} \coqdocvar{v1} \coqdocvar{v2} \coqdocvar{l}, \coqdoceol
   \coqdocindent{8.00em}
-  \coqdocvar{appears\_in\_tree} \coqdocvar{sk} \coqdocvar{v1} \ensuremath{\rightarrow} \coqdocvar{k1} \ensuremath{\le} \coqdocvar{sk} \ensuremath{\land} \coqdocvar{sk} < \coqdocvar{k2} \ensuremath{\rightarrow}\coqdoceol
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} \coqdocvar{v1} \ensuremath{\rightarrow} \coqdocvar{k1} \ensuremath{\le} \coqdocvar{sk} \ensuremath{\land} \coqdocvar{sk} < \coqdocvar{k2} \ensuremath{\rightarrow}\coqdoceol
   \coqdocindent{8.00em}
-  \coqdocvar{appears\_in\_tree} \coqdocvar{sk} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} ((\coqdocvar{k1}, \coqdocvar{v1})::(\coqdocvar{k2}, \coqdocvar{v2})::\coqdocvar{l}))\coqdoceol
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} ((\coqdocvar{k1}, \coqdocvar{v1})::(\coqdocvar{k2}, \coqdocvar{v2})::\coqdocvar{l}))\coqdoceol
   \coqdocindent{1.00em}
-  \ensuremath{|} \coqdocvar{ait\_node\_later}: \coqdockw{\ensuremath{\forall}} \coqdocvar{x} \coqdocvar{k1} \coqdocvar{k2} \coqdocvar{v1} \coqdocvar{v2} \coqdocvar{l},\coqdoceol
+  \ensuremath{|} \coqdocvar{kv\_ait\_node\_later}: \coqdockw{\ensuremath{\forall}} \coqdocvar{x} \coqdocvar{k1} \coqdocvar{k2} \coqdocvar{v1} \coqdocvar{v2} \coqdocvar{l},\coqdoceol
   \coqdocindent{8.00em}
-  \coqdocvar{appears\_in\_tree} \coqdocvar{sk} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} ((\coqdocvar{k1}, \coqdocvar{v1})::(\coqdocvar{k2}, \coqdocvar{v2})::\coqdocvar{l})) \ensuremath{\rightarrow} \coqdoceol
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} ((\coqdocvar{k1}, \coqdocvar{v1})::(\coqdocvar{k2}, \coqdocvar{v2})::\coqdocvar{l})) \ensuremath{\rightarrow} \coqdoceol
   \coqdocindent{8.00em}
   \coqdocvar{k1} \ensuremath{\le} \coqdocvar{sk} \ensuremath{\rightarrow}\coqdoceol
   \coqdocindent{8.00em}
-  \coqdocvar{appears\_in\_tree} \coqdocvar{sk} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} (\coqdocvar{x}::(\coqdocvar{k1}, \coqdocvar{v1})::(\coqdocvar{k2}, \coqdocvar{v2})::\coqdocvar{l})).\coqdoceol
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} (\coqdocvar{x}::(\coqdocvar{k1}, \coqdocvar{v1})::(\coqdocvar{k2}, \coqdocvar{v2})::\coqdocvar{l})).\coqdoceol
   \end{coqdoccode}
 \caption{Inductive propositions for reasoning about contents}
 \label{fig:aik_and_ait}
 \end{figure}
 
-We can reason about leafs using the $appears\_in\_kvl$ proposition on the leafs key-value pairs. If a key is present in the list, then the proposition holds. Likewise the list can not contain a given key if the proposition does not hold. $appears\_in\_tree$ conveys the same properties for entire B+ trees -- if and only if a key is present the tree, the proposition holds.
+\paragraph{}
+We can reason about leaves using the $kw\_appears\_in\_kvl$ proposition on the leaves key-value pairs. If a key is present in the list, then the proposition holds. Likewise the list can not contain a given key if the proposition does not hold. $kw\_appears\_in\_tree$ conveys the same properties for entire B+ trees --- if and only if a key is present the tree, the proposition holds. Often it can be beneficial to reason about only whether or not a given key exists, but not caring about the value. For this reason we also have the $appears\_in\_kvl$ and $appears\_in\_tree$ proposition. The relationship between two two are: $kv\_appears\_in\_kvl~k~v~l \rightarrow appears\_in\_kvl~k~l$. The reason we are interested in knowing if only a key exists, is so we can know if a insert will cause a overflow.
 
-$appears\_in\_kvl$ is inductively defined over the key-value lists and has just two constructors: Either the key must appear at the head of the list or the key must appear later in the list.
+\paragraph{}
+$kw\_appears\_in\_kvl$ is inductively defined over the key-value lists and has just two constructors: Either the key must appear at the head of the list or the key must appear later in the list.
 
-Because of the nature of B+ trees, the $appears\_in\_tree$ proposition is somewhat more complicated. It has a single constructor for leafs that simply requires that the $appears\_in\_kvl$ must hold for the leaf. For nodes, however, we must have 3 different constructors to ensure that the proposition only holds if the proposition also holds for the correct subtree.
+\paragraph{}
+Because of the nature of B+ trees, the $kw\_appears\_in\_tree$ proposition is somewhat more complicated. It has a single constructor for leaves that simply requires that the $kw\_appears\_in\_kvl$ must hold for the leaf. For nodes, however, we must have 3 different constructors to ensure that the proposition only holds if the proposition also holds for the correct subtree.
 
 \subsection{Reasoning about search}
 We want to prove that $search$ actually performs like we expect it to. So if a key is present in a tree, we expect $search$ to find a value. Likewise we expect $search$ to not find anything when the key is not present in the tree.
-Put more succinctly, we must prove that $appears\_in\_tree~k~tree \rightarrow \exists~v, search~k~tree = Some~v$ and $\lnot appears\_in\_tree~k~tree \rightarrow search~k~tree = None$.
+Put more succinctly, we must prove that $kw\_appears\_in\_tree~k~v~tree \rightarrow search~k~tree = Some~v$ and $\lnot appears\_in\_tree~k~tree \rightarrow search~k~tree = None$.
 
 \begin{figure}
   \begin{coqdoccode}
@@ -131,27 +147,30 @@ Put more succinctly, we must prove that $appears\_in\_tree~k~tree \rightarrow \e
   \coqdocindent{1.00em}
   \coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
   \coqdocindent{1.00em}
-  \coqdocvar{appears\_in\_tree} \coqdocvar{k} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
+  \coqdocvar{kw\_appears\_in\_tree} \coqdocvar{k} \coqdocvar{v} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
   \coqdocindent{1.00em}
-  \coqdocvar{\ensuremath{\exists}} \coqdocvar{v}, \coqdocvar{search} \coqdocvar{k} \coqdocvar{t} = \coqdocvar{Some}(\coqdocvar{v}).\coqdoceol
+ \coqdocvar{search} \coqdocvar{k} \coqdocvar{t} = \coqdocvar{Some}(\coqdocvar{v}).\coqdoceol
   \end{coqdoccode}
   \caption{The theorem that states how $search$ must find a item that appears in the tree.}
   \label{fig:search_works}
 \end{figure}
 
-To prove the theorem shown in figure \ref{fig:search_works} we first proved that our implementation could find items in a leaf using the $appears\_in\_kvl$ proposition. Because $appears\_in\_kvl$ is defined inductively over the same list that $search\_leaf$ is recursively defined over, this proof is trivial.
+\paragraph{}
+To prove the theorem shown in Figure \ref{fig:search_works} we first proved that our implementation could find items in a leaf using the $appears\_in\_kvl$ proposition. Because $appears\_in\_kvl$ is defined inductively over the same list that $search\_leaf$ is recursively defined over, this proof is trivial.
 
+\paragraph{}
 For proving the $appears\_search\_works$, we needed to argue that $search'$ has the same properties that we want $search$ to have. Because the definition of $search$ is a simple call to $search'$, the interesting proof is $appears\_search'\_works$. Like mentioned in the problem analysis, a induction over the counter argument of $search'$ it is equivalent to performing a induction over the height of the tree. By isolating the the subtree that $find\_subtree$ finds and applying the induction hypothesis on this subtree, we know that $search'$ will find the key in the subtree. Since $search'$ does not perform any modifications we can conclude that if it works for the subtree that $find\_subtree$, it works for the parent too. 
 
 \subsubsection{A subtree must be found}
-
 A important aspect of our recursion over the height of the subtree, is that we use $find\_subtree$ to identify which subtree to recurse into. So if $find\_subtree$ doesn't find a subtree, we have nothing to apply the induction hypothesis on, and we can not prove the theorem. Hence we must require that
 $valid\_bplustree~b~X~t \leftarrow \forall~sk, \exists~subtree, find\_subtree~ sk~t = Some~subtree$.
 
-Identifying a subtree is a matter of finding the two consecutive keys where the search-key falls within the range of those two keys, that is $k_i \le sk < k_{i+1}$. In a text-book implementation implementation of of B+ trees you also have the two cases $sk < k_0$ and $k_{n} \le sk$ where n is the number of keys. This ensures that no matter what keys exists, you can always use one of the 3 cases to find the range belonging to a subtree. But because we have simplified the datatype for nodes, where we have a key for the first pointer as well, we can no longer use the the rule $sk < k_0$. So if a list key-pointer pair where the first key is bigger than the search-key were to be allowed, $find\_subtree$ can fail to find a subtree. This is why $valid\_bplustree$ states that the first key in all key-pointer lists must be 0. This serves to introduce the equivalent to the rule $sk < k_0$, because we now have $k_0 = 0 \le sk < k_1$. With this, we were able to prove that $find_subtree$ will always find a subtree to recurse into, and thus that $insert$ can traverse down to the leaf and find the key in question.
+\paragraph{}
+Identifying a subtree is a matter of finding the two consecutive keys where the search-key falls within the range of those two keys, that is $k_i \le sk < k_{i+1}$. In a text-book implementation implementation of of B+ trees you also have the two cases $sk < k_0$ and $k_{n} \le sk$ where n is the number of keys. This ensures that no matter what keys exists, you can always use one of the 3 cases to find the range belonging to a subtree. But because we have simplified the data type for nodes, where we have a key for the first pointer as well, we can no longer use the the rule $sk < k_0$. So if a list key-pointer pair where the first key is bigger than the search-key were to be allowed, $find\_subtree$ can fail to find a subtree. This is why $valid\_bplustree$ states that the first key in all key-pointer lists must be 0. This serves to introduce the equivalent to the rule $sk < k_0$, because we now have $k_0 = 0 \le sk < k_1$. With this, we were able to prove that $find_subtree$ will always find a subtree to recurse into, and thus that $insert$ can traverse down to the leaf and find the key in question.
 
-\subsection{Insert impl. appears}
-some of the above should be moved here and find\_subtree must always find a subtree
+\subsection{Proving that insertion implies $kw\_appears\_in\_tree$}
+
+In order to use our model where we use a intermediate proposition in our proofs, we must be able to prove that the $kw\_appears\_in\_tree$ proposition holds after inserting a key-value pair into any given, valid, tree. The theorem can be seen reproduced in Figure \ref{insert_works}.
 
 \begin{figure}
   \begin{coqdoccode}
@@ -162,11 +181,42 @@ some of the above should be moved here and find\_subtree must always find a subt
   \coqdocindent{1.00em}
   \ensuremath{\lnot}\coqdocvar{appears\_in\_tree} \coqdocvar{k} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
   \coqdocindent{1.00em}
-  \coqdocvar{appears\_in\_tree} \coqdocvar{k} (\coqdocvar{insert} \coqdocvar{k} \coqdocvar{v} \coqdocvar{t}).\coqdoceol
+  \coqdocvar{kw\_appears\_in\_tree} \coqdocvar{k} \coqdocvar{v} (\coqdocvar{insert} \coqdocvar{k} \coqdocvar{v} \coqdocvar{t}).\coqdoceol
   \end{coqdoccode}
-  \caption{The theorems that claim that $insert$ works.}
+  \caption{The theorems stating that $insert$ implies $kw\_appears\_in\_tree$}
   \label{fig:insert_works}
 \end{figure}
+
+Just like with $search$, our definition of $insert$ is simple definition that calls $insert'$. To prove $insert'$ we again use the tactic of performing induction on our introduced $counter$ argument. Once we have identified the the subtree where the insertion must happen, we can use the induction hypothesis to prove that the value was correctly inserted into the child. But the task of proving that the child is correctly updated in the tree, and that this implies that the value now exists in the parent is non-trivial. The reason why is that there are multiple different cases that can happen. 
+
+When we only know that the item was correctly inserted into a child that may or may not have overflowed, we have all of the following options for what can happen. In reality we need to handle all of the cases twice: Once for when the child is a leaf and once for when the child is a node.
+
+\begin{enumerate}
+  \item The child did not overflow, and hence the parent will not overflow. 
+  \item The child overflowed.
+  \begin{enumerate}
+    \item The item was inserted into the regular child.
+    \begin{enumerate}
+      \item The parent had room for the overflow.
+      \item The overflow caused the parent to overflow too.
+      \begin{enumerate}
+        \item The item ended up in the regular parent
+        \item The item ended up in the overflow parent
+      \end{enumerate}
+    \end{enumerate}
+    \item The item was inserted into the overflow child.
+    \begin{enumerate}
+      \item The parent had room for the overflow.
+      \item The overflow caused the parent to overflow too.
+      \begin{enumerate}
+        \item The item ended up in the regular parent
+        \item The item ended up in the overflow parent
+      \end{enumerate}
+    \end{enumerate}
+  \end{enumerate}
+\end{enumerate}
+
+A lot of the cases are very similar, and we can see that 2.(a).ii and 2.(b).ii are identical. It was hence possible to construct some lemmas that allows reuse between cases but despite this the sheer amount of cases made the theorem rather complicated and incomprehensible. 
 
 \subsection{Tying it together}
 Fill me in.
