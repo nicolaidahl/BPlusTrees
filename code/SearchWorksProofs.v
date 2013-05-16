@@ -4,6 +4,7 @@ Require Export SortingProofs.
 Require Export AppearsInKVL.
 Require Export HeightProofs.
 Require Export InsertProofs.
+Require Export KvAppearsInTree.
 
 Theorem search_leaf_works_app : forall (X: Type) (k: nat) (v: X) (l1 l2: list (nat * X)), 
   kvl_sorted (l1 ++ (k, v) :: l2) ->
@@ -30,14 +31,13 @@ Proof.
       assumption.
 Qed.
 
-Theorem search_leaf_works : forall (X: Type) (k: nat) (kvl: list (nat * X)),
+Theorem search_leaf_works : forall (X: Type) (k: nat) (v: X) (kvl: list (nat * X)),
   kvl_sorted kvl ->
-  appears_in_kvl k kvl -> exists v, search_leaf k kvl = Some v.
+  kv_appears_in_kvl k v kvl -> search_leaf k kvl = Some v.
 Proof.
   intros.
-  apply appears_in_kvl_app in H0.
-  do 3 destruct H0.
-  exists witness1.
+  apply kv_appears_in_kvl_app in H0.
+  do 2 destruct H0.
   rewrite H0.
   apply search_leaf_works_app.
   rewrite <- H0.
@@ -45,11 +45,11 @@ Proof.
 Qed.
 
 
-Theorem appears_search'_works : forall (counter b sk: nat) (X: Type) (t: bplustree b X),
+Theorem appears_search'_works : forall (X: Type) (counter b sk: nat) (sv: X) (t: bplustree b X),
   valid_bplustree b X t ->
-  appears_in_tree sk t ->
+  kv_appears_in_tree sk sv t ->
   counter = (height t) ->
-  exists v, search' counter sk t = Some(v).
+  search' counter sk t = Some(sv).
 Proof.
   induction counter.
   Case "counter = 0".
@@ -84,8 +84,8 @@ Proof.
           apply all_values_single in H6.
           apply valid_sub_bplustree_impl_valid_bplustree in H6.
           apply H6.
-        assert (appears_in_tree sk b0).
-          apply appears_in_subtree_when_appears_in_tree_and_found in Heqo.
+        assert (kv_appears_in_tree sk sv b0).
+          apply kv_appears_in_subtree_when_appears_in_tree_and_found with (v := sv) in Heqo.
           apply Heqo. assumption.
           rewrite H10. assumption.
         assert (counter = height b0).
@@ -104,10 +104,10 @@ Proof.
         inversion Heqo.
 Qed.
     
-Theorem appears_search_works : forall (b: nat) (X: Type) (t: bplustree b X) (k: nat),
+Theorem appears_search_works : forall (b: nat) (X: Type) (v: X) (t: bplustree b X) (k: nat),
   valid_bplustree b X t -> 
-  appears_in_tree k t -> 
-  exists v, search k t = Some(v).
+  kv_appears_in_tree k v t -> 
+  search k t = Some(v).
 Proof.
   intros.
   unfold search.
