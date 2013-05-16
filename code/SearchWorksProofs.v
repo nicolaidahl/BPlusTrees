@@ -115,3 +115,14 @@ Proof.
   apply appears_search'_works; assumption.
 Qed.
 
+
+
+Theorem not_appears_search_works: forall (b: nat) (X: Type) (t: bplustree b X) (k: nat),
+  valid_bplustree b X t -> 
+  ~ appears_in_tree k t -> 
+  search k t = None.
+Proof. Admitted.
+
+
+
+
