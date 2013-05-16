@@ -57,9 +57,9 @@ Proof.
     omega.
 Qed.
 
-Lemma find_subtree_before_head_None: forall {X: Type} {b: nat} n k t kpl,
+Lemma find_subtree_before_head_None: forall {X: Type} {b: nat} n k t (kpl: list (nat * bplustree b X)),
   n > k -> kvl_sorted ((n, t) :: kpl) ->
-  @find_subtree X b k ((n, t) :: kpl) = None.
+  find_subtree k ((n, t) :: kpl) = None.
 Proof.
   intros. generalize dependent n. generalize dependent t. induction kpl. intros.
   Case "kpl = []".
@@ -74,11 +74,11 @@ Proof.
 Qed.
   
 
-Lemma find_subtree_later: forall {X: Type} b n1 n2 k t1 t2 kpl key subtree,
+Lemma find_subtree_later: forall {X: Type} b n1 n2 k t1 t2 (kpl: list (nat * bplustree b X)) key subtree,
   n1 > k \/ k >= n2 ->
   kvl_sorted((n1, t1) :: (n2, t2) :: kpl) ->
-  @find_subtree X b k ((n1, t1) :: (n2, t2) :: kpl) = Some (key, subtree) ->
-  @find_subtree X b k ((n2, t2) :: kpl) = Some (key, subtree).
+  find_subtree k ((n1, t1) :: (n2, t2) :: kpl) = Some (key, subtree) ->
+  find_subtree k ((n2, t2) :: kpl) = Some (key, subtree).
 Proof.
   intros. destruct H. 
   eapply find_subtree_before_head_None in H0. rewrite H0 in H1. inversion H1.
@@ -91,9 +91,9 @@ Qed.
 
 
 
-Lemma find_subtree_one_impl_found: forall {X: Type} b k n t key subtree,
+Lemma find_subtree_one_impl_found: forall {X: Type} b k (n: nat) (t: bplustree b X) key subtree,
   key <= k \/ n <= k ->
-  @find_subtree X b k [(n, t)] = Some (key, subtree) ->
+  find_subtree k [(n, t)] = Some (key, subtree) ->
   n = key /\ t = subtree.
 Proof.
   intros. simpl in H0. destruct (ble_nat n k). inversion H0. split. reflexivity. 

@@ -1,6 +1,6 @@
 COQC := coqc
 
-all: InsertWorksProofs.vo SearchWorksProofs.vo InsertSearchWorksProofs.vo \
+all: InsertImplAppears.vo AppearsImplSearchFound.vo InsertSearchWorksProofs.vo \
      InsertPreservesProofs.vo
 
 clean:
@@ -10,14 +10,10 @@ clean:
 SfLib.vo: SfLib.v
 	$(COQC) SfLib.v
 
-LowLevelHelperProofs.vo: LowLevelHelperProofs.v SfLib.vo
-	$(COQC) LowLevelHelperProofs.v
-
 HelperFunctions.vo: HelperFunctions.v SfLib.vo
 	$(COQC) HelperFunctions.v
 
-SplitCutList.vo: SplitCutList.v SfLib.vo LowLevelHelperProofs.vo \
-								 HelperFunctions.vo
+SplitCutList.vo: SplitCutList.v SfLib.vo HelperFunctions.vo
 	$(COQC) SplitCutList.v
 
 InductiveDataTypes.vo: InductiveDataTypes.v \
@@ -39,8 +35,8 @@ SortingProofs.vo: SortingProofs.v ValidBPlusTree.vo BPlusTree.vo \
 									HelperProofs.vo 
 	$(COQC) SortingProofs.v
 
-AppearsInKVL.vo: AppearsInKVL.v HelperProofs.vo BPlusTree.vo \
-								 LowLevelHelperProofs.vo InductiveDataTypes.vo \
+AppearsInKVL.vo: AppearsInKVL.v HelperProofs.vo BPlusTree.vo SfLib.vo \
+								 InductiveDataTypes.vo \
 								 HelperFunctions.vo SortingProofs.vo
 	$(COQC) AppearsInKVL.v
 
@@ -75,18 +71,18 @@ InsertPreservesProofs.vo: InsertPreservesProofs.v BPlusTree.vo \
 													InsertProofs.vo
 	$(COQC) InsertPreservesProofs.v
 
-InsertWorksProofs.vo: InsertWorksProofs.v SplitCutList.vo HelperFunctions.vo \
+InsertImplAppears.vo: InsertImplAppears.v SplitCutList.vo HelperFunctions.vo \
 											BPlusTree.vo ValidBPlusTree.vo ElementAtIndexProofs.vo \
 											SortingProofs.vo HelperProofs.vo FindSubtreeProofs.vo \
 											AppearsInTree.vo AppearsInKVL.vo InsertProofs.vo \
 											HeightProofs.vo KvAppearsInTree.vo
-	$(COQC) InsertWorksProofs.v
+	$(COQC) InsertImplAppears.v
 
-SearchWorksProofs.vo: SearchWorksProofs.v BPlusTree.vo ValidBPlusTree.vo \
+AppearsImplSearchFound.vo: AppearsImplSearchFound.v BPlusTree.vo ValidBPlusTree.vo \
 											SortingProofs.vo AppearsInKVL.vo InsertProofs.vo \
 											KvAppearsInTree.vo InsertPreservesProofs.vo
-	$(COQC) SearchWorksProofs.v
+	$(COQC) AppearsImplSearchFound.v
 
 InsertSearchWorksProofs.vo: InsertSearchWorksProofs.v BPlusTree.vo \
-														SortingProofs.vo
+	SortingProofs.vo ValidBPlusTree.vo InsertImplAppears.vo InsertPreservesProofs.vo AppearsImplSearchFound.vo
 	$(COQC) InsertSearchWorksProofs.v

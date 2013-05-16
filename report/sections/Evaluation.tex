@@ -1,0 +1,11 @@
+%!TEX root = ../BPlusTree-report.tex
+\section{Evaluation}
+\label{sec:Evaluation}
+Trying to formally verify a non-trivial (and inherently imperative) data type like B+ trees has proven to be a difficult task. In this section we evaluate three central points regarding our work process and our InsertSearchWorks proof.
+\subsubsection{Insert Leaf Implies Appears}
+insert_leaf_impl_appears cannot be easily used from insert_impl_appears. It does not give enough metadata and should have been implemented like insert'_impl_appears which is much more useful. 
+\subsubsection{Unnecessary Assumption}
+~appears_in_kvl should not have been used for our insert_leaf_impl_appears. It should have been doable without this assumption, which bubbles up into the main proof.
+\subsubsection{Higher Priority for Validity Preservation Proof}
+With a better overview we might have chosen to prove insert_preserves_validity first.
+

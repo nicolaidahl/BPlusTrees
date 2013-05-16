@@ -87,7 +87,7 @@ Lemma split_leaf_impl_length_max_fan_out: forall {X: Type} b counter t1 t2 n k v
    length l = S (b * 2).
 Proof. Admitted.
 
-Theorem insert_preserves_valid_bplustree : forall (b: nat) (X: Type) (tree: bplustree b X) (k: nat) (v: X),
+Theorem insert_preserves_tree_validity : forall (b: nat) (X: Type) (tree: bplustree b X) (k: nat) (v: X),
   valid_bplustree b X tree -> valid_bplustree b X (insert k v tree).
 Proof.
   admit.

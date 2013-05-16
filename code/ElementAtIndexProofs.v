@@ -396,3 +396,24 @@ Proof.
          apply H1.
          apply H2.
 Qed.
+
+Lemma list_of_length_b_implies_element_at_b : forall (X: Type) (b: nat) (kvl: list (nat* X)),
+  kvl <> [] -> b < length kvl -> 
+  exists k, exists v, element_at_index b kvl = Some(k, v).
+Proof.
+  intros. 
+  generalize dependent b.
+  induction kvl.
+  Case "kvl = 0". 
+    apply ex_falso_quodlibet. apply H. reflexivity. 
+    intros.
+    destruct b.
+      simpl. destruct a. exists n. exists x. reflexivity.
+      simpl. simpl in H0. 
+      assert (kvl <> []).
+        destruct kvl. simpl in H0. inversion H0. inversion H2.
+        unfold not. intro. inversion H1.
+      apply IHkvl.
+        apply H1.
+        omega.
+Qed.

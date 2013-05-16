@@ -1,6 +1,5 @@
 Require Export SfLib.
 Require Export HelperFunctions.
-Require Import LowLevelHelperProofs.
   
 Lemma cut_list_left_add_one : forall (X: Type) (x: X) (b: nat) (l: list X),
   cut_list_left (S b) (x :: l) = x :: cut_list_left b l.
