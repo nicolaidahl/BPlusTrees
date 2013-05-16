@@ -2,7 +2,7 @@
 \section{Proof Realization}
 \label{sec:ProofRealization}
 % Notes:
-% bplustree inductive datatype
+% bplustree inductive data type
 %   - Why not have a start pointer/end pointer?
 % insert/search
 %   - Use appears_in instead of search(insert)
@@ -12,8 +12,8 @@
 %   -counter
 In this section we will examine how the proof of InsertSearchWorks was realized. Firstly, we give an overview of the supporting inductive data types as well as the overall strategy we have used to approach this proof obligation. Secondly, we break the problem down into the proof obligations related to search and insert respectively. \todo{Maybe rewrite this little intro}
 
-\subsection{Proofs about sortedness}
-A vital aspect of B+ trees is that all of the key-point and key-value lists in nodes and leafs are sorted by key. So the first proposition we defined was $kvl\_sorted$ that is only applicable to such sorted lists. The proposition can be seen reproduced in figure \ref{fig:kvl_sorted}.
+\subsection{Proofs about sorting}
+A vital aspect of B+ trees is that all of the key-point and key-value lists in nodes and leaves are sorted by key. So the first proposition we defined was $kvl\_sorted$ that is only applicable to such sorted lists. The proposition can be seen reproduced in figure \ref{fig:kvl_sorted}.
 
 \begin{figure}
   \begin{coqdoccode}
@@ -73,7 +73,7 @@ Because almost all of our proofs entails manipulating sorted list, we first buil
 We have chosen to prove the correctness of our implementation using a added level of indirection. Instead of directly proving that $search~k~(insert~k~v~ tree) = Some~v$, we are instead proving after inserting into a tree, we know that the tree has a certain property: that it contains the inserted key. Likewise we prove that if this property holds for a tree, then $search$ can retrieve the item.
 
 \subsubsection{Reasoning about contents}
-To verify that our solution can search and insert into both leafs and entire trees, we designed two propositions that allows us to reason about the content of leafs and trees. The two propositions can be seen represented in figure \ref{fig:aik_and_ait}. 
+To verify that our solution can search and insert into both leaves and entire trees, we designed two propositions that allows us to reason about the content of leaves and trees. The two propositions can be seen represented in figure \ref{fig:aik_and_ait}. 
 
 \begin{figure}
 \centering
@@ -114,11 +114,11 @@ To verify that our solution can search and insert into both leafs and entire tre
 \label{fig:aik_and_ait}
 \end{figure}
 
-We can reason about leafs using the $appears\_in\_kvl$ proposition on the leafs key-value pairs. If a key is present in the list, then the proposition holds. Likewise the list can not contain a given key if the proposition does not hold. $appears\_in\_tree$ conveys the same properties for entire B+ trees -- if and only if a key is present the tree, the proposition holds.
+We can reason about leaves using the $appears\_in\_kvl$ proposition on the leaves key-value pairs. If a key is present in the list, then the proposition holds. Likewise the list can not contain a given key if the proposition does not hold. $appears\_in\_tree$ conveys the same properties for entire B+ trees -- if and only if a key is present the tree, the proposition holds.
 
 $appears\_in\_kvl$ is inductively defined over the key-value lists and has just two constructors: Either the key must appear at the head of the list or the key must appear later in the list.
 
-Because of the nature of B+ trees, the $appears\_in\_tree$ proposition is somewhat more complicated. It has a single constructor for leafs that simply requires that the $appears\_in\_kvl$ must hold for the leaf. For nodes, however, we must have 3 different constructors to ensure that the proposition only holds if the proposition also holds for the correct subtree.
+Because of the nature of B+ trees, the $appears\_in\_tree$ proposition is somewhat more complicated. It has a single constructor for leaves that simply requires that the $appears\_in\_kvl$ must hold for the leaf. For nodes, however, we must have 3 different constructors to ensure that the proposition only holds if the proposition also holds for the correct subtree.
 
 \subsection{Reasoning about search}
 We want to prove that $search$ actually performs like we expect it to. So if a key is present in a tree, we expect $search$ to find a value. Likewise we expect $search$ to not find anything when the key is not present in the tree.
@@ -148,7 +148,7 @@ For proving the $appears\_search\_works$, we needed to argue that $search'$ has 
 A important aspect of our recursion over the height of the subtree, is that we use $find\_subtree$ to identify which subtree to recurse into. So if $find\_subtree$ doesn't find a subtree, we have nothing to apply the induction hypothesis on, and we can not prove the theorem. Hence we must require that
 $valid\_bplustree~b~X~t \leftarrow \forall~sk, \exists~subtree, find\_subtree~ sk~t = Some~subtree$.
 
-Identifying a subtree is a matter of finding the two consecutive keys where the search-key falls within the range of those two keys, that is $k_i \le sk < k_{i+1}$. In a text-book implementation implementation of of B+ trees you also have the two cases $sk < k_0$ and $k_{n} \le sk$ where n is the number of keys. This ensures that no matter what keys exists, you can always use one of the 3 cases to find the range belonging to a subtree. But because we have simplified the datatype for nodes, where we have a key for the first pointer as well, we can no longer use the the rule $sk < k_0$. So if a list key-pointer pair where the first key is bigger than the search-key were to be allowed, $find\_subtree$ can fail to find a subtree. This is why $valid\_bplustree$ states that the first key in all key-pointer lists must be 0. This serves to introduce the equivalent to the rule $sk < k_0$, because we now have $k_0 = 0 \le sk < k_1$. With this, we were able to prove that $find_subtree$ will always find a subtree to recurse into, and thus that $insert$ can traverse down to the leaf and find the key in question.
+Identifying a subtree is a matter of finding the two consecutive keys where the search-key falls within the range of those two keys, that is $k_i \le sk < k_{i+1}$. In a text-book implementation implementation of of B+ trees you also have the two cases $sk < k_0$ and $k_{n} \le sk$ where n is the number of keys. This ensures that no matter what keys exists, you can always use one of the 3 cases to find the range belonging to a subtree. But because we have simplified the data type for nodes, where we have a key for the first pointer as well, we can no longer use the the rule $sk < k_0$. So if a list key-pointer pair where the first key is bigger than the search-key were to be allowed, $find\_subtree$ can fail to find a subtree. This is why $valid\_bplustree$ states that the first key in all key-pointer lists must be 0. This serves to introduce the equivalent to the rule $sk < k_0$, because we now have $k_0 = 0 \le sk < k_1$. With this, we were able to prove that $find_subtree$ will always find a subtree to recurse into, and thus that $insert$ can traverse down to the leaf and find the key in question.
 
 \subsection{Insert impl. appears}
 some of the above should be moved here and find\_subtree must always find a subtree
