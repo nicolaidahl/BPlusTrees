@@ -289,7 +289,8 @@ Theorem insert_leaf_impl_appears : forall {X: Type} {b: nat} (k: nat) (v: X) (le
   ~ (appears_in_kvl k leaf) -> 
   length leaf <= mult b 2 ->
   insert_leaf b k v leaf = (left, rightOption) ->
-  kv_appears_in_kvl k v left \/ (exists right, rightOption = Some(right) /\ kv_appears_in_kvl k v right).
+  kv_appears_in_kvl k v left \/ 
+  (exists right, rightOption = Some(right) /\ kv_appears_in_kvl k v right).
 Proof.
   intros.
   remember (blt_nat (length leaf) (b * 2)) as blt_length_b.
