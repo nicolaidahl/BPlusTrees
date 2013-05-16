@@ -35,7 +35,7 @@ To implement B+ trees in Gallina, several different components have to be implem
 \end{figure}
 
 \paragraph{}
-This data type says that a $bplustree$ is parameterized by $b$, the fanout, and $X$, the type of the values in the tree. Further, a tree can be either a leaf or a node. A leaf is a list of key-value pairs of the types $nat$ and $X$, while a node is a list of key-pointer pairs with the types $nat$ and $bplustree$. Note that we use the term pointer in this report only for easy distinction between the two types of lists. There are, in fact, no an actual pointers between trees in the internal Gallina representation, and \begin{coqdoccode}\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}\end{coqdoccode} is just as much a value as \begin{coqdoccode} \coqdocvar{X}\end{coqdoccode}.
+This data type says that a $bplustree$ is parameterized by $b$, the order, and $X$, the type of the values in the tree. Further, a tree can be either a leaf or a node. A leaf is a list of key-value pairs of the types $nat$ and $X$, while a node is a list of key-pointer pairs with the types $nat$ and $bplustree$. Note that we use the term pointer in this report only for easy distinction between the two types of lists. There are, in fact, no an actual pointers between trees in the internal Gallina representation, and \begin{coqdoccode}\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}\end{coqdoccode} is just as much a value as \begin{coqdoccode} \coqdocvar{X}\end{coqdoccode}.
 
 \begin{figure}
  \centering
@@ -44,11 +44,10 @@ This data type says that a $bplustree$ is parameterized by $b$, the fanout, and 
  \label{fig:bplustreeImpl}
 \end{figure}
 
-Figure \ref{fig:bplustree} correctly shows that for each node with $n$ keys there are $n+1$ pointers to sub trees. As it can be seen from both Figure \ref{fig:inductive_data_type} and \ref{fig:bplustreeImpl} we have chosen to deal with this asymmetry by always having a $0$ key in the beginning of each key-pointer list such that every node has $n+1$ key-pointer pairs. Another way to represent a node would be to have $n$ key-pointer pairs as well as a start pointer of the type \begin{coqdoccode}\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}\end{coqdoccode}. However, that would give us unnecessary complexity both when writing our primary functions but also when proving theorems about these functions. Even though it is more strongly typed with such a definition we would always have to take care of a start pointer corner case when proving anything about our B+ trees. With our current solution we add a couple of assumptions to our notion of what a valid B+ tree is, to ensure the start pointer is properly handled. This will be explained in Section \ref{subsec:Valid_bplustree}. \todo{Maybe write that our implementation has at most $2b+1$ key-pointer pairs and at least $b+1$}
+Figure \ref{fig:bplustree} shows that for each node with $n$ keys there are $n+1$ pointers to sub trees. As it can be seen from both Figure \ref{fig:inductive_data_type} and \ref{fig:bplustreeImpl} we have chosen to deal with this asymmetry by always having an explicit $0$ key in the beginning of each key-pointer list, such that a node with $n$ keys has $n$ pointers. Another way to represent a node would be to have $n$ key-pointer pairs as well as a start pointer of the type \begin{coqdoccode}\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}\end{coqdoccode}. However, that would give us unnecessary complexity both when writing our primary functions but also when proving theorems about these functions. Even though it is more strongly typed with such a definition we would always have to take care of a start pointer corner case when proving anything about our B+ trees. With our current solution we add a couple of assumptions to our notion of what a valid B+ tree is, to ensure the start pointer is properly handled. This will be explained in Section \ref{subsec:Valid_bplustree}. \todo{Maybe write that our implementation has at most $2b+1$ key-pointer pairs and at least $b+1$}
+
 \paragraph{}
-This functional implementation of B+ trees, which is an inherently imperative data structure, does have some implications. A popular implementation of nodes and leafs entails representing the key-pointer and key-value pairs as an array as it enables the fast binary search which runs in $O(log(n))$. Since Gallina does not support arrays, the only way to get lookups in key-pointer and key-value faster than $O(n)$ is through a tree structure, such as a B+ tree. This would add a large degree of complexity to our proofs, and since running time is not an objective of this project, it has been deemed out of scope.
-
-
+This functional implementation of B+ trees, which is an inherently imperative data structure, does have some implications. A popular implementation of nodes and leaves entails representing the key-pointer and key-value pairs as an array as it enables the fast binary search which runs in $O(log(n))$. Since Gallina does not support arrays, the only way to get lookups in key-pointer and key-value faster than $O(n)$ is through a tree structure, such as a B+ tree. This would add a large degree of complexity to our proofs, and since running time is not an objective of this project, it has been deemed out of scope.
 
 \subsection{Valid B+ tree}
 \label{subsec:Valid_bplustree}
@@ -99,7 +98,7 @@ This proposition is only valid when examining the root of a tree, as there are d
 The following must hold for a root leaf to be a valid B+ tree:
 \label{valid_root_is_a_leaf}
 \begin{itemize}
-\item $b \neq 0$ --- The branching must not be 0. Since we are working with natural numbers, this means $b > 0$.
+\item $b \neq 0$ --- The order must not be 0. Since we are working with natural numbers, this means $b > 0$.
 \item $length\ kvl \leq b \times 2 $ --- The leaf must have at most $2b$ elements.
 \item $kvl\_sorted\ kvl$ --- The keys in the leaf must be sorted.
 \end{itemize}
@@ -108,8 +107,8 @@ The following must hold for a root leaf to be a valid B+ tree:
 The following must hold for a root node to be a valid B+ tree:
 \label{valid_root_is_a_node}
 \begin{itemize}
-\item $b \neq 0$ --- The branching must not be 0.
-\item $2 \leq length\ kpl$ and $length\ kpl \leq S\ (b \times 2)$ --- These satisfy the conditions for branching stated in Section \ref{subsec:Background_Bplus_tree}.
+\item $b \neq 0$ --- The order must not be 0.
+\item $2 \leq length\ kpl$ and $length\ kpl \leq S\ (b \times 2)$ --- These satisfy the conditions for order stated in Section \ref{subsec:Background_Bplus_tree}.
 \item $key\_at\_index\ 0\ kpl = Some\ 0$ --- As mentioned above, we must know that the first key is always 0. This assures that this is the case.
 \item $all\_values (bplustree\ b\ X)\ (valid\_sub\_bplustree\ b\ X)\ kpl$ --- All the values stored in the node (the pointers) must be valid subtrees. As mentioned in Section \ref{subsec:Background_Bplus_tree}, the constraints for the root are slightly different. The constraints for internal leaves and nodes will be covered below.
 \item $all\_values\_eq\_prop (bplustree\ b\ X)\ equal\_height\ kpl$ --- All subtrees must have the same height.
@@ -159,15 +158,16 @@ Out of the three central $insert$, $insert'$ and $insert\_leaf$ functions the si
 \todo{Use coqdoc in this section}
 For insertion and search, a formal verification of the implementations would entail a combination of three different (but related) main proofs.
 \subsubsection{InsertSearchWorks}
-Whenever we insert into a tree with insert, we should be able to find it again afterwards. This is true even in the case where the key already exists and we have to overwrite the value. The proposition looks the following way: $search(k, insert(k, v, t)) = Some (v)$, and it can be found in InsertSearchWorksProofs.v.
+Whenever we insert into a tree with insert, we should be able to find it again afterwards. This is true even in the case where the key already exists and we have to overwrite the value. The proposition looks the following way: $search\ k\ (insert\ k\ v\ t) = Some\ v$, and it can be found in InsertSearchWorksProofs.v.
 \subsubsection{InsertPreserves}
-It is, however, not enough to just show that an inserted element is retrievable. It says nothing about the validity of the tree and thus the insertion function could easily leave the tree unbalanced or otherwise invalid. With the definition of a valid B+ tree from Section \ref{}, we can define the following proposition that must hold: $valid_bplustree b X tree -> valid_bplustree b X (insert k v tree)$. It can be found in InsertPreservesProofs.v.
+It is, however, not enough to just show that an inserted element is retrievable. It says nothing about the validity of the tree and thus the insertion function could easily leave the tree unbalanced or otherwise invalid. With the definition of a valid B+ tree from Section \ref{subsec:Valid_bplustree}, we can define the following proposition that must hold: $valid\_bplustree\ b\ X\ tree\ \rightarrow valid\_bplustree\ b\ X\ (insert\ k\ v\ tree)$. It can be found in InsertPreservesProofs.v.
 \subsubsection{InsertPreservesElements}
 As a final guard we must ensure that insert does not throw away elements from the initial tree or inserts other elements. A bogus implementation of insert designed to circumvent the two above-mentioned proofs could just return a leaf with the inserted key-value pair for all trees. Using an in-order traversal of the tree together with a simple insertion into the sorted list it produces, we can ensure that no elements are lost and that only the $(k, v)$ pair is inserted. In its simplest form it is structured the following way: $insert_into_list k v (inorder t) = inorder (insert k v t)$. See InsertPreservesElements.v for the full specification of the proof. 
 \subsubsection{Scope and Proof Limitations}
 Proving these three main theorems in Coq turns out to be an immense task. As a consequence we have chosen to focus on the most central one, which is the InsertSearchWorks proof, as it is the most heavily depended on the three as it only holds if all the primary functions are correct. 
 \paragraph{}
 However, as mentioned above, only proving InsertSearchWorks leaves the possibility for a bogus implementation of insert that just throws away the initial tree and returns a leaf with the inserted element. We will let it be up to the reader to manually verify that our insertion function is not implemented that way and list InsertPreservesElements as future work. Conversely, the assumption that the insertion function ensures that the validity of the tree is preserved is way more difficult to manually verify. Not having proved InsertPreserves is a central admit in the proof of InsertSearchWorks, as the search function assumes that the input tree is valid. Given the fact that we currently do not ensure that the tree is valid after insertion, we cannot prove that the input tree handed to the search function (in our InsertSearchWorks proof) is actually valid. InsertPreserves is classified as future work as well.
+
 
 
 
