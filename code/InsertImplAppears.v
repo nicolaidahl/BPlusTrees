@@ -547,7 +547,8 @@ Proof.
         split. assumption.
         rewrite H2 in H5.
         rewrite H2 in H16.
-        rewrite cut_list_left_elim with (b2 := b+1) (b1 := b) (l1 := witness) in *; try assumption.
+        rewrite H2 in H3. rewrite app_length in H3. simpl in H3.
+        rewrite cut_list_left_elim with (b2 := b+1) (b1 := b) (l1 := witness) in *; simpl; try assumption; try omega.
         replace (b + 1 - b) with (1) in * by omega.
         simpl. simpl in H16.
         destruct witness.
@@ -607,13 +608,56 @@ Proof.
         assumption.
 Qed.
   
+Theorem cut_right_preserves_all_keys: forall (X: Type) (b: nat) (P: nat -> Prop) (l: list (nat * X)),
+  all_keys X P l -> all_keys X P (cut_list_right b l).
+Proof.
+  intros. generalize dependent b.
+  induction l.
+  Case "l = []".
+    intros.
+    destruct b.
+    SCase "b = 0". 
+      simpl. apply ak_empty.
+    SCase "b = S b".
+      simpl. apply ak_empty.
+  Case "l = a::l".
+    intros.
+    destruct b.
+    SCase "b = 0".
+      simpl. apply H.
+    SCase "b = S b".
+      simpl. apply IHl. inversion H. apply H2.
+Qed.  
+  
 Lemma cut_list_right_above : forall (X: Type) (b k: nat) (v: X) (l1 l2 l3: list (nat*X)),
+  kvl_sorted(l1++(k,v)::l2) ->
   length l1 <= b ->
   cut_list_right b (l1++(k,v)::l2) = l3 ->
   all_keys X (above k) (l3).
 Proof.
-  admit.
-Admitted.
+  induction b.
+  Case "b = 0".
+    intros.
+    apply length_gt_0_impl_nil in H0. subst.
+    simpl in *.
+    apply sorted_all_keys_above_cons. assumption.
+  Case "b = S b".
+    intros.
+    destruct l1.
+    SCase "l1 = []".
+      simpl in *. apply sorted_all_keys_above_cons in H.
+      inversion H.
+      subst.
+      apply cut_right_preserves_all_keys.
+      apply H4.
+    SCase "l1 = p::l1".
+      destruct p. rewrite <- app_comm_cons in *.
+      simpl in H1.
+      eapply IHb.
+        apply list_tail_is_sorted in H. apply H.
+        simpl in H0. omega.
+        apply H1.
+Qed.
   
 Lemma insert'_impl_appears_overflow_right: forall (X: Type) (b k k1 k2 ok: nat) (v: X) (t1 t1' t2 ot0: bplustree b X) (kpl kpl' left right: list (nat* bplustree b X)),
   valid_bplustree b X (bptNode b X kpl) ->
@@ -730,7 +774,8 @@ Proof.
         split. assumption.
         rewrite H2 in H5.
         rewrite H2 in H16.
-        rewrite cut_list_left_elim with (b2 := b+1) (b1 := b-1) (l1 := witness) in *; try assumption.
+        rewrite H2 in H3. rewrite app_length in H3. simpl in H3.
+        rewrite cut_list_left_elim with (b2 := b+1) (b1 := b-1) (l1 := witness) in *; simpl; try assumption; try omega.
         replace (b + 1 - (b - 1)) with (2) in * by omega.
         simpl in H5. simpl in H16.
         rewrite H5.
@@ -765,8 +810,8 @@ Proof.
           inversion H22.
           unfold above in H27. apply ble_nat_true in H27.
           omega.
-          rewrite <- app_assoc.  simpl. rewrite <- H2.
-          symmetry. apply H4.
+          rewrite <- app_assoc.  simpl. rewrite <- H2. assumption.
+          symmetry. rewrite <- app_assoc. simpl. rewrite <- H2. assumption.
         split. assumption.  
         simpl.
         remember (witness++[(k1,t1')]) as witness'.
