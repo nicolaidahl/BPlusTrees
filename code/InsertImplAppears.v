@@ -436,6 +436,175 @@ Proof.
   apply kv_appears_in_tree_when_appears_in_subtree_and_found with (kpl := kpl') (subtree := t2) (key := n); try reflexivity; try assumption. 
 Qed.
 
+Lemma insert'_impl_appears_overflow_left: forall (X: Type) (b k k1 k2 ok: nat) (v: X) (t1 t1' t2 ot0: bplustree b X) (kpl kpl' left right: list (nat* bplustree b X)),
+  valid_bplustree b X (bptNode b X kpl) ->
+  insert' (height t1) k v t1 = (t1', Some (k2, t2)) ->
+  find_subtree k kpl = Some (k1, t1)->
+  kpl' = insert_into_list k1 t1' (insert_into_list k2 t2 kpl) ->
+  length kpl' > b * 2 + 1 ->
+  (ok, ot0) :: right = cut_list_right (b + 1) kpl' ->
+  left = cut_list_left (b + 1) kpl' ->
+  k < k2 ->
+  kv_appears_in_tree k v t1' ->
+
+  k < ok /\
+   kv_appears_in_tree k v (bptNode b X left) \/
+   ok <= k /\ kv_appears_in_tree k v (bptNode b X ((0, ot0) :: right)).
+Proof.
+  intros.
+  assert (find_subtree k kpl = Some (k1, t1)) by assumption.
+  apply find_subtree_impl_kpl_app in H8.
+  do 2 destruct H8. inversion H8; clear H8.
+  assert (k1 <= k).
+    inversion H.
+    assert (1 <= length kpl) by omega.
+    apply find_subtree_returns_a_lesser_key in H1; assumption.
+  assert (k1 < k2).
+    inversion H.
+    eapply insert'_overflow_impl_greater_key.
+      apply H1.
+      apply H0.
+      assumption.
+  assert (length kpl' > b + 1) by omega.
+  assert (kvl_sorted(kpl)) by (inversion H; assumption).
+  assert (kvl_sorted(kpl')).
+    subst. repeat apply insert_preserves_sort. assumption.
+  assert (kvl_sorted(cut_list_right (b+1) kpl')).
+    rewrite cut_list_left_right_preserves_list with (b := b+1) in H14.
+    apply kvl_sorted_app in H14. inversion H14.
+    assumption.
+  assert (kvl_sorted(cut_list_left (b+1) kpl')).
+    rewrite cut_list_left_right_preserves_list with (b := b+1) in H14.
+    apply kvl_sorted_app in H14. inversion H14.
+    assumption.  
+  destruct witness0.
+  Case "subtree was in the end of the kpl".
+    right. clear H10.
+    rewrite H9 in H2.
+    rewrite insert_into_list_last_twice with (l:= witness) in H2; try (subst; assumption).
+    assert (length kpl' = S (length kpl)).
+      subst. repeat rewrite app_length. simpl.
+      rewrite <- plus_Sn_m. rewrite plus_comm with (m := 1).
+      simpl. rewrite plus_comm. reflexivity.
+    assert (length kpl' = (S b) * 2).
+      inversion H.
+      omega.
+    assert (length witness >= b + 1 ).
+      rewrite H2 in H17.
+      rewrite app_length in H17.
+      simpl in H17.
+      inversion H.
+      omega.
+    apply cut_list_right_app with (l2 :=  [(k1, t1'), (k2, t2)]) in H18.
+    destruct H18. rewrite <- H2 in H18.
+    rewrite H18 in H4.
+    destruct witness0.
+    SCase "witness0 = []".
+      simpl in H4. inversion H4.
+      split. assumption.
+      apply kv_ait_node_here. assumption.
+      omega.
+    SCase "witness0 = p::witness0".
+      destruct p.
+      rewrite <- app_comm_cons in H4.
+      inversion H4.
+      assert (n <= k).
+        rewrite H18 in H15. simpl in H15.
+        apply kvl_sorted_key_across_app in H15.
+        omega.
+      split. assumption.
+      apply kv_appears_in_tree_when_appears_in_subtree with (l1 := (0, b0) :: witness0) (l2 := []).
+        assumption.
+        omega.
+        rewrite H18 in H15. simpl in H15. simpl.
+        apply kvl_sorted_after_replace_head_with_zero in H15.
+        assumption.
+   Case "subtree was in the middle of the kpl".
+     destruct p as [k3 t3].
+     assert (k2 < k3). 
+      eapply insert'_overflow_impl_lesser_than_next in H0.
+        apply H0.
+        rewrite H9 in H1. apply H1.
+        rewrite H9 in H13. apply H13.
+      assert (k1 < k2 < k3) by omega.
+    rewrite H9 in H2.
+    rewrite insert_into_list_middle_twice in H2; try (subst; assumption).
+    remember (blt_nat (length witness) (b + 1)) as in_left.
+    destruct in_left; symmetry in Heqin_left; [apply blt_nat_true in Heqin_left | apply blt_nat_false in Heqin_left].
+    SCase "subtree fit in regular node".
+      left.
+      remember (beq_nat (length witness) b) as eqb.
+      destruct eqb; symmetry in Heqeqb; [apply beq_nat_true_iff in Heqeqb | apply beq_nat_false_iff in Heqeqb ].
+      SSCase "subtree is the right-most node".
+        assert (k < ok).
+          rewrite H2 in H4.
+          rewrite cut_list_right_elim with (b2 := b+1) (b1 := b) (l1 := witness) in H4; try assumption.
+          replace (b + 1 - b) with (1) in H4 by omega. simpl in H4.
+          inversion H4.
+          omega.
+        split. assumption.
+        rewrite H2 in H5.
+        rewrite H2 in H16.
+        rewrite cut_list_left_elim with (b2 := b+1) (b1 := b) (l1 := witness) in *; try assumption.
+        replace (b + 1 - b) with (1) in * by omega.
+        simpl. simpl in H16.
+        destruct witness.
+          simpl in Heqeqb. inversion H. exfalso. omega.
+        destruct p.
+        rewrite H5.
+        apply kv_appears_in_tree_when_appears_in_last_subtree with (k := k) (v := v); try assumption.
+      SSCase "subtree is not the right-most node".
+        assert (length (witness ++ [(k1, t1'), (k2, t2)]) <= b+1).
+          rewrite app_length. simpl. omega.
+        apply cut_list_left_app with (b := b+1) (l2 := (k3, t3) :: witness0) in H19.
+        destruct H19. rewrite app_assoc_reverse in H19. simpl in H19. 
+        rewrite <- H2 in H19.
+        rewrite H19 in H5.
+        rewrite H5.
+        rewrite app_assoc_reverse.
+        assert (k < ok).
+          rewrite cut_list_left_right_preserves_list with (b := b +1) in H14.
+          rewrite <- H4 in H14.
+          rewrite H19 in H14.
+          repeat rewrite <- app_assoc in H14.
+          apply kvl_sorted_app in H14. inversion H14.
+          simpl in H21.
+          apply list_tail_is_sorted in H21.
+          apply kvl_sorted_key_across_app in H21.
+          omega.
+        split. assumption.
+        simpl.
+        eapply kv_appears_in_tree_when_appears_in_subtree; try (subst; assumption).
+          omega.
+          rewrite H19 in H16. rewrite app_assoc_reverse in H16. simpl in H16. apply H16.
+    SCase "subtree falls in the overflow node".
+      right.
+      assert (length witness >= b + 1) by omega. clear Heqin_left.
+      apply cut_list_right_app with (l2 := (k1, t1') :: (k2, t2) :: (k3, t3) :: witness0) in H19.
+      destruct H19.
+      rewrite <- H2 in H19.
+      rewrite H19 in *.
+      destruct witness1.
+      SSCase "witness1 = []".
+        simpl in H4. inversion H4.
+        split. assumption.
+        apply kv_ait_node_here. assumption.
+        omega.
+      SSCase "witness1 = p::witness1".
+      destruct p. rewrite <- app_comm_cons in H4.
+      inversion H4.
+      assert (n <= k).
+        repeat rewrite <- app_comm_cons in H15.
+        apply kvl_sorted_key_across_app in H15.
+        omega.
+      split. assumption.
+      assert (k1 <= k < k2) by omega.
+      eapply kv_appears_in_tree_when_appears_in_subtree with (l1 := (0, b0)::witness1); try (subst; assumption).
+        simpl in H15. simpl.
+        apply kvl_sorted_after_replace_head_with_zero in H15.
+        assumption.
+Qed.
+  
 Lemma insert'_leaf_disregards_counter: forall (X: Type) (b counter k: nat) (v: X) (kvl: list (nat * X)),
   insert' counter k v (bptLeaf b X kvl) = let (fst, snd_opt) := insert_leaf b k v kvl in
     match snd_opt with
@@ -510,7 +679,6 @@ Proof.
           rewrite Heqchild.
           constructor.
           apply H6.
-        
         destruct o.
         SSSCase "child overflowed".
           destruct p.
@@ -535,7 +703,6 @@ Proof.
             symmetry in Heqp0.
             apply insert_leaf_impl_appears in Heqp0; try (inversion H; rewrite Heqchild in H4; inversion H4; assumption).
             inversion Heqp.
-            
             assert (n < n0).
               rewrite H3 in H7.
               inversion H.
@@ -608,7 +775,6 @@ Proof.
             constructor.
             symmetry in Heqp0.
             apply insert_leaf_impl_appears_normal in Heqp0; try assumption.
-
           inversion H2.
           split. reflexivity.
           rewrite H8 in H7.
@@ -768,188 +934,26 @@ Proof.
               assert (find_subtree k kpl = Some (n, child)) by (symmetry in Heqo; assumption).
               apply find_subtree_impl_kpl_app in H7.
               do 2 destruct H7. inversion H7. clear H7.
-              assert (n <= k).
-                inversion H.
-                assert (1 <= length kpl) by omega.
-                symmetry in Heqo.
-                apply find_subtree_returns_a_lesser_key in Heqo; assumption.
-              assert (n < witness).
-                rewrite H3 in H6. rewrite <- Heqchild in H6. 
-                eapply insert'_overflow_impl_greater_key.
-                  symmetry in Heqo. apply Heqo.
-                  apply H6. inversion H; assumption.
               symmetry in Heqfits_here. apply ble_nat_false in Heqfits_here. 
               assert (length kpl' > b + 1) by omega.
-              apply cut_right_not_nil in H13.
+              apply cut_right_not_nil in H7.
               remember (cut_list_right (b + 1) kpl') as right.
-              destruct right. exfalso. apply H13. reflexivity.
+              destruct right. exfalso. apply H7. reflexivity.
               destruct p.
               exists n0. exists (bptNode b X ((0, b0) :: right)).
-              assert (kvl_sorted(witness1 ++ (n, child) :: witness2)) by (rewrite H10 in H; inversion H; assumption).
               inversion H2.
               split. reflexivity.
-              destruct witness2.
-              SSSSSSCase "subtree was in the end of the kpl".
-                right.
-                rewrite H10 in Heqkpl'.
-                assert (kvl_sorted (insert_into_list n b1 (insert_into_list witness witness0 (witness1 ++ [(n, child)])))).
-                  apply insert_preserves_sort. apply insert_preserves_sort.
-                  assumption.
-                rewrite insert_into_list_last_twice in *; try assumption.
-                rewrite Heqkpl' in Heqright.
-                assert (length kpl' = S (length kpl)).
-                  subst. repeat rewrite app_length. simpl.
-                  rewrite <- plus_Sn_m. rewrite plus_comm with (m := 1).
-                  simpl. rewrite plus_comm. reflexivity.
-                assert (length kpl' = (S b) * 2).
-                  inversion H.
-                  omega.
-                assert (kvl_sorted(cut_list_right (b+1) kpl')).
-                  rewrite <- Heqkpl' in H15.
-                  rewrite cut_list_left_right_preserves_list with (b := b+1) in H15.
-                  apply kvl_sorted_app in H15. inversion H15.
-                  assumption.
-                assert (length witness1 >= b + 1 ).
-                  rewrite Heqkpl' in H19.
-                  rewrite app_length in H19.
-                  simpl in H19.
-                  inversion H.
-                  omega.
-                apply cut_list_right_app with (l2 :=  [(n, b1), (witness, witness0)]) in H21.
-                destruct H21.
-                rewrite H21 in Heqright.
-                rewrite Heqkpl' in H20. rewrite H21 in H20. clear H21.
-                destruct witness2.
-                SSSSSSSCase "witness2 = []".
-                  simpl in Heqright. inversion Heqright.
-                  split. assumption.
-                  apply kv_ait_node_here. assumption.
-                  omega.
-                SSSSSSSCase "witness2 = p::witness".
-                  destruct p.
-                  rewrite <- app_comm_cons in Heqright.
-                  inversion Heqright.
-                  assert (n1 <= k).
-                    apply kvl_sorted_key_across_app in H20.
-                    omega.
-                  split. assumption.
-                  apply kv_appears_in_tree_when_appears_in_subtree with (l1 := (0, b2) :: witness2) (l2 := []).
-                    assumption.
-                    omega.
-                    rewrite <- app_comm_cons in H20. apply kvl_sorted_after_replace_head_with_zero in H20.
-                    rewrite <- app_comm_cons. apply H20.
-              SSSSSSCase "subtree was in the middle of the kpl".
-                inversion H11. inversion H15. do 3 destruct H15. clear H11.
-                inversion H15. clear H15. rewrite H11 in *. clear H11.
-                assert (kvl_sorted kpl').
-                  rewrite Heqkpl'. apply insert_preserves_sort.
-                  apply insert_preserves_sort. inversion H.
-                  assumption.
-                rewrite Heqkpl' in H11.
-                rewrite H10 in H11. rewrite H10 in Heqkpl'.
-                assert (witness < witness3). 
-                  eapply insert'_overflow_impl_lesser_than_next in H14.
-                    apply H14.
-                    symmetry in Heqo. rewrite H10 in Heqo. apply Heqo.
-                    rewrite H3 in H6. rewrite <- Heqchild in H6. apply H6.
-                assert (n < witness < witness3) by omega.
-                rewrite insert_into_list_middle_twice in *; try assumption.
-                remember (blt_nat (length witness1) (b + 1)) as in_left.
-                destruct in_left; symmetry in Heqin_left; [apply blt_nat_true in Heqin_left | apply blt_nat_false in Heqin_left].
-                SSSSSSSCase "subtree fit in regular node".
-                  left.
-                  remember (beq_nat (length witness1) b) as eqb.
-                  destruct eqb; symmetry in Heqeqb; [apply beq_nat_true_iff in Heqeqb | apply beq_nat_false_iff in Heqeqb ].
-                  SSSSSSSSCase "subtree is the right-most node".
-                    assert (k < n0).
-                      rewrite Heqkpl' in Heqright.
-                      rewrite cut_list_right_elim with (b2 := b+1) (b1 := b) (l1 := witness1) in Heqright; try assumption.
-                      replace (b + 1 - b) with (1) in Heqright by omega. simpl in Heqright.
-                      inversion Heqright.
-                      omega.
-                    assert (kvl_sorted(cut_list_left (b+1) kpl')).
-                      rewrite cut_list_left_right_preserves_list with (b := b+1) in H11.
-                      apply kvl_sorted_app in H11. inversion H11.
-                      rewrite <- Heqkpl' in H21.
-                      assumption.
-                    split. assumption.
-                    rewrite Heqkpl'. rewrite Heqkpl' in H21.
-                    rewrite cut_list_left_elim with (b2 := b+1) (b1 := b) (l1 := witness1) in *; try assumption.
-                    replace (b + 1 - b) with (1) in * by omega.
-                    simpl. simpl in H21.
-                    destruct witness1.
-                      simpl in Heqeqb. inversion H. exfalso. omega.
-                    destruct p0.
-                    apply kv_appears_in_tree_when_appears_in_last_subtree with (k := k) (v := v); try assumption.
-                  SSSSSSSSCase "subtree is not right-most node".
-                    assert (length (witness1 ++ [(n, b1), (witness, witness0)]) <= b+1).
-                      rewrite app_length. simpl. omega.
-                    remember (cut_list_left (b + 1) kpl') as ll.
-                    assert (witness1 ++ (n, b1) :: (witness, witness0) :: (witness3, witness4) :: witness5 = witness1 ++ [(n, b1), (witness, witness0)] ++ (witness3, witness4) :: witness5) by reflexivity.
-                    apply cut_list_left_app with (b := b+1) (l2 := (witness3, witness4) :: witness5) in H20.
-                    destruct H20. 
-                    rewrite Heqkpl' in Heqll. rewrite app_assoc_reverse in H20.
-                    rewrite <- H21 in H20. clear H21.
-                    rewrite H20 in Heqll.
-                    assert (k < n0).
-                      rewrite <- Heqkpl' in H11.
-                      rewrite cut_list_left_right_preserves_list with (b := b +1) in H11.
-                      rewrite Heqkpl' in H11.
-                      rewrite H20 in H11.
-                      rewrite Heqkpl' in Heqright.
-                      rewrite <- Heqright in H11.
-                      repeat rewrite <- app_assoc in H11.
-                      simpl in H11.
-                      apply kvl_sorted_app in H11.
-                      inversion H11.
-                      apply list_tail_is_sorted in H22.
-                      apply kvl_sorted_key_across_app in H22.
-                      omega.
-                    assert (kvl_sorted(cut_list_left (b+1) kpl')).
-                      rewrite cut_list_left_right_preserves_list with (b := b+1) in H11.
-                      apply kvl_sorted_app in H11. inversion H11.
-                      rewrite <- Heqkpl' in H22.
-                      assumption.
-                    rewrite Heqkpl' in H22. rewrite H20 in H22.
-                    rewrite <- app_assoc in H22. simpl in H22.
-                    split. assumption.
-                    rewrite Heqll.
-                    rewrite <- app_assoc. simpl.
-                    eapply kv_appears_in_tree_when_appears_in_subtree; try assumption.
-                      omega.
-                SSSSSSSCase "subtree falls in the overflow node".
-                  right.
-                  assert (length witness1 >= b + 1) by omega. clear Heqin_left.
-                  assert (kvl_sorted(cut_list_right (b+1) kpl')).
-                    rewrite cut_list_left_right_preserves_list with (b := b+1) in H11.
-                    apply kvl_sorted_app in H11. inversion H11.
-                    rewrite <- Heqkpl' in H22.
-                    assumption.
-                  
-                  apply cut_list_right_app with (l2 := (n, b1) :: (witness, witness0) :: (witness3, witness4) :: witness5) in H20. 
-                  destruct H20.
-                  rewrite Heqkpl' in Heqright.
-                  rewrite H20 in *.
-                  destruct witness6.
-                  SSSSSSSSCase "witness6 = []".
-                    simpl in Heqright.
-                    inversion Heqright.
-                    split. assumption.
-                    apply kv_ait_node_here. assumption.
-                    omega.
-                  SSSSSSSSCase "witness6 = p::witness6".
-                    destruct p0. rewrite <- app_comm_cons in Heqright.
-                    inversion Heqright.
-                    assert (n1 <= k).
-                      rewrite Heqkpl' in H21.
-                      rewrite H20 in H21.
-                      apply kvl_sorted_key_across_app in H21.
-                      omega.
-                    split. assumption.
-                    assert (n <= k < witness) by omega.
-                    eapply kv_appears_in_tree_when_appears_in_subtree with (l1 := (0, b2)::witness6); try assumption.
-                      rewrite Heqkpl' in H21. rewrite H20 in H21. rewrite <- app_comm_cons in H21. apply kvl_sorted_after_replace_head_with_zero in H21.
-                      rewrite <- app_comm_cons. apply H21.
+              eapply insert'_impl_appears_overflow_left with (kpl := kpl); try (subst; assumption).
+                rewrite H3 in H6. rewrite <- Heqchild in H6.
+                  apply H6.
+                symmetry in Heqo.
+                  apply Heqo.
+                apply Heqkpl'.
+                omega.
+                apply Heqright.
+                reflexivity.
+                omega.
+                apply H9.
             SSSSSCase "insert happened in the overflow child".
               admit.
         SSSCase "child didn't overflow".
