@@ -737,7 +737,7 @@ Proof.
               rewrite ble_nat_false in Heqb1. symmetry in Heqb2.  apply ble_nat_false in Heqb2. 
               symmetry in Heqb3. apply ble_nat_true in Heqb3. symmetry in Heqb4. apply blt_nat_false in Heqb4.
               apply blt_nat_true in H4. apply find_subtree_is_first in H1.
-              omega. omega. omega. assumption.
+              exfalso. omega. omega. omega. assumption.
           SSSSCase "n1 > sk".
             eapply find_subtree_before_head_None in H5. rewrite H5 in H1. inversion H1.
             symmetry in Heqb3. apply ble_nat_false in Heqb3. omega.
