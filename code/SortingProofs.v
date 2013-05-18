@@ -326,6 +326,11 @@ Qed.
 Lemma kvl_sorted_after_replace_head_with_zero : forall (X: Type) (k: nat) (v: X) (l: list (nat * X)),
   kvl_sorted( (k, v)::l ) -> kvl_sorted( (0, v)::l).
 Proof.
-  admit.
-Admitted.
+  intros.
+  inversion H.
+  constructor.
+  apply kvl_sorted_cons.
+    assumption.
+    rewrite blt_nat_true. rewrite blt_nat_true in H4. omega.
+Qed.
 
