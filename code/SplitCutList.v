@@ -144,14 +144,6 @@ Proof.
      as long as we decrease the place to cut with b1 *)
   admit.
 Admitted.
-
-Lemma what : forall (X: Type) (b1 b2: nat) (l1 l2: list (nat * X)),
-  cut_list_right b2 (l1 ++ l2) = cut_list_right (b2 - b1) l2 ->
-  cut_list_right (S b2) (l1 ++ l2) = cut_list_right (S b2 - S b1) l2.
-Proof.
-  intros.
-
-Admitted.
   
 Lemma cut_list_right_elim: forall (X: Type) (b1 b2: nat) (l1 l2: list (nat * X)),
   length l1 = b1 -> b1 <= b2 -> b2 <= length l2 ->
