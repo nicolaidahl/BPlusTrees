@@ -542,6 +542,8 @@ Proof.
           replace (b + 1 - b) with (1) in H4 by omega. simpl in H4.
           inversion H4.
           omega.
+          omega.
+          simpl. rewrite H2 in H3. rewrite app_length in H3. simpl in H3. omega.
         split. assumption.
         rewrite H2 in H5.
         rewrite H2 in H16.
@@ -723,6 +725,8 @@ Proof.
           inversion H10. inversion H19.
           do 3 destruct H19. inversion H19.
           inversion H23. apply H24.
+          omega.
+          simpl. rewrite H2 in H3. rewrite app_length in H3. simpl in H3. omega.
         split. assumption.
         rewrite H2 in H5.
         rewrite H2 in H16.
