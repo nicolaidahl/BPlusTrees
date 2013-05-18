@@ -113,8 +113,28 @@ Lemma cut_list_left_app : forall (X: Type) (b: nat) (l1 l2: list X),
   length l1 <= b ->
   exists l3, cut_list_left b (l1++l2) = l1++l3.
 Proof.
-  admit.
-Admitted.
+  intros. generalize dependent l1.
+  induction b; intros.
+  Case "b = 0".
+    simpl.
+    exists [].
+    apply length_gt_0_impl_nil in H. subst. reflexivity.
+  Case "b = S b".
+    destruct l1.
+    SCase "l1 = []".
+      destruct l2. 
+      SSCase "l2 = []". 
+        simpl. exists []. reflexivity.
+      SSCase "l2 = x :: l2".
+        simpl. exists (x :: cut_list_left b l2). reflexivity.
+    SCase "l1 = x :: l1".
+      rewrite <- app_comm_cons. simpl. simpl in H. 
+      assert ((exists l3 : list X, cut_list_left b (l1 ++ l2) = l1 ++ l3) -> 
+              (exists l3 : list X, x :: cut_list_left b (l1 ++ l2) = x :: l1 ++ l3)).
+        intros. destruct H0. 
+        exists witness. apply cons_remove. apply H0.
+      apply H0. apply IHb. omega.
+Qed.
 
 Lemma cut_list_left_elim: forall (X: Type) (b1 b2: nat) (l1 l2: list (nat * X)),
   length l1 = b1 ->
