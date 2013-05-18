@@ -273,24 +273,25 @@ Qed.
 	  
  
 
-Lemma find_subtree_later3: forall {X: Type} (b:nat) sk k1 k2 t1 t2
+Lemma find_subtree_later3: forall {X: Type} (b:nat) sk k1 k2 k3 t1 t2 t3
                            (l1 l2: list(nat*bplustree b X)),
   kvl_sorted ((k1, t1) :: l1 ++ (k2, t2) :: l2) ->
   k2 <= sk ->
-  find_subtree sk (l1 ++ (k2, t2) :: l2) = Some (k2, t2) ->
-  find_subtree sk ((k1, t1) :: l1 ++ (k2, t2) :: l2) = Some (k2, t2).
+  find_subtree sk (l1 ++ (k2, t2) :: l2) = Some (k3, t3) ->
+  find_subtree sk ((k1, t1) :: l1 ++ (k2, t2) :: l2) = Some (k3, t3).
 Proof.
   intros. destruct l1.
   Case "l1 = []".
     simpl. remember (ble_nat k1 sk). destruct b0. remember (blt_nat sk k2). destruct b0.
     simpl. symmetry in Heqb1. apply blt_nat_true in Heqb1. exfalso. omega. simpl.
-    simpl in H1. apply H1. simpl. apply H1.
+    simpl. assumption. simpl. assumption.
   Case "l1 = p :: l1".
     destruct p. simpl. 
     remember (ble_nat k1 sk). destruct b1. remember (blt_nat sk n). destruct b1. simpl.
     apply list_tail_is_sorted in H. apply kvl_sorted_key_across_app in H.
     symmetry in Heqb0. apply blt_nat_true in Heqb0. exfalso. omega.
-    simpl. apply H1. simpl. apply H1.
+	simpl. assumption. simpl. assumption.    
+
 Qed.
     
   
@@ -388,6 +389,47 @@ Qed.
 
 
 
+Lemma find_subtree_impl_sk_greater_than_first: forall (X: Type) b k k1 t t1 sk 
+											   (l: list (nat * bplustree b X)),
+  kvl_sorted ((k, t) :: l) ->
+  find_subtree sk ((k, t) :: l) = Some (k1, t1) ->
+  k <= sk.
+Proof.
+  intros. remember ((k, t) :: l). induction H. 
+  Case "kvl_sorted_0".
+    inversion Heql0.
+  Case "kvl_sorted_1".
+    admit.
+  Case "kvl_sorted_cons".
+    inversion Heql0. subst.
+    remember (ble_nat k sk). destruct b0.
+    SCase "k <= sk".
+      symmetry in Heqb0. apply ble_nat_true. assumption.
+    SCase "k > sk".
+      rewrite find_subtree_before_head_None in H0. inversion H0. 
+      symmetry in Heqb0. apply ble_nat_false in Heqb0. omega.
+      apply kvl_sorted_cons; assumption.
+      
+Qed.
+
+Lemma find_subtree_is_first: forall {X: Type} b sk n1 n2 k1 x1 x2 t1 (l: list(nat * bplustree b X)),
+  k1 < n2 -> n1 <= sk ->
+  kvl_sorted ((n1, x1) :: (n2, x2) :: l) ->
+  find_subtree sk ((n1, x1) :: (n2, x2) :: l) = Some (k1, t1) ->
+  k1 <= sk /\ sk < n2.
+Proof.
+  intros.
+    simpl in H2. 
+    assert (ble_nat n1 sk = true).
+      apply ble_nat_true. omega.
+    rewrite H3 in H2. remember (blt_nat sk n2). destruct b0.
+    SCase "sk < n2".
+      simpl in H2. inversion H2. apply ble_nat_true in H3. symmetry in Heqb0. 
+      apply blt_nat_true in Heqb0. omega.
+    SCase "n2 <= sk".
+      simpl in H2. apply find_subtree_now_or_later in H2. omega.
+      apply list_tail_is_sorted in H1. assumption.
+Qed.
 
 
 
