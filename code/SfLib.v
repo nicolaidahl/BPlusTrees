@@ -348,3 +348,29 @@ Qed.
 Lemma app_one_cons : forall {X: Type} (x: X) l,
   [x] ++ l = x :: l.
 Proof. intros. simpl. reflexivity. Qed.
+
+(*
+ * Length lemmas
+ *)
+Lemma length_0_impl_nil : forall (X: Type) (l: list X),
+  length l = 0 -> l = [].
+Proof.
+  intros. induction l.
+  reflexivity.
+  simpl in H. inversion H.
+Qed.
+
+Lemma length_gt_0_impl_nil : forall (X: Type) (l: list X),
+  length l <= 0 -> l = [].
+Proof.
+  intros. induction l.
+  reflexivity.
+  simpl in H. inversion H.
+Qed.
+
+Lemma list_eq_impl_length_eq : forall (X: Type) (l1 l2: list X),
+  l1 = l2 -> length l1 = length l2.
+Proof.
+  intros.
+  subst. reflexivity.
+Qed.

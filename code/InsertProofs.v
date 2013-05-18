@@ -578,12 +578,85 @@ Proof.
     apply find_subtree_key_in_middle; assumption. assumption. apply H1. assumption.
 Qed.
 
+Lemma insert_into_list_later_than_first: forall (X: Type) b k1 k2 t1 t2 
+                                       (l: list (nat * bplustree b X)), 
+  k1 < k2 ->
+  exists l1, exists l2, insert_into_list k2 t2 ((k1, t1) :: l) = (k1, t1) :: l1 ++ (k2, t2) :: l2.
+Proof.
+  intros. 
+  simpl.
+  
+  assert (ble_nat k2 k1 = false).
+    apply ble_nat_false. omega.
+  rewrite H0.
+  remember (insert_into_list k2 t2 l).
+  symmetry in Heql0. apply insert_into_list_app in Heql0. destruct Heql0. destruct H1.
+  exists witness. exists witness0. rewrite H1. reflexivity.
+Qed.
+
+
 Lemma find_subtree_insert_into_list_remove_inner_cons: forall {X: Type} b k1 k2 k3 k4 t1 t2 t3 t4 sk
     (l: list(nat * bplustree b X)),
+  kvl_sorted ((k1, t1) :: (k2, t2) :: l) ->
   k2 <= k3 ->
   find_subtree sk (insert_into_list k3 t3 ((k2, t2) :: l)) = Some (k4, t4) ->
   find_subtree sk ((k1, t1) :: insert_into_list k3 t3 ((k2, t2) :: l)) = Some (k4, t4).
-Proof. Admitted.
+Proof.
+  intros. 
+  assert (kvl_sorted ((k1, t1) :: (k2, t2) :: l)) by assumption.
+  assert ((k1, t1) :: (k2, t2) :: l = (k1, t1) :: [] ++ (k2, t2) :: l).
+    reflexivity.
+  rewrite H3 in H2.
+  apply kvl_sorted_key_across_app in H2. clear H3.
+  assert (k1 < k3) by omega.
+  
+  remember (beq_nat k2 k3). destruct b0.
+  Case "k2 = k3".
+    symmetry in Heqb0. apply beq_nat_true in Heqb0. subst. 
+    assert ((k3, t2) :: l = [] ++ (k3, t2) :: l) by reflexivity.
+    rewrite H4.
+    rewrite insert_into_list_override with (l1 := []).
+    rewrite H4 in H1. 
+    rewrite insert_into_list_override with (l1 := []) in H1.
+    assert (find_subtree sk ((k3, t3) :: l) = Some (k4, t4)) by assumption.
+    apply find_subtree_impl_sk_greater_than_first in H1.  
+    simpl. 
+    assert (ble_nat k1 sk && blt_nat sk k3 = false).
+      assert (blt_nat sk k3 = false). 
+        apply blt_nat_false. omega.
+      rewrite H6. destruct (ble_nat k1 sk); reflexivity.
+    rewrite H6. apply H5.
+      
+    apply list_tail_is_sorted in H.
+    simpl. apply sort_ignores_value with (v2:=t3) (v1:= t2).
+    assumption.
+    apply list_tail_is_sorted in H. assumption.
+    apply list_tail_is_sorted in H. assumption.
+  Case "k2 < k3".
+    remember (insert_into_list k3 t3 ((k2, t2) :: l)) as kpl'.
+    symmetry in Heqkpl'. 
+    assert (kvl_sorted kpl').
+      rewrite <- Heqkpl'. apply insert_preserves_sort.
+      apply list_tail_is_sorted in H. assumption.
+    assert (k2 < k3).
+      symmetry in Heqb0. apply beq_nat_false_iff in Heqb0. omega.
+    apply insert_into_list_later_than_first with (t1:=t2)(t2:=t3)(l:=l) in H5.
+    do 2 destruct H5. rewrite Heqkpl' in H5. rewrite H5. rewrite H5 in H1.
+    apply find_subtree_later3 with (l1:=[]).
+    
+    rewrite H5 in H4. simpl. apply kvl_sorted_cons. assumption. apply blt_nat_true. assumption.
+    apply find_subtree_impl_sk_greater_than_first in H1. omega.
+    rewrite H5 in H4. assumption.
+    simpl. assumption. 
+
+Qed.
+    
+ 
+
+  
+
+
+
 
 Lemma find_subtree_after_inserting_greater_element: forall (X: Type) (b k1 k2 sk: nat) (t1 t2: bplustree b X) (kpl: list (nat * bplustree b X)),
   1 <= length kpl ->
@@ -613,12 +686,19 @@ Proof.
       apply kvl_sorted_cons. assumption. assumption.
     remember (ble_nat n2 k2). destruct b0.
     SCase "n2 <= k2".
-      rewrite insert_into_list_prepend_first. 
+      assert (n1 < k2).
+        assert ((n1, x1) :: (n2, x2) :: lst = (n1, x1) :: [] ++ (n2, x2) :: lst).
+          reflexivity.
+        rewrite H6 in H5.
+        apply kvl_sorted_key_across_app in H5. symmetry in Heqb0. apply ble_nat_true in Heqb0.
+        omega.
+      rewrite insert_into_list_prepend_first; try assumption. 
       remember (ble_nat n2 k1). destruct b0.
       SSCase "n2 <= k1".
-        apply find_subtree_later in H1. apply IHkvl_sorted in H1. 
-        apply find_subtree_insert_into_list_remove_inner_cons.
-        symmetry in Heqb0. apply ble_nat_true in Heqb0. omega. assumption.
+        apply find_subtree_later in H1. apply IHkvl_sorted in H1.
+        apply find_subtree_insert_into_list_remove_inner_cons.  assumption.
+        symmetry in Heqb0. apply ble_nat_true in Heqb0. apply blt_nat_true in H4. 
+        omega. assumption.
         simpl. omega.
         symmetry in Heqb0. apply ble_nat_true in Heqb0. apply blt_nat_true in H4. right.
         symmetry in Heqb1. apply ble_nat_true in Heqb1. omega.
@@ -639,22 +719,28 @@ Proof.
           remember (ble_nat n1 sk). destruct b0. remember (blt_nat sk k2). destruct b0.
           simpl. simpl in H1.
           symmetry in Heqb2. apply ble_nat_true in Heqb2. assert (n2 = k2). omega.
-          rewrite H6 in H1. rewrite <- Heqb5 in H1. rewrite <- Heqb4 in H1. simpl in H1.
+          rewrite H7 in H1. rewrite <- Heqb5 in H1. rewrite <- Heqb4 in H1. simpl in H1.
           assumption.
           symmetry in Heqb5. apply blt_nat_false in Heqb5. exfalso. omega.
           symmetry in Heqb4. apply ble_nat_false in Heqb4. symmetry in Heqb2. apply ble_nat_true in Heqb2.
           apply ble_nat_false in Heqb1. symmetry in Heqb3. apply beq_nat_false_iff in Heqb3. exfalso. omega.
         SSSCase "k2 > n2".
           remember (ble_nat n1 sk). destruct b0. 
-          remember (blt_nat sk n2). destruct b0. simpl. simpl in H1.
-          symmetry in Heqb2. apply ble_nat_false in Heqb2. rewrite <- Heqb3 in H1. 
-          assert (blt_nat sk n2 = true). admit.
-          rewrite H6 in H1. simpl in H1. assumption.
-          rewrite ble_nat_false in Heqb1. symmetry in Heqb2.  apply ble_nat_false in Heqb2. 
-          symmetry in Heqb3. apply ble_nat_true in Heqb3. symmetry in Heqb4. apply blt_nat_false in Heqb4.
-          apply blt_nat_true in H4.
-          admit. admit. admit. 
-
+          SSSSCase "n1 <= sk".
+            remember (blt_nat sk n2). destruct b0. 
+            SSSSSCase "sk < n2".
+              simpl. simpl in H1.
+              symmetry in Heqb2. apply ble_nat_false in Heqb2. rewrite <- Heqb3 in H1. 
+              symmetry in Heqb4.
+              rewrite Heqb4 in H1. simpl in H1. assumption.
+            SSSSSCase "n2 <= sk".
+              rewrite ble_nat_false in Heqb1. symmetry in Heqb2.  apply ble_nat_false in Heqb2. 
+              symmetry in Heqb3. apply ble_nat_true in Heqb3. symmetry in Heqb4. apply blt_nat_false in Heqb4.
+              apply blt_nat_true in H4. apply find_subtree_is_first in H1.
+              omega. omega. omega. assumption.
+          SSSSCase "n1 > sk".
+            eapply find_subtree_before_head_None in H5. rewrite H5 in H1. inversion H1.
+            symmetry in Heqb3. apply ble_nat_false in Heqb3. omega.
     SCase "n2 > k2".
       apply blt_nat_true in H4.
       symmetry in Heqb0. apply ble_nat_false in Heqb0.
@@ -689,6 +775,8 @@ Proof.
 	    SSSCase "it seems n2 < k2".
 	      symmetry in Heqb2. apply ble_nat_false in Heqb2. exfalso. omega.
 Qed.
+
+
 
 Lemma child_is_valid_bplustree : forall (X: Type) (b k key: nat) (child: bplustree b X) (kpl: list (nat * bplustree b X)),
   valid_bplustree b X (bptNode b X kpl) ->

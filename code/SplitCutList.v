@@ -98,15 +98,43 @@ Lemma cut_list_right_app : forall (X: Type) (b: nat) (l1 l2: list X),
   length l1 >= b -> 
   exists l3, cut_list_right b (l1++l2) = l3++l2.
 Proof.
-  admit.
-Admitted.
+  intros. generalize dependent b.
+  induction l1; intros.
+  Case "l1 = []".
+    assert (b = 0). simpl in H. omega.
+    subst. simpl. exists []. reflexivity.
+  Case "l1 = a :: l1".
+    destruct b. simpl. exists (a::l1). reflexivity.
+    simpl. assert (length l1 >= b). inversion H; omega.
+    apply IHl1. assumption.
+Qed.
 
 Lemma cut_list_left_app : forall (X: Type) (b: nat) (l1 l2: list X),
   length l1 <= b ->
   exists l3, cut_list_left b (l1++l2) = l1++l3.
 Proof.
-  admit.
-Admitted.
+  intros. generalize dependent l1.
+  induction b; intros.
+  Case "b = 0".
+    simpl.
+    exists [].
+    apply length_gt_0_impl_nil in H. subst. reflexivity.
+  Case "b = S b".
+    destruct l1.
+    SCase "l1 = []".
+      destruct l2. 
+      SSCase "l2 = []". 
+        simpl. exists []. reflexivity.
+      SSCase "l2 = x :: l2".
+        simpl. exists (x :: cut_list_left b l2). reflexivity.
+    SCase "l1 = x :: l1".
+      rewrite <- app_comm_cons. simpl. simpl in H. 
+      assert ((exists l3 : list X, cut_list_left b (l1 ++ l2) = l1 ++ l3) -> 
+              (exists l3 : list X, x :: cut_list_left b (l1 ++ l2) = x :: l1 ++ l3)).
+        intros. destruct H0. 
+        exists witness. apply cons_remove. apply H0.
+      apply H0. apply IHb. omega.
+Qed.
 
 Lemma cut_list_left_elim: forall (X: Type) (b1 b2: nat) (l1 l2: list (nat * X)),
   length l1 = b1 ->
@@ -118,18 +146,32 @@ Proof.
 Admitted.
   
 Lemma cut_list_right_elim: forall (X: Type) (b1 b2: nat) (l1 l2: list (nat * X)),
-  length l1 = b1 ->
+  length l1 = b1 -> b1 <= b2 -> b2 <= length l2 ->
   cut_list_right b2 (l1 ++ l2) = cut_list_right (b2 - b1) l2.
 Proof.
   (* Informal: We can throw the first b1 items out of cut_list_right, as long
      as we decrease the place to cut with b1 *)
-  admit.
-Admitted.
-
-
-    
-    
-    
-    
-    
+  intros. generalize dependent b1. generalize dependent l1. generalize dependent l2.
+  induction b2; intros.
+  Case "b2 = 0".
+    inversion H0.
+    simpl. subst. apply length_0_impl_nil in H2. subst. reflexivity.
+  Case "b2 = S b2".
+    destruct l1.
+      SCase "l1 = []".
+        destruct l2; simpl in H; rewrite <- H; rewrite <- minus_n_O; simpl; reflexivity.
+      SCase "l1 = a :: l1".
+        destruct l2.
+        SSCase "l2 = []".
+          simpl in H1. assert (S b2 = 0) by omega. assert (b1 = 0) by omega.
+          rewrite H2. rewrite H3. simpl. subst. apply length_0_impl_nil in H3.
+          inversion H3.
+        SSCase "l2 = p0 :: l2".
+          destruct b1.
+          SSSCase "b1 = 0".
+            simpl. inversion H.
+          SSSCase "b1 = S b1".
+            replace (S b2 - S b1) with (b2 - b1) by omega.
+            rewrite <- app_comm_cons. simpl. simpl in H. apply IHb2; omega.
+Qed.
     
