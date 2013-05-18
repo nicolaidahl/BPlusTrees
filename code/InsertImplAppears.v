@@ -780,7 +780,6 @@ Proof.
               split. reflexivity.
               destruct witness2.
               SSSSSSCase "subtree was in the end of the kpl".
-                inversion H2.
                 right.
                 rewrite H10 in Heqkpl'.
                 assert (kvl_sorted (insert_into_list n b1 (insert_into_list witness witness0 (witness1 ++ [(n, child)])))).
@@ -788,11 +787,47 @@ Proof.
                   assumption.
                 rewrite insert_into_list_last_twice in *; try assumption.
                 rewrite Heqkpl' in Heqright.
-                (* The key is Heqright and Heqfits_here, which gives us that
-                 * right must be exists l, l ++ [(n, b1), (witness, witness0)]
-                 * and then destructing on l will give us two cases, that both should
-                 * be proveable. *)
-                admit.
+                assert (length kpl' = S (length kpl)).
+                  subst. repeat rewrite app_length. simpl.
+                  rewrite <- plus_Sn_m. rewrite plus_comm with (m := 1).
+                  simpl. rewrite plus_comm. reflexivity.
+                assert (length kpl' = (S b) * 2).
+                  inversion H.
+                  omega.
+                assert (kvl_sorted(cut_list_right (b+1) kpl')).
+                  rewrite <- Heqkpl' in H15.
+                  rewrite cut_list_left_right_preserves_list with (b := b+1) in H15.
+                  apply kvl_sorted_app in H15. inversion H15.
+                  assumption.
+                assert (length witness1 >= b + 1 ).
+                  rewrite Heqkpl' in H19.
+                  rewrite app_length in H19.
+                  simpl in H19.
+                  inversion H.
+                  omega.
+                apply cut_list_right_app with (l2 :=  [(n, b1), (witness, witness0)]) in H21.
+                destruct H21.
+                rewrite H21 in Heqright.
+                rewrite Heqkpl' in H20. rewrite H21 in H20. clear H21.
+                destruct witness2.
+                SSSSSSSCase "witness2 = []".
+                  simpl in Heqright. inversion Heqright.
+                  split. assumption.
+                  apply kv_ait_node_here. assumption.
+                  omega.
+                SSSSSSSCase "witness2 = p::witness".
+                  destruct p.
+                  rewrite <- app_comm_cons in Heqright.
+                  inversion Heqright.
+                  assert (n1 <= k).
+                    apply kvl_sorted_key_across_app in H20.
+                    omega.
+                  split. assumption.
+                  apply kv_appears_in_tree_when_appears_in_subtree with (l1 := (0, b2) :: witness2) (l2 := []).
+                    assumption.
+                    omega.
+                    rewrite <- app_comm_cons in H20. apply kvl_sorted_after_replace_head_with_zero in H20.
+                    rewrite <- app_comm_cons. apply H20.
               SSSSSSCase "subtree was in the middle of the kpl".
                 admit.
             SSSSSCase "insert happened in the overflow child".

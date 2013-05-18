@@ -322,3 +322,10 @@ Proof.
     apply kvl_sorted_elim_list in H.
     simpl in H. apply H.
 Qed.
+
+Lemma kvl_sorted_after_replace_head_with_zero : forall (X: Type) (k: nat) (v: X) (l: list (nat * X)),
+  kvl_sorted( (k, v)::l ) -> kvl_sorted( (0, v)::l).
+Proof.
+  admit.
+Admitted.
+

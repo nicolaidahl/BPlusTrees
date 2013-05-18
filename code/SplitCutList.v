@@ -94,7 +94,12 @@ Proof.
     simpl. apply IHl. simpl in H. omega.
 Qed.
   
-
+Lemma cut_list_right_app : forall (X: Type) (b: nat) (l1 l2: list X),
+  length l1 >= b -> 
+  exists l3, cut_list_right b (l1++l2) = l3++l2.
+Proof.
+  admit.
+Admitted.
 
     
     
