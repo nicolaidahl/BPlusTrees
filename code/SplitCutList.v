@@ -101,9 +101,32 @@ Proof.
   admit.
 Admitted.
 
-    
-    
-    
+Lemma cut_list_left_app : forall (X: Type) (b: nat) (l1 l2: list X),
+  length l1 <= b ->
+  exists l3, cut_list_left b (l1++l2) = l1++l3.
+Proof.
+  admit.
+Admitted.
+
+Lemma cut_list_left_elim: forall (X: Type) (b1 b2: nat) (l1 l2: list (nat * X)),
+  length l1 = b1 ->
+  cut_list_left b2 (l1 ++ l2) = l1++cut_list_left (b2 - b1) l2.
+Proof.
+  (* Informal: We are allowed to move the first b1 items out of cut_list_left,
+     as long as we decrease the place to cut with b1 *)
+  admit.
+Admitted.
+  
+Lemma cut_list_right_elim: forall (X: Type) (b1 b2: nat) (l1 l2: list (nat * X)),
+  length l1 = b1 ->
+  cut_list_right b2 (l1 ++ l2) = cut_list_right (b2 - b1) l2.
+Proof.
+  (* Informal: We can throw the first b1 items out of cut_list_right, as long
+     as we decrease the place to cut with b1 *)
+  admit.
+Admitted.
+
+
     
     
     

@@ -46,6 +46,11 @@ Tactic Notation "SSSSCase" constr(name) := Case_aux SSSSCase name.
 Tactic Notation "SSSSSCase" constr(name) := Case_aux SSSSSCase name.
 Tactic Notation "SSSSSSCase" constr(name) := Case_aux SSSSSSCase name.
 Tactic Notation "SSSSSSSCase" constr(name) := Case_aux SSSSSSSCase name.
+Tactic Notation "SSSSSSSSCase" constr(name) := Case_aux SSSSSSSSCase name.
+Tactic Notation "SSSSSSSSSCase" constr(name) := Case_aux SSSSSSSSSCase name.
+Tactic Notation "SSSSSSSSSSCase" constr(name) := Case_aux SSSSSSSSSSCase name.
+Tactic Notation "SSSSSSSSSSSCase" constr(name) := Case_aux SSSSSSSSSSSCase name.
+Tactic Notation "SSSSSSSSSSSSCase" constr(name) := Case_aux SSSSSSSSSSSSCase name.
 
 Fixpoint ble_nat (n m : nat) : bool :=
   match n with
