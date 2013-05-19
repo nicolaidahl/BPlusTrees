@@ -33,7 +33,8 @@ Qed.
 
 Theorem appears_leaf_impl_search_found : forall (X: Type) (k: nat) (v: X) (kvl: list (nat * X)),
   kvl_sorted kvl ->
-  kv_appears_in_kvl k v kvl -> search_leaf k kvl = Some v.
+  kv_appears_in_kvl k v kvl -> 
+  search_leaf k kvl = Some v.
 Proof.
   intros.
   apply kv_appears_in_kvl_app in H0.
@@ -116,13 +117,8 @@ Proof.
 Qed.
 
 
+  
 
-Theorem not_appears_impl_search_not_found: forall (b: nat) (X: Type) (t: bplustree b X) (k: nat),
-  valid_bplustree b X t -> 
-  ~ appears_in_tree k t -> 
-  search k t = None.
-Proof. 
-  intros. induction H0. admit. Admitted.
 
 
 

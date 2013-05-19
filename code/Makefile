@@ -1,7 +1,7 @@
 COQC := coqc
 
-all: InsertImplAppears.vo AppearsImplSearchFound.vo InsertSearchWorksProofs.vo \
-     InsertPreservesProofs.vo
+all: InsertImplAppears.vo AppearsImplSearchFound.vo NotAppearsImplNotSearchFound.vo \
+     InsertSearchWorksProofs.vo InsertPreservesProofs.vo
 
 clean:
 	rm -r *.vo
@@ -82,6 +82,11 @@ AppearsImplSearchFound.vo: AppearsImplSearchFound.v BPlusTree.vo ValidBPlusTree.
 											SortingProofs.vo AppearsInKVL.vo InsertProofs.vo \
 											KvAppearsInTree.vo InsertPreservesProofs.vo
 	$(COQC) AppearsImplSearchFound.v
+
+NotAppearsImplNotSearchFound.vo: NotAppearsImplNotSearchFound.v BPlusTree.vo ValidBPlusTree.vo \
+											SortingProofs.vo AppearsInKVL.vo InsertProofs.vo \
+											InsertPreservesProofs.vo
+	$(COQC) NotAppearsImplNotSearchFound.v
 
 InsertSearchWorksProofs.vo: InsertSearchWorksProofs.v BPlusTree.vo \
 	SortingProofs.vo ValidBPlusTree.vo InsertImplAppears.vo InsertPreservesProofs.vo AppearsImplSearchFound.vo

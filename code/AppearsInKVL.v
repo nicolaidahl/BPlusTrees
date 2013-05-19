@@ -212,3 +212,45 @@ Proof.
 Qed.
 
 
+Lemma appears_in_kvl_cons_middle: forall (X: Type) k n x (l1 l2: list (nat * X)),
+  appears_in_kvl k (l1 ++ l2) ->
+  appears_in_kvl k (l1 ++ (n, x) :: l2).
+Proof.
+  intros. induction l1. destruct l2. inversion H. 
+  destruct p. simpl in H. simpl. apply aik_later. apply H.
+  destruct a.
+  remember (beq_nat k n0).  destruct b.
+  symmetry in Heqb. apply beq_nat_true_iff in Heqb. subst.
+  apply aik_here.
+  simpl.
+  apply aik_later. apply IHl1.
+  simpl in H.
+  apply appears_cons in H. assumption. apply beq_nat_false_iff. symmetry. assumption.
+Qed.
+  
+Lemma not_appears_in_kvl_impl_remove_element: forall (X: Type) n x k (l1 l2: list (nat * X)),
+  ~ appears_in_kvl k (l1 ++ (n, x) :: l2) ->
+  ~ appears_in_kvl k (l1 ++ l2).
+Proof.
+  intros. unfold not in H. unfold not. intro.
+  eapply appears_in_kvl_cons_middle in H0. apply H in H0. assumption.
+Qed.
+
+
+Lemma not_appears_in_kvl_key_not_equal: forall (X: Type) n x k (l1 l2: list (nat * X)),
+  ~ appears_in_kvl k (l1 ++ (n, x) :: l2) ->
+  k <> n.
+Proof.
+  intros. unfold not. unfold not in H. intro. apply H.
+  induction l1; simpl; subst. 
+  Case "l1 = []".
+    apply aik_here.
+  Case "l1 = a :: l1".
+    destruct a. 
+      apply aik_later. 
+      simpl in H.
+      apply IHl1. intro. apply H.
+      apply aik_later. assumption.
+Qed.
+
+
