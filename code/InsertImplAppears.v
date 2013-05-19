@@ -387,6 +387,16 @@ Proof.
   rewrite Heqp in H1. apply H1.
 Qed.
 
+
+Lemma split_list_overflow_key: forall (X: Type) b k1  k n x 
+                               (kpl: list (nat * bplustree b X)) (l: list (nat * X)),
+   find_subtree k kpl = Some (k1, bptLeaf b X ((n, x) :: l)) ->
+   k1 = n.
+Proof.
+Admitted.
+
+
+
 Lemma insert'_overflow_impl_greater_key: forall (X: Type) (b k k1 k2: nat) (v: X) (t1 t1' t2: bplustree b X) (kpl: list (nat * bplustree b X)),
   find_subtree k kpl = Some(k1, t1) ->
   insert' (height t1) k v t1 = (t1', Some(k2, t2)) ->
@@ -394,8 +404,39 @@ Lemma insert'_overflow_impl_greater_key: forall (X: Type) (b k k1 k2: nat) (v: X
 
   k1 < k2.
 Proof.
-  admit.
+  intros. destruct t1. 
+  Case "leaf".
+    unfold insert' in H0. simpl in H0. unfold insert_leaf in H0.
+    destruct l.
+    SCase "l = []".
+      admit.
+    SCase "l = p :: l".
+      destruct p.
+    
+      destruct (ble_nat (length (insert_into_list k v ((n,x)::l))) (b * 2)). inversion H0.
+      apply split_list_overflow_key in H. subst.
+      remember (blt_nat k n). destruct b0.
+      SSCase "k < n".
+        unfold insert_into_list in H0.  
+        assert (ble_nat k n = true).  
+          apply ble_nat_true.
+          symmetry in Heqb0. apply blt_nat_true in Heqb0. omega.
+        rewrite H in H0. 
+        assert (beq_nat k n = false). 
+          apply beq_nat_false_iff. symmetry in Heqb0. apply ble_nat_true in Heqb0. omega.
+        rewrite H2 in H0.
+        (* in this case it wont hold if b = 1 as n will become k2 and n < n is false *)
+        admit.
+      SSCase "n <= k".
+        remember (beq_nat n k). destruct b0.
+        SSSCase "n = k".
+          admit.
+        SSSCase "n < k".
+          admit. 
+  Case "node".
+    unfold insert' in H0. simpl in H0. admit.
 Admitted.
+
 
 Lemma insert'_overflow_impl_lesser_than_next: forall (X: Type) (b k k1 k2 k3: nat) (v: X) (t1 t1' t2 t3: bplustree b X) (l1 l2: list (nat * bplustree b X)),
   find_subtree k (l1++(k1,t1)::(k3,t3)::l2) = Some(k1, t1) ->

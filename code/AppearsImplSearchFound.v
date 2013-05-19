@@ -121,7 +121,8 @@ Theorem not_appears_impl_search_not_found: forall (b: nat) (X: Type) (t: bplustr
   valid_bplustree b X t -> 
   ~ appears_in_tree k t -> 
   search k t = None.
-Proof. Admitted.
+Proof. 
+  intros. induction H0. admit. Admitted.
 
 
 
