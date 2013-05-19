@@ -399,7 +399,9 @@ Proof.
   Case "kvl_sorted_0".
     inversion Heql0.
   Case "kvl_sorted_1".
-    admit.
+    inversion Heql0. 
+    simpl in H0. remember (ble_nat n sk). destruct b0; symmetry in Heqb0;
+      [apply ble_nat_true in Heqb0; omega|apply ble_nat_false in Heqb0; inversion H0].
   Case "kvl_sorted_cons".
     inversion Heql0. subst.
     remember (ble_nat k sk). destruct b0.
