@@ -85,7 +85,7 @@ AppearsImplSearchFound.vo: AppearsImplSearchFound.v BPlusTree.vo ValidBPlusTree.
 
 NotAppearsImplNotSearchFound.vo: NotAppearsImplNotSearchFound.v BPlusTree.vo ValidBPlusTree.vo \
 											SortingProofs.vo AppearsInKVL.vo InsertProofs.vo \
-											cInsertPreservesProofs.vo
+											InsertPreservesProofs.vo
 	$(COQC) NotAppearsImplNotSearchFound.v
 
 InsertSearchWorksProofs.vo: InsertSearchWorksProofs.v BPlusTree.vo \
