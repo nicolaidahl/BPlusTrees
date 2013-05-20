@@ -940,6 +940,7 @@ Proof.
           inversion H2. subst. omega.
           assumption.
           assumption.
+          intuition.
           inversion H0; assumption.
           
         SSSCase "subsubtree did not overflow".
@@ -1001,6 +1002,7 @@ Proof.
             inversion H2. subst. omega.
             assumption.
             assumption.
+            intuition.
             inversion H0. assumption.
           SSSSSCase "subsubtree did not overflow".
             inversion H2. inversion H2.
