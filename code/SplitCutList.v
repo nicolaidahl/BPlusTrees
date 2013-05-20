@@ -195,4 +195,9 @@ Proof.
             replace (S b2 - S b1) with (b2 - b1) by omega.
             rewrite <- app_comm_cons. simpl. simpl in H. apply IHb2; omega.
 Qed.
+
+
+
+
+
     

@@ -289,6 +289,19 @@ Proof.
   apply split_preserves_sort with (l := l); assumption.
 Qed.
 
+Lemma split_list_after_two_appears_later: forall (X: Type) b k1 k2 v1 v2 (l l1 l2: list (nat * X)),
+  kvl_sorted ((k1, v1) :: l) ->
+  (l1, (k2, v2) :: l2) = split_list (S b) ((k1, v1) :: l) ->
+  k1 < k2.
+Proof. Admitted.
+
+Lemma split_list_overflow_key_le_first: forall (X: Type) b k1  k n x 
+                               (kpl: list (nat * bplustree b X)) (l: list (nat * X)),
+   find_subtree k kpl = Some (k1, bptLeaf b X ((n, x) :: l)) ->
+   k1 <= n.
+Proof.
+Admitted.
+
 Lemma app_list_eq_list_list : forall (X: Type) (l1 l2: list X),
   l1 ++ l2 = l1 -> l2 = [].
 Proof.

@@ -417,12 +417,6 @@ Proof.
 Admitted.
 
 
-Lemma split_list_after_two_appears_later: forall (X: Type) b k1 k2 v1 v2 (l l1 l2: list (nat * X)),
-  kvl_sorted ((k1, v1) :: l) ->
-  (l1, (k2, v2) :: l2) = split_list (S b) ((k1, v1) :: l) ->
-  k1 < k2.
-Proof. Admitted.
-
 
 Lemma find_subtree_leaf_head_key: forall (X: Type) b k key k1 x 
                                   (l: list (nat * X)) (kpl: list (nat * bplustree b X)),
@@ -430,12 +424,7 @@ Lemma find_subtree_leaf_head_key: forall (X: Type) b k key k1 x
   k1 <= key.
 Proof. Admitted.
 
-Lemma split_list_overflow_key_le_first: forall (X: Type) b k1  k n x 
-                               (kpl: list (nat * bplustree b X)) (l: list (nat * X)),
-   find_subtree k kpl = Some (k1, bptLeaf b X ((n, x) :: l)) ->
-   k1 <= n.
-Proof.
-Admitted.
+
 
 Lemma insert'_overflow_leaf_impl_greater_key: forall (X: Type) (b key k k1 k2: nat) (v x: X) 
                                          (t1 t1' t2: bplustree b X) (kpl: list (nat * bplustree b X))
@@ -494,7 +483,29 @@ Qed.
 Lemma find_subtree_node_impl_ge_first_key: forall (X: Type) b k k1 k2 v (kpl l: list (nat* bplustree b X)),
   find_subtree k kpl = Some (k1, bptNode b X ((k2, v) :: l)) ->
   k1 <= k2.
-Proof. Admitted.
+Proof.
+  intros. induction kpl. 
+  Case "kpl = []".
+    simpl in H. inversion H.
+  Case "kpl = a :: kpl".
+    destruct a. destruct kpl.
+    SCase "kpl = []".
+      admit.
+    SCase "kpl = p :: kpl".
+      destruct p.
+      simpl in H.
+      remember (ble_nat n k). destruct b2.
+      SSCase "n <= k".
+        remember (blt_nat k n0). destruct b2.
+        SSSCase "k <= n0".
+          simpl in H. admit.
+        SSSCase "n0 < k".
+         simpl in H. apply IHkpl. apply H.
+      SSCase "k < n".
+        simpl in H. apply IHkpl. apply H.
+Qed.
+
+
 
 Lemma insert'_overflow_node_impl_greater_key: forall (X: Type) b k k1 k2 v
                                          (t1' t2: bplustree b X) (kpl kpl': list (nat * bplustree b X)),
