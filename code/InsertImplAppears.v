@@ -469,9 +469,8 @@ Proof.
         assumption.
 Qed.  
 
-Lemma insert'_overflow_impl_greater_key: forall (X: Type) (b key k k1 k2: nat) (v x: X) 
-                                         (t1 t1' t2: bplustree b X) (kpl: list (nat * bplustree b X))
-                                         (l: list (nat * X)),
+Lemma insert'_overflow_impl_greater_key: forall (X: Type) (b key k k1 k2: nat) (v: X) 
+                                         (t1 t1' t2: bplustree b X) (kpl: list (nat * bplustree b X)),
   b <> 0 ->
   valid_bplustree b X t1 ->
   find_subtree k kpl = Some(k1, t1) ->
@@ -480,7 +479,9 @@ Lemma insert'_overflow_impl_greater_key: forall (X: Type) (b key k k1 k2: nat) (
   kvl_sorted kpl ->
 
   k1 < k2.
-
+Proof.
+  admit.
+Admitted.
 
 
 Lemma insert'_overflow_impl_lesser_than_next: forall (X: Type) (b k k1 k2 k3: nat) (v: X) (t1 t1' t2 t3: bplustree b X) (l1 l2: list (nat * bplustree b X)),
@@ -546,10 +547,15 @@ Proof.
     assert (1 <= length kpl) by omega.
     apply find_subtree_returns_a_lesser_key in H1; assumption.
   assert (k1 < k2).
+    assert (valid_bplustree b X t1).
+      apply child_is_valid_bplustree with (k := k) (key := k1) (kpl := kpl); try assumption.
     inversion H.
-    eapply insert'_overflow_impl_greater_key.
+    eapply insert'_overflow_impl_greater_key with (X := X).
+      apply H13.
+      apply H11.
       apply H1.
       apply H0.
+      apply H8.
       assumption.
   assert (length kpl' > b + 1) by omega.
   assert (kvl_sorted(kpl)) by (inversion H; assumption).
@@ -769,10 +775,15 @@ Proof.
     assert (1 <= length kpl) by omega.
     apply find_subtree_returns_a_lesser_key in H1; assumption.
   assert (k1 < k2).
+    assert (valid_bplustree b X t1).
+      apply child_is_valid_bplustree with (k := k) (key := k1) (kpl := kpl); try assumption.
     inversion H.
     eapply insert'_overflow_impl_greater_key.
+      apply H13.
+      apply H11.
       apply H1.
       apply H0.
+      apply H6.
       assumption.
   assert (length kpl' > b + 1) by omega.
   assert (kvl_sorted(kpl)) by (inversion H; assumption).
@@ -1040,20 +1051,25 @@ Proof.
             symmetry in Heqp0.
             apply insert_leaf_impl_appears in Heqp0; try (inversion H; rewrite Heqchild in H4; inversion H4; assumption).
             inversion Heqp.
-            assert (n < n0).
-              rewrite H3 in H7.
-              inversion H.
-              eapply insert'_overflow_impl_greater_key.
-                apply Heqo.
-                apply H7.
-                apply H17.
             assert (n <= k).
               inversion H.
               assert (1 <= length kpl) by omega.
               eapply find_subtree_returns_a_lesser_key. 
-                apply H20.
-                apply H18.
+                apply H19.
+                apply H17.
                 apply Heqo.
+            assert (n < n0).
+              rewrite H3 in H7.
+              assert (valid_bplustree b X child).
+                apply child_is_valid_bplustree with (k := k) (key := n) (kpl := kpl); try assumption.
+              inversion H.
+              eapply insert'_overflow_impl_greater_key.
+                apply H13.
+                apply H11.
+                apply Heqo.
+                apply H7.
+                apply H2.
+                assumption.
             apply find_subtree_impl_kpl_app in Heqo. 
             destruct Heqo. destruct H12.
             inversion H12. clear H12.
@@ -1193,9 +1209,14 @@ Proof.
               assert (n < witness).
                 rewrite H3 in H6. rewrite H13 in H6. rewrite H14 in H6.
                 rewrite <- Heqchild in H6.
+                inversion H.
                 eapply insert'_overflow_impl_greater_key.
+                  apply H17.
+                  apply H4.
                   apply Heqo.
-                  apply H6. inversion H; assumption.
+                  apply H6. 
+                  apply H7.
+                  assumption.
              destruct witness2.
               SSSSSSCase "subtree was last in the node".
                 clear H15.
