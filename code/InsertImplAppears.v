@@ -1049,14 +1049,19 @@ Proof.
             destruct l1. exfalso. apply H2. reflexivity.
             destruct p. clear H2.
             symmetry in Heqp0.
+            assert (l0 ++ (n1,x)::l1 = insert_into_list k v l).
+              apply insert_leaf_split_preserves_list in Heqp0.
+              symmetry in Heqp0.
+              assumption.
             apply insert_leaf_impl_appears in Heqp0; try (inversion H; rewrite Heqchild in H4; inversion H4; assumption).
             inversion Heqp.
+            rewrite H10 in *.
             assert (n <= k).
               inversion H.
               assert (1 <= length kpl) by omega.
               eapply find_subtree_returns_a_lesser_key. 
-                apply H19.
-                apply H17.
+                apply H20.
+                apply H18.
                 apply Heqo.
             assert (n < n0).
               rewrite H3 in H7.
@@ -1064,49 +1069,190 @@ Proof.
                 apply child_is_valid_bplustree with (k := k) (key := n) (kpl := kpl); try assumption.
               inversion H.
               eapply insert'_overflow_impl_greater_key.
-                apply H13.
-                apply H11.
+                apply H14.
+                apply H12.
                 apply Heqo.
                 apply H7.
-                apply H2.
+                apply H8.
                 assumption.
+            assert (kvl_sorted((insert_into_list n (bptLeaf b X l0) (insert_into_list n0 (bptLeaf b X ((n0, x) :: l1)) kpl)))).
+              apply insert_preserves_sort. apply insert_preserves_sort.
+              inversion H.
+              apply H20.
             assert(find_subtree k kpl = Some (n, child)) by assumption.
-            apply find_subtree_impl_kpl_app in H12. 
-            do 2 destruct H12.
-            inversion H12. clear H12.
-            rewrite H13.
+            apply find_subtree_impl_kpl_app in H14. 
+            do 2 destruct H14.
+            inversion H14. clear H14.
+            rewrite H15. rewrite H15 in H13.
             destruct witness0.
             SSSSSCase "leaf was at the end of the node".
-              rewrite insert_into_list_last_twice; try (rewrite H13 in H; inversion H; assumption).
-              
-              (* We need two cases if n <= k < n0 or n0 <= k *)
-              admit.
+              rewrite insert_into_list_last_twice in *; try (rewrite H15 in H; inversion H; assumption).
+              remember (blt_nat k n0) as in_left.
+              destruct in_left; symmetry in Heqin_left; [ apply blt_nat_true in Heqin_left | apply blt_nat_false in Heqin_left ].
+              SSSSSSCase "n <= k < n0".
+                assert (n <= k < n0) by omega.
+                inversion Heqp0.
+                SSSSSSSCase "appears in left leaf".
+                  rewrite H9. rewrite H9 in H13.
+                  rewrite H11. rewrite H11 in H13.
+                  assert (kv_appears_in_tree k v b1).
+                    rewrite <- H9.
+                    apply kv_ait_leaf.
+                    apply H17.
+                  eapply kv_appears_in_tree_when_appears_in_subtree with (l2 := []).
+                    apply H18.
+                    apply H14.
+                    apply H13.
+                SSSSSSSCase "appears in right leaf (bogus)".
+                  destruct H17. inversion H17. inversion H18.
+                  rewrite <- H21 in H19. clear H17. clear H18. clear H21.
+                  assert (kvl_sorted ((n0,x)::l1)).
+                    assert (kvl_sorted (l0 ++ (n0, x) :: l1)).
+                      rewrite Heqchild in H4. inversion H4.
+                      rewrite H2. apply insert_preserves_sort. assumption. 
+                      apply kvl_sorted_app in H17.
+                    inversion H17.
+                    assumption.
+                  assert (~appears_in_kvl k ((n0,x)::l1)).
+                    assert (kvl_sorted ((n0, x) :: l1)) by assumption.
+                    apply sorted_all_keys_above_cons in H18.
+                    eapply key_smaller_than_all_keys_does_not_appear.
+                      apply H17.
+                      apply H18.
+                      omega.
+                  exfalso. 
+                  apply H18. 
+                  apply kv_appears_in_kvl_impl_appears_in_kvl in H19. 
+                  apply H19.
+              SSSSSSCase "n0 <= k".
+                assert (n0 <= k) by omega.
+                inversion Heqp0.
+                SSSSSSSCase "appears in left (bogus)".
+                  assert (kvl_sorted (l0 ++ (n0, x) :: l1)).
+                    rewrite Heqchild in H4. inversion H4.
+                    rewrite H2. apply insert_preserves_sort. assumption. 
+                  assert (kvl_sorted l0).
+                    apply kvl_sorted_app in H18.
+                    inversion H18.
+                    assumption.
+                  assert (~appears_in_kvl k l0).
+                    apply sorted_all_keys_below_app_cons in H18.
+                    eapply key_greater_than_all_keys_does_not_appear.
+                      apply H19.
+                      apply H18.
+                      omega.
+                  exfalso. apply H20.
+                  apply kv_appears_in_kvl_impl_appears_in_kvl in H17.
+                  apply H17.
+                SSSSSSSCase "appears in right".
+                  destruct H17. inversion H17. inversion H18.
+                  rewrite <- H21 in H19. clear H17. clear H18. clear H21.
+                  rewrite H11. rewrite H11 in H13.
+                  rewrite H9. rewrite H9 in H13.
+                  assert (kv_appears_in_tree k v b0).
+                    rewrite <- H11.
+                    apply kv_ait_leaf.
+                    apply H19.
+                  admit.
             SSSSSCase "leaf was in the middle of the node".
               destruct p.
-              inversion H14. inversion H12.
-              do 3 destruct H12. inversion H12. clear H12. clear H14.
-              inversion H15. rewrite H14 in *. rewrite H17 in *. rewrite H18 in *.
-              clear H15. clear H14. clear H17. clear H18.
+              inversion H16. inversion H14.
+              do 3 destruct H14. inversion H14. clear H14. clear H16.
+              inversion H17. rewrite H16 in *. rewrite H19 in *. rewrite H20 in *.
+              clear H17. clear H16. clear H19. clear H20.
               assert (n < witness1).
                 inversion H.
-                rewrite H13 in H21.
-                apply kvl_sorted_app with (l2 := (n, child) :: (witness1, witness2) :: witness3) in H21.
-                inversion H21.
-                inversion H24.
-                apply blt_nat_true in H31.
+                rewrite H15 in H23.
+                apply kvl_sorted_app with (l2 := (n, child) :: (witness1, witness2) :: witness3) in H23.
+                inversion H23.
+                inversion H26.
+                apply blt_nat_true in H33.
                 omega.
               assert (n0 < witness1).
                 inversion H.
                 eapply insert'_overflow_impl_lesser_than_next.
-                  rewrite H13 in Heqo. apply Heqo.
+                  rewrite H15 in Heqo. apply Heqo.
                   rewrite H3 in H7. apply H7.
-                  rewrite H13 in H22. apply H22.
+                  rewrite H15 in H24. apply H24.
               assert (n < n0 < witness1).
                 omega.
-              rewrite insert_into_list_middle_twice; try (rewrite H13 in H; inversion H; assumption).
-              
-              (* We need two cases if n <= k < n0 or n0 <= k < witness *)
-              admit.
+              rewrite insert_into_list_middle_twice in *; try (rewrite H15 in H; inversion H; assumption).
+              remember (blt_nat k n0) as in_left.
+              destruct in_left; symmetry in Heqin_left; [ apply blt_nat_true in Heqin_left | apply blt_nat_false in Heqin_left ].
+              SSSSSSCase "n <= k < n0".
+                assert (n <= k < n0) by omega.
+                inversion Heqp0.
+                SSSSSSSCase "appears in left leaf".
+                  rewrite H9. rewrite H9 in H13.
+                  rewrite H11. rewrite H11 in H13.
+                  assert (kv_appears_in_tree k v b1).
+                    rewrite <- H9.
+                    apply kv_ait_leaf.
+                    apply H20.
+                  eapply kv_appears_in_tree_when_appears_in_subtree with (l2 := ((witness1, witness2)::witness3)).
+                    apply H21.
+                    apply H19.
+                    apply H13.
+                SSSSSSSCase "appears in right leaf (bogus)".
+                  destruct H20. inversion H20. inversion H21.
+                  rewrite <- H24 in H22. clear H20. clear H21. clear H24.
+                  assert (kvl_sorted ((n0,x)::l1)).
+                    assert (kvl_sorted (l0 ++ (n0, x) :: l1)).
+                      rewrite Heqchild in H4. inversion H4.
+                      rewrite H2. apply insert_preserves_sort. assumption. 
+                      apply kvl_sorted_app in H20.
+                    inversion H20.
+                    assumption.
+                  assert (~appears_in_kvl k ((n0,x)::l1)).
+                    assert (kvl_sorted ((n0, x) :: l1)) by assumption.
+                    apply sorted_all_keys_above_cons in H21.
+                    eapply key_smaller_than_all_keys_does_not_appear.
+                      apply H20.
+                      apply H21.
+                      omega.
+                  exfalso. 
+                  apply H21. 
+                  apply kv_appears_in_kvl_impl_appears_in_kvl in H22. 
+                  apply H22.
+              SSSSSSCase "n0 <= k".
+                assert (n0 <= k) by omega.
+                inversion Heqp0.
+                SSSSSSSCase "appears in left (bogus)".
+                  assert (kvl_sorted (l0 ++ (n0, x) :: l1)).
+                    rewrite Heqchild in H4. inversion H4.
+                    rewrite H2. apply insert_preserves_sort. assumption. 
+                  assert (kvl_sorted l0).
+                    apply kvl_sorted_app in H21.
+                    inversion H21.
+                    assumption.
+                  assert (~appears_in_kvl k l0).
+                    apply sorted_all_keys_below_app_cons in H21.
+                    eapply key_greater_than_all_keys_does_not_appear.
+                      apply H22.
+                      apply H21.
+                      omega.
+                  exfalso. apply H23.
+                  apply kv_appears_in_kvl_impl_appears_in_kvl in H20.
+                  apply H20.
+                SSSSSSSCase "appears in right".
+                  destruct H20. inversion H20. inversion H21.
+                  rewrite <- H24 in H22. clear H20. clear H21. clear H24.
+                  rewrite H11. rewrite H11 in H13.
+                  rewrite H9. rewrite H9 in H13.
+                  assert (kv_appears_in_tree k v b0).
+                    rewrite <- H11.
+                    apply kv_ait_leaf.
+                    apply H22.
+                  assert (n0 <= k < witness1) by omega.
+                  remember (witness ++ [(n, b1)]) as witness'.
+                  assert (witness ++ (n, b1) :: (n0, b0) :: (witness1, witness2) :: witness3 = witness' ++ (n0, b0) :: (witness1, witness2) :: witness3). 
+                    rewrite Heqwitness'. rewrite <- app_assoc. simpl.
+                    reflexivity.
+                  rewrite H23.
+                  eapply kv_appears_in_tree_when_appears_in_subtree.
+                    apply H20.
+                    apply H21.
+                    rewrite <- H23. apply H13.
           SSSSCase "overflow doesnt fit on this level".
             admit.
         SSSCase "child didn't overflow".

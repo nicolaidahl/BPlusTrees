@@ -794,8 +794,24 @@ Proof.
   assumption.
 Qed.
 
-
-  
+Lemma insert_leaf_split_preserves_list: forall (X: Type) (b k: nat) (v: X) (l l1 l2: list (nat *X)),
+  insert_leaf b k v l = (l1, Some (l2)) ->
+  insert_into_list k v l = l1++l2.
+Proof.
+  intros.
+  unfold insert_leaf in H.
+  remember (ble_nat (length (insert_into_list k v l)) (b * 2)) as fits_here.
+  destruct fits_here.
+  Case "fits here".
+    inversion H.
+  Case "overflow".
+    remember (split_list b (insert_into_list k v l)) as sl.
+    symmetry in Heqsl.
+    destruct sl.
+    apply split_list_preserves_lists in Heqsl. inversion H.
+    subst.
+    apply Heqsl.
+Qed.
   
   
   

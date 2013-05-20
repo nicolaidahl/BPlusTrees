@@ -323,6 +323,23 @@ Proof.
     simpl in H. apply H.
 Qed.
 
+Lemma sorted_all_keys_below_app_cons : forall (X: Type) (l1 l2: list (nat*X)) (k: nat) (v1: X), 
+  kvl_sorted (l1++(k, v1)::l2) -> all_keys X (below k) (l1).
+Proof.
+  induction l1.
+  Case "l1 = []".
+    intros. apply ak_empty. 
+  Case "l1 = a::l1". destruct a.
+    intros.
+    simpl in H.
+    apply ak_next.
+    eapply IHl1.
+      apply list_tail_is_sorted in H. apply H.
+    unfold below. apply blt_nat_true.
+    apply kvl_sorted_key_across_app in H. 
+    omega.
+Qed.
+
 Lemma kvl_sorted_after_replace_head_with_zero : forall (X: Type) (k: nat) (v: X) (l: list (nat * X)),
   kvl_sorted( (k, v)::l ) -> kvl_sorted( (0, v)::l).
 Proof.

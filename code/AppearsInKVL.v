@@ -151,7 +151,7 @@ Qed.
 Lemma key_greater_than_all_keys_does_not_appear : forall (X: Type) (k kb: nat) (l: list (nat*X)), 
   kvl_sorted l ->
   all_keys X (below kb) l ->
-  k > kb ->
+  k >= kb ->
 
   ~ appears_in_kvl k l.
 Proof.
@@ -210,7 +210,6 @@ Proof.
   apply appears_cons in H2. assumption.
   assumption.
 Qed.
-
 
 Lemma appears_in_kvl_cons_middle: forall (X: Type) k n x (l1 l2: list (nat * X)),
   appears_in_kvl k (l1 ++ l2) ->
