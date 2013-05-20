@@ -1153,7 +1153,20 @@ Proof.
                     rewrite <- H11.
                     apply kv_ait_leaf.
                     apply H19.
-                  admit.
+                  destruct witness.
+                  SSSSSSSSCase "witness = []".
+                    simpl. apply kv_ait_node_last; try assumption.
+                  SSSSSSSSCase "witness = p::witness".
+                    destruct p. simpl.
+                    remember (witness ++ [(n,b1)]) as witness'.
+                    assert ((n2, b2) :: witness ++ [(n, b1), (n0, b0)] = (n2, b2) :: witness' ++ [(n0, b0)]).
+                      rewrite Heqwitness'. rewrite <- app_assoc.
+                      simpl. reflexivity. 
+                  rewrite H18.
+                  eapply kv_appears_in_tree_when_appears_in_last_subtree.
+                    apply H17.
+                    apply H14.
+                    rewrite <- H18. apply H13.
             SSSSSCase "leaf was in the middle of the node".
               destruct p.
               inversion H16. inversion H14.
@@ -1254,7 +1267,120 @@ Proof.
                     apply H21.
                     rewrite <- H23. apply H13.
           SSSSCase "overflow doesnt fit on this level".
-            admit.
+            right.
+            remember (insert_into_list n b1 (insert_into_list n0 b0 kpl)) as kpl'.
+            rewrite Heqchild in H4.
+            assert (length kpl' > b * 2 + 1).
+              symmetry in Heqfits_here.
+              apply ble_nat_false in Heqfits_here.
+              omega. 
+            clear Heqfits_here.
+            assert (insert' counter k v child = (b1, Some (n0, b0))) by (subst; assumption).
+            rewrite Heqchild in H8. 
+            rewrite insert'_leaf_disregards_counter in H8.
+            remember (insert_leaf b k v l).
+            destruct p.
+            destruct o; [ | inversion Heqp; inversion H8].
+            assert (l1 <> []).
+              apply insert_leaf_split_never_empty in Heqp0.
+              intuition.
+              inversion H.
+              assumption.
+            destruct l1. exfalso. apply H9. reflexivity.
+            destruct p. clear H9.
+            symmetry in Heqp0.
+            assert (l0 ++ (n1,x)::l1 = insert_into_list k v l).
+              apply insert_leaf_split_preserves_list in Heqp0.
+              symmetry in Heqp0.
+              assumption.
+            inversion H8. rewrite H12 in *. clear H12. clear n1.
+            symmetry in H11. symmetry in H13. clear H8.
+            apply insert_leaf_impl_appears in Heqp0; try (subst; inversion H4; assumption).
+            rewrite H3 in Heqp.
+            remember (cut_list_left (b + 1) kpl') as ll.
+            remember (cut_list_right(b + 1) kpl') as rl.
+            assert (rl <> []).
+              assert (length kpl' > b + 1) by omega.
+              apply cut_right_not_nil in H8.
+              rewrite Heqrl. assumption.
+            destruct rl. exfalso. apply H8. reflexivity.
+            destruct p.            
+            
+            inversion H2.
+            exists n1. exists (bptNode b X ((0, b2)::rl)).
+            split. reflexivity. clear H12. clear H14.
+            remember (blt_nat k n0) as in_left.
+            destruct in_left; symmetry in Heqin_left; [ apply blt_nat_true in Heqin_left | apply blt_nat_false in Heqin_left ].
+            SSSSSCase "it should be in the left tree".
+              inversion Heqp0.
+              SSSSSSCase "it does appear in the left tree".
+                assert (kv_appears_in_tree k v b1).
+                  rewrite H11.
+                  apply kv_ait_leaf.
+                  assumption.
+                eapply insert'_impl_appears_overflow_left.
+                  apply H.
+                  apply Heqp.
+                  apply Heqo.
+                  apply Heqkpl'.
+                  apply H7.
+                  apply Heqrl.
+                  apply Heqll.
+                  omega.
+                  apply H12.
+              SSSSSSCase "it does not appear in the left tree".
+                destruct H10. inversion H10. inversion H12.
+                rewrite <- H16 in H14. clear H10. clear H12. clear H16.
+                assert (kvl_sorted (l0 ++ (n0,x)::l1)).
+                  rewrite H9. apply insert_preserves_sort.
+                  inversion H4. assumption.
+                apply kvl_sorted_app in H10.
+                inversion H10.
+                assert (~appears_in_kvl k ((n0,x)::l1)).
+                  assert (kvl_sorted ((n0, x) :: l1)) by assumption.
+                  apply sorted_all_keys_above_cons in H16.
+                  eapply key_smaller_than_all_keys_does_not_appear.
+                    apply H15.
+                    apply H16.
+                    omega.
+                exfalso. apply H16. apply kv_appears_in_kvl_impl_appears_in_kvl in H14.
+                apply H14.
+            SSSSSCase "it should be in the right tree".
+              assert (n0 <= k) by omega.
+              inversion Heqp0.
+              SSSSSSCase "but it appears in the left tree".
+                assert (kvl_sorted (l0 ++ (n0,x)::l1)).
+                  rewrite H9.
+                  apply insert_preserves_sort.
+                  inversion H4.
+                  apply H17.
+                assert (kvl_sorted (l0 ++ (n0,x)::l1)) by assumption.
+                apply sorted_all_keys_below_app_cons in H15.
+                assert (~appears_in_kvl k l0).
+                  eapply key_greater_than_all_keys_does_not_appear.
+                    apply kvl_sorted_app in H14. inversion H14.
+                      apply H16.
+                    apply H15.
+                    omega.
+                exfalso. apply H16. apply kv_appears_in_kvl_impl_appears_in_kvl in H12.
+                apply H12.
+              SSSSSSCase "and it does".
+                destruct H12. inversion H12. inversion H14.
+                rewrite <- H17 in H15. clear H12. clear H14. clear H17.
+                assert (kv_appears_in_tree k v b0).
+                  rewrite H13.
+                  apply kv_ait_leaf.
+                  assumption.
+                eapply insert'_impl_appears_overflow_right.
+                  apply H.
+                  apply Heqp.
+                  apply Heqo.
+                  apply Heqkpl'.
+                  apply H7.
+                  apply Heqrl.
+                  apply Heqll.
+                  apply H10.
+                  apply H12.
         SSSCase "child didn't overflow".
           rewrite Heqchild in Heqp.
           unfold insert' in Heqp. simpl in Heqp.
