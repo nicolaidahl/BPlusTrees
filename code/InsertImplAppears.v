@@ -496,15 +496,6 @@ Lemma find_subtree_node_impl_ge_first_key: forall (X: Type) b k k1 k2 v (kpl l: 
   k1 <= k2.
 Proof. Admitted.
 
-Lemma cut_list_left_ins_ins_two_crazy: forall (X: Type) b (kpl' left: list (nat* bplustree b X))
-                                       n4 b5 b3 n2 b2 n1,
-  b <> 0 ->
-  appears_in_kvl n1 ((n4, b5) :: kpl') ->
-  left = cut_list_left (S b) (insert_into_list n1 b2 (insert_into_list n2 b3 ((n4, b5) :: kpl'))) ->
-  appears_in_kvl n4 left.
-Proof. Admitted.
-
-
 Lemma insert'_overflow_node_impl_greater_key: forall (X: Type) b k k1 k2 v
                                          (t1' t2: bplustree b X) (kpl kpl': list (nat * bplustree b X)),
   b <> 0 ->

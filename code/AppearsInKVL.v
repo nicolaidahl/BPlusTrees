@@ -252,4 +252,12 @@ Proof.
       apply aik_later. assumption.
 Qed.
 
+Lemma cut_list_left_ins_ins_two_crazy: forall (X: Type) b (kpl' left: list (nat* bplustree b X))
+                                       n4 b5 b3 n2 b2 n1,
+  b <> 0 ->
+  appears_in_kvl n1 ((n4, b5) :: kpl') ->
+  left = cut_list_left (S b) (insert_into_list n1 b2 (insert_into_list n2 b3 ((n4, b5) :: kpl'))) ->
+  appears_in_kvl n4 left.
+Proof.
 
+Admitted.
