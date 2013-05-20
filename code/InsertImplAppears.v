@@ -491,6 +491,17 @@ Proof.
         assumption.
 Qed.  
 
+Lemma find_subtree_node_impl_ge_first_key: forall (X: Type) b k k1 k2 v (kpl l: list (nat* bplustree b X)),
+  find_subtree k kpl = Some (k1, bptNode b X ((k2, v) :: l)) ->
+  k1 <= k2.
+Proof. Admitted.
+
+Lemma cut_list_left_ins_ins_two_crazy: forall (X: Type) b (kpl' left: list (nat* bplustree b X))
+                                       n4 b5 b2 b3 n2 n1,
+  left = cut_list_left (b + 1) (insert_into_list n1 b2 (insert_into_list n2 b3 ((n4, b5) :: kpl'))) ->
+  appears_in_kvl n4 left.
+Proof. Admitted.
+
 
 Lemma insert'_overflow_node_impl_greater_key: forall (X: Type) b k k1 k2 v
                                          (t1' t2: bplustree b X) (kpl kpl': list (nat * bplustree b X)),
@@ -520,11 +531,32 @@ Proof.
         remember (insert' n0 k v b1). destruct p. destruct o.
         SSSCase "subsubtree did overflow". 
           destruct p. remember (insert_into_list n1 b2 (insert_into_list n2 b3 kpl')) as insins.
-          destruct kpl'. inversion H0. simpl in H6. omega. destruct p.
           
           destruct (ble_nat (length insins) (b * 2 + 1)). inversion H2.
-          remember (cut_list_right (b + 1) insins). destruct l. inversion H2.
+          
+          (* We must know something about the sortedness of the overflow key-pointer list *)
+          assert (kvl_sorted kpl').
+            subst. inversion H0. assumption. 
+          remember (cut_list_right (b + 1) insins).
+          destruct l. inversion H2.
           destruct p. subst.
+          
+          destruct kpl'. inversion H0. simpl in H7. omega. destruct p.
+          apply find_subtree_node_impl_ge_first_key in H1.
+          (* now we must show that n4 < k2 as k1 <= n4
+           * For that to be possible n1 must already exist in the kpl' list (which it does)
+           *)
+          assert (appears_in_kvl n1 ((n4, b5) :: kpl')).
+            admit.
+            
+          remember ((insert_into_list n1 b2 (insert_into_list n2 b3 ((n4, b5) :: kpl')))) as insins.
+          remember (cut_list_left (b + 1) insins) as left.
+          assert (insins = left ++ (n3, b4) :: l).
+            rewrite cut_list_left_right_preserves_list with (b:=b +1) (l:=insins).
+            subst. rewrite Heql. reflexivity.
+          assert (kvl_sorted (left ++ (n3, b4) :: l)).
+            rewrite <- H6. rewrite Heqinsins. do 2 apply insert_preserves_sort. apply H4.
+          rewrite Heqinsins in Heqleft.
           admit.
           
           
@@ -552,7 +584,8 @@ Proof.
           apply find_subtree_before_head_None. omega. apply H3.
         simpl in H5.
         rewrite <- Heqb2 in H5. simpl in H5. simpl in H1. rewrite H1 in H5. inversion H5.
-Qed.
+Qed. 
+
 
 Lemma insert'_overflow_impl_greater_key: forall (X: Type) b k k1 k2 v 
                                          (t1 t1' t2: bplustree b X) (kpl: list (nat * bplustree b X)),
