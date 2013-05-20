@@ -388,12 +388,34 @@ Proof.
 Qed.
 
 
-
-
 Lemma split_list_move_first: forall (X: Type) b k1 v1 (l l1 l2: list (nat * X)),
+  b <> 0 -> length l > 1 ->
   (l1, l2) = split_list (S b) ((k1, v1) :: l) ->
-  exists l3, ((k1, v1) :: l3, l2) = split_list b l. 
-Proof. Admitted.
+  exists l3, ((k1, v1) :: l3, l2) = split_list b l.
+Proof.
+  intros X b.
+  induction b; intros.
+    exfalso. omega.
+  Case "b = S b".
+    destruct l.
+      SCase "l = []".
+        simpl in H0. exfalso. omega.
+      SCase "l = p :: l".
+        unfold split_list in H1. simpl in H1.
+  
+  
+  induction l; intros.
+  (*Case "l = []".
+    simpl in H0. exfalso. omega.
+  Case "l = a :: l1".
+    destruct a.
+    
+    unfold split_list in H1. simpl in H1.
+    assert (split_list (S b) ((k1, v1) :: (n, x) :: l) = ((k1, v1) :: cut_list_left b ((n, x) :: l), cut_list_right b ((n, x) :: l))).
+      unfold split_list. simpl. reflexivity.
+    unfold split_list in H2. simpl in H2.*)
+Admitted.
+
 
 Lemma split_list_after_two_appears_later: forall (X: Type) b k1 k2 v1 v2 (l l1 l2: list (nat * X)),
   kvl_sorted ((k1, v1) :: l) ->
