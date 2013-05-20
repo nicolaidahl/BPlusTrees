@@ -13,7 +13,7 @@ SfLib.vo: SfLib.v
 HelperFunctions.vo: HelperFunctions.v SfLib.vo
 	$(COQC) HelperFunctions.v
 
-SplitCutList.vo: SplitCutList.v SfLib.vo HelperFunctions.vo
+SplitCutList.vo: SplitCutList.v SfLib.vo HelperFunctions.vo InductiveDataTypes.vo
 	$(COQC) SplitCutList.v
 
 InductiveDataTypes.vo: InductiveDataTypes.v \

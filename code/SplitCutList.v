@@ -1,5 +1,6 @@
 Require Export SfLib.
 Require Export HelperFunctions.
+Require Export InductiveDataTypes.
   
 Lemma cut_list_left_add_one : forall (X: Type) (x: X) (b: nat) (l: list X),
   cut_list_left (S b) (x :: l) = x :: cut_list_left b l.
@@ -195,6 +196,28 @@ Proof.
             replace (S b2 - S b1) with (b2 - b1) by omega.
             rewrite <- app_comm_cons. simpl. simpl in H. apply IHb2; omega.
 Qed.
+
+
+Theorem cut_right_preserves_all_keys: forall (X: Type) (b: nat) (P: nat -> Prop) (l: list (nat * X)),
+  all_keys X P l -> all_keys X P (cut_list_right b l).
+Proof.
+  intros. generalize dependent b.
+  induction l.
+  Case "l = []".
+    intros.
+    destruct b.
+    SCase "b = 0". 
+      simpl. apply ak_empty.
+    SCase "b = S b".
+      simpl. apply ak_empty.
+  Case "l = a::l".
+    intros.
+    destruct b.
+    SCase "b = 0".
+      simpl. apply H.
+    SCase "b = S b".
+      simpl. apply IHl. inversion H. apply H2.
+Qed. 
 
 
 

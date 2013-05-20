@@ -106,3 +106,22 @@ Proof.
   inversion H; constructor; try assumption.
   omega.
 Qed.
+
+Lemma valid_splits_cons_remove: forall (X: Type) b p1 p2 k1 k2  (l: list (nat * bplustree b X)),
+  valid_splits b X ((k1, p1) :: (k2, p2) :: l) ->
+  valid_splits b X ((k2, p2) :: l).
+Proof.
+  intros. remember ((k1, p1) :: (k2, p2) :: l). 
+  induction H. inversion Heql0. subst. assumption. 
+  inversion Heql0.
+Qed.
+
+
+
+
+
+
+
+
+
+
