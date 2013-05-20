@@ -497,8 +497,10 @@ Lemma find_subtree_node_impl_ge_first_key: forall (X: Type) b k k1 k2 v (kpl l: 
 Proof. Admitted.
 
 Lemma cut_list_left_ins_ins_two_crazy: forall (X: Type) b (kpl' left: list (nat* bplustree b X))
-                                       n4 b5 b2 b3 n2 n1,
-  left = cut_list_left (b + 1) (insert_into_list n1 b2 (insert_into_list n2 b3 ((n4, b5) :: kpl'))) ->
+                                       n4 b5 b3 n2 b2 n1,
+  b <> 0 ->
+  appears_in_kvl n1 ((n4, b5) :: kpl') ->
+  left = cut_list_left (S b) (insert_into_list n1 b2 (insert_into_list n2 b3 ((n4, b5) :: kpl'))) ->
   appears_in_kvl n4 left.
 Proof. Admitted.
 
@@ -557,8 +559,15 @@ Proof.
           assert (kvl_sorted (left ++ (n3, b4) :: l)).
             rewrite <- H6. rewrite Heqinsins. do 2 apply insert_preserves_sort. apply H4.
           rewrite Heqinsins in Heqleft.
+          assert (appears_in_kvl n4 left).
+            eapply cut_list_left_ins_ins_two_crazy. 
+            assumption. apply H5. assert (b+1 = S b) by omega. 
+            rewrite H8 in Heqleft.
+            apply Heqleft.
+          (*apply appears_in_kvl_app in Heqleft. destruct Heqleft. do 2 destruct H8.
+          rewrite H8 in H7.
+          rewrite app_comm_cons in H7.*)
           admit.
-          
           
         SSSCase "subsubtree did not overflow".
           inversion H2. 
