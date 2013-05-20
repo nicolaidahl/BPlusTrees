@@ -569,7 +569,7 @@ Proof.
   Case "leaf".
     destruct l. unfold insert' in H2. simpl in H2. unfold insert_leaf in H2. 
     assert (ble_nat (length (insert_into_list k v [])) (b * 2) = true).
-      simpl. destruct b. omega. simpl. reflexivity.
+      simpl. destruct b. exfalso. omega. simpl. reflexivity.
     rewrite H4 in H2. inversion H2.
     destruct p.
     eapply insert'_overflow_leaf_impl_greater_key in H2. apply H2. assumption.
@@ -654,7 +654,6 @@ Proof.
       apply H11.
       apply H1.
       apply H0.
-      apply H8.
       assumption.
   assert (length kpl' > b + 1) by omega.
   assert (kvl_sorted(kpl)) by (inversion H; assumption).
@@ -882,7 +881,6 @@ Proof.
       apply H11.
       apply H1.
       apply H0.
-      apply H6.
       assumption.
   assert (length kpl' > b + 1) by omega.
   assert (kvl_sorted(kpl)) by (inversion H; assumption).
@@ -1172,7 +1170,6 @@ Proof.
                 apply H12.
                 apply Heqo.
                 apply H7.
-                apply H8.
                 assumption.
             assert (kvl_sorted((insert_into_list n (bptLeaf b X l0) (insert_into_list n0 (bptLeaf b X ((n0, x) :: l1)) kpl)))).
               apply insert_preserves_sort. apply insert_preserves_sort.
@@ -1593,7 +1590,6 @@ Proof.
                   apply H4.
                   apply Heqo.
                   apply H6. 
-                  apply H7.
                   assumption.
              destruct witness2.
               SSSSSSCase "subtree was last in the node".
