@@ -549,7 +549,7 @@ Proof.
            * For that to be possible n1 must already exist in the kpl' list (which it does)
            *)
           assert (appears_in_kvl n1 ((n4, b5) :: kpl')).
-            admit.
+            symmetry in Heqo. apply find_subtree_impl_key_appears in Heqo. assumption.
             
           remember ((insert_into_list n1 b2 (insert_into_list n2 b3 ((n4, b5) :: kpl')))) as insins.
           remember (cut_list_left (b + 1) insins) as left.
@@ -559,28 +559,81 @@ Proof.
           assert (kvl_sorted (left ++ (n3, b4) :: l)).
             rewrite <- H6. rewrite Heqinsins. do 2 apply insert_preserves_sort. apply H4.
           rewrite Heqinsins in Heqleft.
-          assert (appears_in_kvl n4 left).
-            eapply cut_list_left_ins_ins_two_crazy. 
-            assumption. apply H5. assert (b+1 = S b) by omega. 
-            rewrite H8 in Heqleft.
-            apply Heqleft.
-          (*apply appears_in_kvl_app in Heqleft. destruct Heqleft. do 2 destruct H8.
+          assert (b+1 = S b) by omega. 
+            rewrite H8 in Heqleft. clear H8.
+          eapply cut_list_left_ins_ins_two_crazy in Heqleft. 
+          apply appears_in_kvl_app in Heqleft. destruct Heqleft. do 2 destruct H8.
           rewrite H8 in H7.
-          rewrite app_comm_cons in H7.*)
-          admit.
-          
+          assert (n4 < n3).
+            rewrite <- app_assoc in H7.
+            apply kvl_sorted_app in H7.
+            inversion H7. simpl in H10.
+            apply kvl_sorted_key_across_app in H10.
+            omega.
+          inversion H2. subst. omega.
+          assumption.
+          assumption.
         SSSCase "subsubtree did not overflow".
           inversion H2. 
       SSCase "find subtree did not find anything".
         inversion H2.
     SCase "kpl = a :: kpl".
-      destruct p. simpl in H1.
+      destruct p. 
+      assert (find_subtree k ((n, b0) :: (n0, b1) :: kpl) = Some (k1, bptNode b X kpl')) by assumption.
+      simpl in H1.
       remember (ble_nat n k). destruct b2.
       SSCase "n <= k".
         remember (blt_nat k n0). destruct b2.
         SSSCase "k <= n0".
-          simpl in H1. inversion H1. subst. 
-          admit. (*shoudl be provable by unfolding insert'*)
+          simpl in H1. inversion H1. subst. destruct (height (bptNode b X kpl')). 
+          simpl in H2. inversion H2.
+          simpl in H2.
+          remember (find_subtree k kpl'). destruct o. destruct p.
+          SSSSCase "find subtree found something".
+            remember (insert' n k v b0). destruct p. destruct o.
+            SSSSSCase "subsubtree did overflow". 
+              destruct p. remember (insert_into_list n1 b2 (insert_into_list n2 b3 kpl')) as insins.
+              destruct (ble_nat (length insins) (b * 2 + 1)). inversion H2.
+          
+            (* We must know something about the sortedness of the overflow key-pointer list *)
+            assert (kvl_sorted kpl').
+              subst. inversion H0. assumption. 
+            remember (cut_list_right (b + 1) insins).
+            destruct l. inversion H2.
+            destruct p. subst.
+            
+            destruct kpl'. inversion H0. simpl in H8. omega. destruct p.
+            apply find_subtree_node_impl_ge_first_key in H4.
+            (* now we must show that n4 < k2 as k1 <= n4
+             * For that to be possible n1 must already exist in the kpl' list (which it does)
+             *)
+            assert (appears_in_kvl n1 ((n4, b5) :: kpl')).
+              symmetry in Heqo. apply find_subtree_impl_key_appears in Heqo. assumption.
+            
+            remember ((insert_into_list n1 b2 (insert_into_list n2 b3 ((n4, b5) :: kpl')))) as insins.
+            remember (cut_list_left (b + 1) insins) as left.
+            assert (insins = left ++ (n3, b4) :: l).
+              rewrite cut_list_left_right_preserves_list with (b:=b +1) (l:=insins).
+              subst. rewrite Heql. reflexivity.
+            assert (kvl_sorted (left ++ (n3, b4) :: l)).
+              rewrite <- H7. rewrite Heqinsins. do 2 apply insert_preserves_sort. apply H5.
+            rewrite Heqinsins in Heqleft.
+            assert (b+1 = S b) by omega. 
+              rewrite H9 in Heqleft. clear H9.
+            eapply cut_list_left_ins_ins_two_crazy in Heqleft. 
+            apply appears_in_kvl_app in Heqleft. destruct Heqleft. do 2 destruct H9.
+            rewrite H9 in H8.
+            assert (n4 < n3).
+              rewrite <- app_assoc in H8.
+              apply kvl_sorted_app in H8.
+              inversion H8. simpl in H10.
+              apply kvl_sorted_key_across_app in H11.
+              omega.
+            inversion H2. subst. omega.
+            assumption.
+            assumption.
+          SSSSSCase "subsubtree did not overflow".
+            inversion H2. inversion H2.
         SSSCase "n0 < k".
           simpl in H1. eapply IHkpl. 
           apply list_tail_is_sorted in H3. assumption.
@@ -591,8 +644,8 @@ Proof.
           symmetry in Heqb2. apply ble_nat_false in Heqb2. omega.
         assert (find_subtree k ((n, b0) :: (n0, b1) :: kpl) = None).
           apply find_subtree_before_head_None. omega. apply H3.
-        simpl in H5.
-        rewrite <- Heqb2 in H5. simpl in H5. simpl in H1. rewrite H1 in H5. inversion H5.
+        simpl in H6.
+        rewrite <- Heqb2 in H6. simpl in H6. simpl in H1. rewrite H1 in H6. inversion H6.
 Qed. 
 
 
