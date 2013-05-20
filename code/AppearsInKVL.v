@@ -252,12 +252,227 @@ Proof.
       apply aik_later. assumption.
 Qed.
 
+Lemma insert_into_list_eq_nil_impl_false: forall (X: Type) b k1 v1 (l: list (nat * bplustree b X)),
+  [] = insert_into_list k1 v1 l -> False.
+Proof.
+  intros.
+  induction l.
+    inversion H.
+    apply IHl. 
+    simpl in H.
+    destruct a.
+    remember (ble_nat k1 n).
+    destruct b1; symmetry in Heqb1; [apply ble_nat_true in Heqb1 | apply ble_nat_false in Heqb1].
+      remember (beq_nat k1 n).
+      destruct b1; symmetry in Heqb0; [apply beq_nat_true in Heqb0 | apply beq_nat_false in Heqb0]; inversion H.
+      inversion H.
+Qed.
+
 Lemma cut_list_left_ins_ins_two_crazy: forall (X: Type) b (kpl' left: list (nat* bplustree b X))
                                        n4 b5 b3 n2 b2 n1,
   b <> 0 ->
   appears_in_kvl n1 ((n4, b5) :: kpl') ->
   left = cut_list_left (S b) (insert_into_list n1 b2 (insert_into_list n2 b3 ((n4, b5) :: kpl'))) ->
+  kvl_sorted ((n4, b5) :: kpl') ->
   appears_in_kvl n4 left.
 Proof.
-
-Admitted.
+  intros.
+  destruct b.
+  Case "b = 0".
+    exfalso. omega. 
+  Case "b = S b".
+    apply appears_in_kvl_app in H0. do 3 destruct H0.
+    destruct witness.
+    SCase "witness = []".
+      inversion H0.
+      subst.
+      simpl.
+      remember (ble_nat n2 n1).
+      destruct b0; symmetry in Heqb0; [apply ble_nat_true in Heqb0 | apply ble_nat_false in Heqb0].
+      SSCase "n2 <= n1".
+        remember (beq_nat n2 n1).
+        destruct b0; symmetry in Heqb1; [apply beq_nat_true in Heqb1 | apply beq_nat_false in Heqb1].
+        SSSCase "n2 = n1".
+          remember (insert_into_list n1 b2 ((n2, b3) :: witness0)).
+          destruct l.
+          SSSSCase "l = []".
+            apply insert_into_list_eq_nil_impl_false in Heql. exfalso. assumption.
+          SSSSCase "l = p :: l".
+            simpl in Heql.
+            assert (beq_nat n1 n2 = true). 
+              apply beq_nat_true_iff in Heqb1. rewrite beq_nat_sym in Heqb1. assumption.
+            rewrite H1 in Heql.
+            remember (ble_nat n1 n2).
+            destruct  b0; symmetry in Heqb2; [apply ble_nat_true in Heqb2 | apply ble_nat_false in Heqb2]. 
+              SSSSSCase "n1 <= n2".
+                inversion Heql.
+                destruct witness0.
+                SSSSSSCase "witness0 = []".
+                  constructor.
+                SSSSSSCase "witness0 = [p :: witness0]".
+                  subst. constructor.
+              SSSSSCase "~n1 <= n2".
+                inversion Heql.
+                remember (insert_into_list n1 b2 witness0).
+                destruct l0.
+                SSSSSSCase "l0 = []".
+                  apply insert_into_list_eq_nil_impl_false in Heql0. exfalso. assumption.
+                SSSSSSCase "l0 = p :: l0".
+                  subst. constructor.
+        SSSCase "n2 <> n1".
+          inversion Heqb0. exfalso. omega.
+          remember (insert_into_list (S m) b2 ((n2, b3) :: (S m, witness1) :: witness0)).
+          destruct l.
+          SSSSCase "l = []".
+            apply insert_into_list_eq_nil_impl_false in Heql. exfalso. assumption.
+          SSSSCase "l = p :: l".
+            simpl in Heql.
+            subst.
+            destruct n2.
+            SSSSSCase "n2 = 0".
+              remember (ble_nat m m).
+              destruct b0; symmetry in Heqb2; [apply ble_nat_true in Heqb2 | apply ble_nat_false in Heqb2].
+              SSSSSSCase "m <= m".
+                remember (beq_nat m m).
+                destruct b0; symmetry in Heqb3; [apply beq_nat_true in Heqb3 | apply beq_nat_false in Heqb3].
+                  SSSSSSSCase "m = m".
+                    inversion Heql.
+                    repeat constructor.
+                  SSSSSSSCase "m <> m".
+                    exfalso. omega.
+              SSSSSSCase "~m<=m".
+                exfalso. omega.
+            SSSSSCase "n2 = S n2".
+              remember (ble_nat m n2).
+              destruct b0; symmetry in Heqb2; [apply ble_nat_true in Heqb2 | apply ble_nat_false in Heqb2].
+              SSSSSSCase "m <= n2".
+                remember (beq_nat m n2).
+                destruct b0; symmetry in Heqb3; [apply beq_nat_true in Heqb3 | apply beq_nat_false in Heqb3]; 
+                  inversion Heql; constructor.
+              SSSSSSCase "~m <= n2".
+                remember (ble_nat m m).
+                destruct b0; symmetry in Heqb3; [apply ble_nat_true in Heqb3 | apply ble_nat_false in Heqb3].
+                SSSSSSSCase "m <= m".
+                  remember (beq_nat m m).
+                  destruct b0; symmetry in Heqb4; [apply beq_nat_true in Heqb4 | apply beq_nat_false in Heqb4];
+                    inversion Heql; repeat constructor.
+                SSSSSSSCase "~m <= m".
+                  inversion Heql.
+                  repeat constructor.
+      SSCase "~n2 <= n1".
+        simpl.
+        remember (ble_nat n1 n1).
+        destruct b0; symmetry in Heqb1; [apply ble_nat_true in Heqb1 | apply ble_nat_false in Heqb1].
+        SSSCase "n1 <= n1".
+          remember (beq_nat n1 n1).
+          destruct b0; symmetry in Heqb2; [apply beq_nat_true in Heqb2 | apply beq_nat_false in Heqb2].
+          SSSSCase "n1 = n1".
+            remember (insert_into_list n2 b3 witness0).
+            destruct l.
+            SSSSSCase "l = []".
+              apply insert_into_list_eq_nil_impl_false in Heql. exfalso. assumption. 
+            SSSSSCase "l = p :: l".
+              constructor.
+          SSSSCase "n1 <> n1".
+            exfalso. omega.
+        SSSCase "~ n1 <= n1". 
+          exfalso. omega. 
+    SCase "witness = p :: witness".
+      inversion H0.
+      subst.
+      simpl.
+      remember (ble_nat n2 n4).
+      destruct b0; symmetry in Heqb0; [apply ble_nat_true in Heqb0 | apply ble_nat_false in Heqb0].
+      SSCase "n2 <= n4".
+        remember (beq_nat n2 n4).
+        destruct b0; symmetry in Heqb1; [apply beq_nat_true in Heqb1 | apply beq_nat_false in Heqb1].
+        SSSCase "n2 = n4".
+          remember (insert_into_list n1 b2 ((n2, b3) :: witness ++ (n1, witness1) :: witness0)).
+          destruct l.
+          SSSSCase "l = []".
+            apply insert_into_list_eq_nil_impl_false in Heql. exfalso. assumption. 
+          SSSSCase "l = p :: l".
+            simpl in Heql.
+            remember (ble_nat n1 n2).
+            destruct b0; symmetry in Heqb2; [apply ble_nat_true in Heqb2 | apply ble_nat_false in Heqb2].
+            SSSSSCase "n1 <= n2".
+              remember (beq_nat n1 n2).
+              destruct b0; symmetry in Heqb3; [apply beq_nat_true in Heqb3 | apply beq_nat_false in Heqb3].
+                SSSSSSCase "n1 = n2".
+                  inversion Heql.
+                  remember (witness ++ (n1, witness1) :: witness0).
+                    destruct l0.
+                    SSSSSSSCase "l0 = []".
+                      subst. constructor.
+                    SSSSSSSCase "l0 = p :: l0".
+                      subst. constructor.
+                SSSSSSCase "n1 <> n2".
+                  inversion Heql. subst. repeat constructor.
+            SSSSSCase "~n1 <= n2".
+              inversion Heql.
+              remember (insert_into_list n1 b2 (witness ++ (n1, witness1) :: witness0)).
+              destruct l0.
+              SSSSSSCase "l0 = []".
+                apply insert_into_list_eq_nil_impl_false in Heql0. exfalso. omega.
+              SSSSSSCase "l0 = p :: l0".
+                subst. constructor.
+        SSSCase "n2 <> n4".
+          remember (insert_into_list n1 b2 ((n2, b3) :: (n4, b5) :: witness ++ (n1, witness1) :: witness0)).
+          destruct l.
+          SSSSCase "l = []".
+            apply insert_into_list_eq_nil_impl_false in Heql. exfalso. assumption. 
+          SSSSCase "l = p :: l".
+            simpl in Heql.
+            remember (ble_nat n1 n2).
+            destruct b0; symmetry in Heqb2; [apply ble_nat_true in Heqb2 | apply ble_nat_false in Heqb2].
+            SSSSSCase "n1 <= n2".
+              remember (beq_nat n1 n2).
+              destruct b0; symmetry in Heqb3; [apply beq_nat_true in Heqb3 | apply beq_nat_false in Heqb3].
+              SSSSSSCase "n1 = n2".
+                inversion Heql. subst. repeat constructor.
+              SSSSSSCase "n1 <> n2".
+                inversion Heql. subst. repeat constructor.
+                apply kvl_sorted_key_across_app in H2. exfalso. omega.
+            SSSSSCase "~n1 <= n2".
+              remember (ble_nat n1 n4).
+              destruct b0; symmetry in Heqb3; [apply ble_nat_true in Heqb3 | apply ble_nat_false in Heqb3].
+              SSSSSSCase "n1 <= n4".
+                remember (beq_nat n1 n4).
+                destruct b0; symmetry in Heqb4; [apply beq_nat_true in Heqb4 | apply beq_nat_false in Heqb4].
+                  apply kvl_sorted_key_across_app in H2. exfalso. omega.
+                  apply kvl_sorted_key_across_app in H2. exfalso. omega.
+              SSSSSSCase "~n1 <= n4".
+                inversion Heql.
+                repeat constructor.
+      SSCase "~n2 <= n4".
+        remember (insert_into_list n1 b2 ((n4, b5) :: insert_into_list n2 b3 (witness ++ (n1, witness1) :: witness0))).
+        destruct l.
+        SSSCase "l = []".
+          apply insert_into_list_eq_nil_impl_false in Heql. exfalso. omega.
+        SSSCase "l = p :: l".
+          inversion Heql.
+          remember (ble_nat n1 n4).
+          destruct b0; symmetry in Heqb1; [apply ble_nat_true in Heqb1 | apply ble_nat_false in Heqb1].
+          SSSSCase "n1 <= n4".
+            remember (beq_nat n1 n4).
+            destruct b0; symmetry in Heqb2; [apply beq_nat_true in Heqb2 | apply beq_nat_false in Heqb2].
+            SSSSSCase "n1 = n4".
+              remember (insert_into_list n2 b3 (witness ++ (n1, witness1) :: witness0)).
+              destruct l0.
+                SSSSSSCase "l0 = []".
+                  subst.
+                  apply insert_into_list_eq_nil_impl_false in Heql0. exfalso. assumption.
+                SSSSSSCase "l0 = p :: l0".
+                  apply kvl_sorted_key_across_app in H2. exfalso. omega. 
+            SSSSSCase "n1 <> n4".
+              inversion H3.
+              subst. repeat constructor.
+          SSSSCase "~n1 <= n4".
+            inversion H3.
+            remember (insert_into_list n1 b2 (insert_into_list n2 b3 (witness ++ (n1, witness1) :: witness0))).
+            destruct l0.
+            SSSSSCase "l0 = []".
+              apply insert_into_list_eq_nil_impl_false in Heql0. exfalso. assumption.
+            SSSSSCase "l0 = p :: l0".
+              repeat constructor.
+Qed.
