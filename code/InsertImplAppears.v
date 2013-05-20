@@ -388,12 +388,34 @@ Proof.
 Qed.
 
 
-
-
 Lemma split_list_move_first: forall (X: Type) b k1 v1 (l l1 l2: list (nat * X)),
+  b <> 0 -> length l > 1 ->
   (l1, l2) = split_list (S b) ((k1, v1) :: l) ->
-  exists l3, ((k1, v1) :: l3, l2) = split_list b l. 
-Proof. Admitted.
+  exists l3, ((k1, v1) :: l3, l2) = split_list b l.
+Proof.
+  intros X b.
+  induction b; intros.
+    exfalso. omega.
+  Case "b = S b".
+    destruct l.
+      SCase "l = []".
+        simpl in H0. exfalso. omega.
+      SCase "l = p :: l".
+        unfold split_list in H1. simpl in H1.
+  
+  
+  induction l; intros.
+  (*Case "l = []".
+    simpl in H0. exfalso. omega.
+  Case "l = a :: l1".
+    destruct a.
+    
+    unfold split_list in H1. simpl in H1.
+    assert (split_list (S b) ((k1, v1) :: (n, x) :: l) = ((k1, v1) :: cut_list_left b ((n, x) :: l), cut_list_right b ((n, x) :: l))).
+      unfold split_list. simpl. reflexivity.
+    unfold split_list in H2. simpl in H2.*)
+Admitted.
+
 
 Lemma split_list_after_two_appears_later: forall (X: Type) b k1 k2 v1 v2 (l l1 l2: list (nat * X)),
   kvl_sorted ((k1, v1) :: l) ->
@@ -469,19 +491,96 @@ Proof.
         assumption.
 Qed.  
 
-Lemma insert'_overflow_impl_greater_key: forall (X: Type) (b key k k1 k2: nat) (v: X) 
+
+Lemma insert'_overflow_node_impl_greater_key: forall (X: Type) b k k1 k2 v
+                                         (t1' t2: bplustree b X) (kpl kpl': list (nat * bplustree b X)),
+  b <> 0 ->
+  valid_bplustree b X (bptNode b X kpl') ->
+  find_subtree k kpl = Some(k1, (bptNode b X kpl')) ->
+  insert' (height (bptNode b X kpl')) k v (bptNode b X kpl') = (t1', Some(k2, t2)) ->
+  kvl_sorted kpl ->
+
+  k1 < k2.
+Proof.    
+  intros.
+  generalize dependent t1'. generalize dependent t2. generalize dependent k2.
+  generalize dependent k1. 
+  induction kpl; intros.
+  Case "kpl = []".
+    inversion H1.
+  Case "kpl = a :: kpl".
+    destruct a.
+    destruct kpl.
+    SCase "kpl = []".
+      
+      destruct (height (bptNode b X kpl')). simpl in H2. inversion H2.
+      simpl in H2.
+      remember (find_subtree k kpl'). destruct o. destruct p.
+      SSCase "find subtree found something".
+        remember (insert' n0 k v b1). destruct p. destruct o.
+        SSSCase "subsubtree did overflow". 
+          destruct p. remember (insert_into_list n1 b2 (insert_into_list n2 b3 kpl')) as insins.
+          destruct kpl'. inversion H0. simpl in H6. omega. destruct p.
+          
+          destruct (ble_nat (length insins) (b * 2 + 1)). inversion H2.
+          remember (cut_list_right (b + 1) insins). destruct l. inversion H2.
+          destruct p. subst.
+          admit.
+          
+          
+        SSSCase "subsubtree did not overflow".
+          inversion H2. 
+      SSCase "find subtree did not find anything".
+        inversion H2.
+    SCase "kpl = a :: kpl".
+      destruct p. simpl in H1.
+      remember (ble_nat n k). destruct b2.
+      SSCase "n <= k".
+        remember (blt_nat k n0). destruct b2.
+        SSSCase "k <= n0".
+          simpl in H1. inversion H1. subst. 
+          admit. (*shoudl be provable by unfolding insert'*)
+        SSSCase "n0 < k".
+          simpl in H1. eapply IHkpl. 
+          apply list_tail_is_sorted in H3. assumption.
+          apply H1.
+          apply H2.
+      SSCase "k < n".
+        assert (k < n).
+          symmetry in Heqb2. apply ble_nat_false in Heqb2. omega.
+        assert (find_subtree k ((n, b0) :: (n0, b1) :: kpl) = None).
+          apply find_subtree_before_head_None. omega. apply H3.
+        simpl in H5.
+        rewrite <- Heqb2 in H5. simpl in H5. simpl in H1. rewrite H1 in H5. inversion H5.
+Qed.
+
+Lemma insert'_overflow_impl_greater_key: forall (X: Type) b k k1 k2 v 
                                          (t1 t1' t2: bplustree b X) (kpl: list (nat * bplustree b X)),
   b <> 0 ->
   valid_bplustree b X t1 ->
   find_subtree k kpl = Some(k1, t1) ->
   insert' (height t1) k v t1 = (t1', Some(k2, t2)) ->
-  key <= k ->
   kvl_sorted kpl ->
 
   k1 < k2.
-Proof.
-  admit.
-Admitted.
+Proof. 
+  intros.
+  destruct t1.
+  Case "leaf".
+    destruct l. unfold insert' in H2. simpl in H2. unfold insert_leaf in H2. 
+    assert (ble_nat (length (insert_into_list k v [])) (b * 2) = true).
+      simpl. destruct b. omega. simpl. reflexivity.
+    rewrite H4 in H2. inversion H2.
+    destruct p.
+    eapply insert'_overflow_leaf_impl_greater_key in H2. apply H2. assumption.
+    reflexivity. apply H0.
+    apply H1.
+    admit.
+    assumption.
+  Case "node".
+    apply insert'_overflow_node_impl_greater_key with (k1:=k1)(kpl:=kpl) in H2;
+    try assumption.
+Qed.
 
 
 Lemma insert'_overflow_impl_lesser_than_next: forall (X: Type) (b k k1 k2 k3: nat) (v: X) (t1 t1' t2 t3: bplustree b X) (l1 l2: list (nat * bplustree b X)),
