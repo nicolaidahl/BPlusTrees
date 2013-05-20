@@ -1070,8 +1070,9 @@ Proof.
                 apply H7.
                 apply H2.
                 assumption.
-            apply find_subtree_impl_kpl_app in Heqo. 
-            destruct Heqo. destruct H12.
+            assert(find_subtree k kpl = Some (n, child)) by assumption.
+            apply find_subtree_impl_kpl_app in H12. 
+            do 2 destruct H12.
             inversion H12. clear H12.
             rewrite H13.
             destruct witness0.
@@ -1094,8 +1095,14 @@ Proof.
                 inversion H24.
                 apply blt_nat_true in H31.
                 omega.
+              assert (n0 < witness1).
+                inversion H.
+                eapply insert'_overflow_impl_lesser_than_next.
+                  rewrite H13 in Heqo. apply Heqo.
+                  rewrite H3 in H7. apply H7.
+                  rewrite H13 in H22. apply H22.
               assert (n < n0 < witness1).
-                admit. (* need to find a way to find that n0 < witness1 *)
+                omega.
               rewrite insert_into_list_middle_twice; try (rewrite H13 in H; inversion H; assumption).
               
               (* We need two cases if n <= k < n0 or n0 <= k < witness *)
