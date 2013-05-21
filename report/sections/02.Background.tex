@@ -10,35 +10,45 @@
 %       - Mention how one could make it optimal.
 %       - A tree in a tree in a tree, dawg
 %     - Running time out of scope
-
-\subsection{Gallina}
-Gallina is a purely functional language\todo{ref}, which is used by the Coq interactive proof assistant. It is very lean, and does not include non-functional data structures, such as arrays\todo{ref}.
-
-\subsection{B+ tree}
+\subsection{B+ trees}
 \label{subsec:Background_Bplus_tree}
-The B+ tree is a n-ary, self-balancing, tree data structure\,\cite[pp. 334]{ramakrishnan2003database}, similar to a B-tree. It is composed of a root, nodes, and leaves. The root may be a leaf or a node. Nodes hold pairs of keys and pointers, $(k, p)$. $P$ points to either a node or leaf that holds the values over $k$, but below the key of the next pair. Leaves hold pairs of keys and values, $(k, v)$. In this project keys are always natural numbers, while values can have any type, denoted by $X$. Duplicate keys are not allowed. A typical B+ tree can be seen in Fig. \ref{fig:bplustree}.
+The B+ tree is a n-ary, self-balancing, tree data structure\,\cite[pp. 334]{ramakrishnan2003database}, similar to a B-tree. It is composed of a root, nodes, and leaves. The root may be a leaf or a node. Nodes hold keys and pointers, and leaves hold keys mapped to values, as shown in Fig \ref{fig:bplustree}. Duplicate keys are not allowed. A pointer $p_0$ in a node points to the subtree containing keys with values lower than the key $k$ following $p_0$. The next pointer in the node, $p_1$ points to the subtree containing keys with values that are larger than $k$. For a given B+ tree, an order $b$ determines the capacity of nodes and leaves\,\cite[p. 335]{ramakrishnan2003database}. See Table \ref{tab:bpluschildren} for capacities. In most B+ tree implementations, each leaf is joined to the next leaf by a pointer, allowing fast sequential access to values, which is useful for range queries.
+
+% Maybe use this $\forall~k_0\in p_0,~k_1\in p_1: k_0< k < k_1$
 
 \begin{figure}
  \centering
    \includegraphics[width=90mm]{diagrams/BPlusTree.pdf}
- \caption{An example of a B+ tree with $b=1$. The bottom row contains leaves, with values, in this case characters, in the dashed boxes.}
+ \caption{An example of a B+ tree with $b=1$. The black boxes in the root and nodes are pointers to subtrees. The bottom row contains leaves, with values, in this case characters, in the dashed boxes. Pointers connect the leaves.}
  \label{fig:bplustree}
 \end{figure}
 
-For a given B+ tree, an order $b$ determines the capacity of nodes and leaves. A root node must have between 2 and $2b+1$ children, while a root leaf must have between + $2b$ values. The constraint is tighter for nodes and leaves which are not the root. An internal node must have between $b+1$ and $2b+1$ children, while non-root leaves must have between $b$ and $2b$ values\,\cite[p. 335]{ramakrishnan2003database}. 
+\begin{table}
+\centering
+\label{tab:bpluschildren}
+\begin{tabular}{| l | l | l | l | l | }
+\hline
+           & Min keys~ & Max keys~ & Min children~ & Max children~ \\ \hline
+Root node~ &  1  & $2b$ &  2    & $2b+1$ \\ \hline
+Root leaf  &  0  & $2b$ &  0    & $2b$   \\ \hline
+Node       & $b$ & $2b$ & $b+1$ & $2b+1$ \\ \hline
+Leaf       & $b$ & $2b$ & $b$   & $2b$   \\ \hline
+\end{tabular}
+\caption{Capacity of nodes and leaves in a B+ tree.}
+\end{table}
 
 \paragraph{}
-In our implementation, a node is a list of key-pointer $(k, p)$ pairs where $p$ points to a child tree. A leaf is a list of key-value $(k, v)$ pairs. The height of the tree is referred to as $h$, while $n$ is the total number of $(k, v)$ pairs. We support three operations, which we will refer to as our primary operations. These are: $insert$, $search$ and $height$. The theory behind the $height$ function is trivial, and will not be explained in this section, but the theory behind the $insert$ and $search$ functions require some explanation. In most B+ tree implementations, each leaf is joined to the next leaf by a pointer, allowing fast sequential access to values, which is useful for range queries. To simplify the B+ tree data structure, this has been omitted, and sequential access to values is implemented through a simple in-order traversal of the B+ tree. Likewise, the deletion function is beyond the scope of this project, as the work required for just the $insert$ and $search$ functions is substantial.
+In this project, we will work with three functions, which we will refer to as our primary functions. These are: $insert$, $search$ and $height$. The theory behind the $height$ function is trivial, as a B+ tree is always balanced, and will not be explained in this section, but the theory behind the $insert$ and $search$ functions require some explanation. The deletion function is beyond the scope of this project, as the work required for just the $insert$ and $search$ functions is substantial.
 
 \subsubsection{Search}
 \label{subsec:Search}
-The $search$ function takes two arguments: a search key $sk$, and a tree $t$, to search in. Tree can be either a node or a leaf. If the the tree is a node, the function finds the pointer $p$ in the node for which it holds that
+The $search$ function takes two arguments: a search key $sk$, and a tree, $t$, to search in. The tree can be either a node or a leaf. If the the tree is a node, the function finds the pointer $p$ in the node for which it holds that
 \begin{itemize}
 	\item $p$ is the start pointer of the node and there exists a key $k$ that immediately succeeds $p$, where $sk < k$ OR
-	\item There exists keys $k1$ and $k2$ on each side of $p$ and $k1 <= sk < k2$ OR
+	\item The keys $k1$ and $k2$ exists on either side of $p$, such that $k1 <= sk < k2$ OR
 	\item $p$ is the end pointer of the node and for all keys $k$ in the node $k <= sk$
 \end{itemize}
-The function then recursively calls itself with the subtree $p$. Once the function reaches a leaf, the function searches for the key-value pair. This is often implemented as binary search in an array or tree. This results in a time complexity of $O(h~log~b)$, as one node in each level must be visited, and the binary search takes $log~b$ operations.
+The function then recursively calls itself with the subtree $p$. Once the function reaches a leaf, the function searches for the key, and returns the value. This is often implemented as binary search in an array or tree. This results in a time complexity of $O(h~log~b)$, as one node in each level must be visited, and the binary search takes $log~b$ operations.
 
 \subsubsection{Insert}
-The $insert$ function takes two arguments: a key-value pair $(k, v)$ and a tree $t$ to insert the pair into. The function starts at the root of the tree, and recursively searches for the leaf to insert into. It does this search in the same way the $search$ function does. The pair is then inserted into the leaf at the correct position. If the insertion results in the leaf having more than $2b$ values, the leaf must be split. This is called a leaf overflow. This is handled by splitting the leaf in half, and inserting a pointer to the new leaf in the parent node. If the parent node now has more than $2b$ children, it most also be split, following the same pattern. This can continue all the way to the root, which in turn can be split into two. If this happens, a new root node is created, as a parent to two split halves of the old root, and the height of the tree increases by one. Thus, a B+ tree can be seen to grow up from the leaves and is always in perfect balance. The complexity of such an $insert$ function is $O(h~log~b)$, using the same reasoning as for search.
+The $insert$ function takes two arguments: a key-value pair $(k, v)$ and a tree $t$ to insert the pair into. The function starts at the root of the tree, and recursively searches for the leaf to insert into. It does this search in the same way the $search$ function does. The pair is then inserted into the leaf at the correct position. If the insertion results in the leaf having more than $2b$ values, the leaf must be split. This is called a leaf overflow. This is handled by splitting the leaf in half, and inserting a pointer to the new leaf in the parent node. If the parent node now has more than $2b+1$ children, it most also be split, following the same pattern. This can continue all the way to the root, which in turn can be split into two. If this happens, a new root node is created, as a parent of the two split halves of the old root, and the height of the tree increases by one. Thus, a B+ tree can be seen to grow up from the leaves, and is always in balance. The complexity of such an $insert$ function is $O(h~log~b)$, using the same reasoning as for search, and assuming that nodes and leaves with overflows can be split in constant time.
