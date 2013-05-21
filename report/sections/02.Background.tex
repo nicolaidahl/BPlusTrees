@@ -32,6 +32,7 @@ In our implementation, a node is a list of key-pointer $(k, p)$ pairs where $p$ 
 
 \subsubsection{Search}
 \label{subsec:Search}
+\todo{this section must contain a better discussion of the asymptotic complexity. Why is the running time logb(n)? Because you can do binary search in node keys.}
 The $search$ function takes two arguments: a search key $sk$, and a tree $t$, to search in. Tree can be either a node or a leaf. If the the tree is a node, the function finds the pointer $p$ in the node for which it holds that
 \begin{itemize}
 	\item $p$ is the start pointer of the node and there exists a key $k$ that immediately succeeds $p$, where $sk < k$ OR
