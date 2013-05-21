@@ -1,5 +1,16 @@
 %!TEX root = ../BPlusTree-report.tex
 \section{Conclusion}
 \label{sec:Conclusion}
-% Notes:
-% HAAAARD
+In this paper we presented a definition of B+ trees in Coq, and accounted for the performance and representational challenges connected to it. This included adding an extra zero key to the beginning of all nodes, as well as using the height of the given tree as a counter on which the insertion and search functions recursed. 
+\paragraph{}
+First we defined an inductive data type, called $valid\_bplustree~b~X$, for usage in various proofs related to the primary functions on B+ trees. Then we defined the three main theorems of a complete proof of correctness with regards to insertion and search. We decided to focus on $insert\_search\_works$, as we believed it to be the most significant of the three. As a consequence, we chose to leave $insert\_preserves\_tree\_validity$ and $insert\_preserves\_elements$ as future work.
+\paragraph{}
+To accommodate the need for reasoning about the search and insert functions independently, an intermediate proposition was defined. The $kv\_appears\_in\_tree$, $appears\_in\_tre$, $kv\_appears\_in\_kvl$, and $appears\_in\_kvl$ propositions were used to prove a list of facts that are informally described here:
+
+\begin{itemize}
+	\item If a key-value pair $(k, v)$ appears in a tree $t$ then $search~k~t = Some~(v)$
+	\item If a key $k$ does not appear in a tree $t$ then $search~k~t = None$
+	\item If the key of a key-value pair $(k, v)$ does not appear in a tree $t$, then performing $insert~k~v~t$ ensures that the pair appears in $t$.
+\end{itemize} 
+
+These facts were ultimately used to verify the correctness of $insert\allowbreak{}\_search\allowbreak{}\_works$, the main theorem of the paper stating that subsequent insertion of a key-value pair and search of the same key-value pair would find it again.

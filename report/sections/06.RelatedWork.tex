@@ -1,9 +1,10 @@
 %!TEX root = ../BPlusTree-report.tex
 \section{Related Work}
 \label{sec:RelatedWork}
-Earlier work\,\cite{sexton2008reasoning} has reasoned about B+ trees using separation logic, but to our knowledge, no one has produced a complete proof of correctness for a B+ tree implementation\todo{Write about this}.
+Sexton et al.\,\cite{sexton2008reasoning} use an abstract machine to specify operations on B+ trees, and then use separation logic to reason about these operations, specifically the insert and range query operations. Their approach lets them reason locally about the subtree being modified, while the rest of the tree is invariant. This makes their proofs less complex, as they only have to take a small part of the tree into account. It should be noted that their work does not constitute a formal proof, but rather a rigorous informal proof.
 
-%\todo{Write about http://ynot.cs.harvard.edu/papers/popl10.pdf}
+\paragraph{}
+Ernst et al.\,\cite{ernst2011verification} use the TVLA tool to conduct shape analysis on B+ trees, automatically discharching many proof obligations related to the structure of B+ trees, such as proof of acyclicity, while using the KIV interactive proof assistant to prove move complicated obligations. They argue that automated shape analysis combined with interactive theorem proving is a great improvement over using one or the other alone.
 
-%\todo{Write about http://link.springer.com/content/pdf/10.1007%2F978-3-642-24690-6_14.pdf}
-
+\paragraph{}
+Malecha et al.\,\cite{malecha2010toward} describe their formal verification of a light weight relational database management system including, the B+ data structure. Using the Ynot extension for Coq to reason about imperative, pointer-based code, they are capable of keeping the references between leaves,effectively supporting range queries.
