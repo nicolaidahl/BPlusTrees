@@ -1,0 +1,23 @@
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Fixpoint} \coqdocvar{find\_subtree} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{sk}: \coqdocvar{nat}) (\coqdocvar{kpl}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})) : \coqdocvar{option} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) :=\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{match} \coqdocvar{kpl} \coqdockw{with}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} [] \ensuremath{\Rightarrow} \coqdocvar{None}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (\coqdocvar{k}, \coqdocvar{last\_tree}) :: [] \ensuremath{\Rightarrow} \coqdockw{if} \coqdocvar{ble\_nat} \coqdocvar{k} \coqdocvar{sk} \coqdockw{then} \coqdocvar{Some} (\coqdocvar{k}, \coqdocvar{last\_tree}) \coqdockw{else} \coqdocvar{None}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (\coqdocvar{k1}, \coqdocvar{subtree}) :: ((\coqdocvar{k2}, \coqdocvar{\_}) :: \coqdocvar{\_}) \coqdockw{as} \coqdocvar{kpl'} \ensuremath{\Rightarrow}
+\coqdoceol
+\coqdocindent{3.00em}
+\coqdockw{if} \coqdocvar{ble\_nat} \coqdocvar{k1} \coqdocvar{sk} \&\& \coqdocvar{blt\_nat} \coqdocvar{sk} \coqdocvar{k2}\coqdoceol
+\coqdocindent{4.0em}
+\coqdockw{then} \coqdocvar{Some} (\coqdocvar{k1}, \coqdocvar{subtree})\coqdoceol
+\coqdocindent{4.0em}
+\coqdockw{else} \coqdocvar{find\_subtree} \coqdocvar{sk} \coqdocvar{kpl'}\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{end}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\end{coqdoccode}

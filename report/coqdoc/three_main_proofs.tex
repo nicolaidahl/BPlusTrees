@@ -1,0 +1,25 @@
+
+
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Theorem} \coqdocvar{insert\_search\_works}: \coqdockw{\ensuremath{\forall}} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{k}: \coqdocvar{nat}) (\coqdocvar{v}: \coqdocvar{X}) (\coqdocvar{t}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}),\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} \coqdocvar{t} \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{\lnot} \coqdocvar{appears\_in\_tree} \coqdocvar{k} \coqdocvar{t} \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{search} \coqdocvar{k} (\coqdocvar{insert} \coqdocvar{k} \coqdocvar{v} \coqdocvar{t}) = \coqdocvar{Some} (\coqdocvar{v}).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Theorem} \coqdocvar{insert\_preserves\_tree\_validity} : \coqdockw{\ensuremath{\forall}} (\coqdocvar{b}: \coqdocvar{nat}) (\coqdocvar{X}: \coqdockw{Type}) (\coqdocvar{tree}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) (\coqdocvar{k}: \coqdocvar{nat}) (\coqdocvar{v}: \coqdocvar{X}),\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} \coqdocvar{tree} \ensuremath{\rightarrow} \coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} (\coqdocvar{insert} \coqdocvar{k} \coqdocvar{v} \coqdocvar{tree}).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Theorem} \coqdocvar{insert\_preserves\_elements}: \coqdockw{\ensuremath{\forall}} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} \coqdocvar{k} (\coqdocvar{v}:\coqdocvar{X}) (\coqdocvar{t}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}),\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{insert\_into\_list} \coqdocvar{k} \coqdocvar{v} (\coqdocvar{inorder} \coqdocvar{t}) = \coqdocvar{inorder} (\coqdocvar{insert} \coqdocvar{k} \coqdocvar{v} \coqdocvar{t}).\coqdoceol
+\coqdocemptyline
+\end{coqdoccode}
