@@ -13,31 +13,7 @@
 In this section we will examine how the proof of InsertSearchWorks was realized. Firstly, we give an overview of the supporting inductive data types as well as the overall strategy we have used to approach this proof obligation. Secondly, we break the problem down into the proof obligations related to search and insert, respectively. \todo{Maybe rewrite this little intro}
 
 \subsection{Proofs about sorting}
-A vital aspect of B+ trees is that all of the key-point and key-value lists in nodes and leaves are sorted by the key. $kvl\_sorted$ is a proposition that only holds if the list it is applied to is sorted. The proposition is reproduced in Fig. \ref{fig:kvl_sorted}.
-
-\begin{figure}
-  \begin{coqdoccode}
-  \coqdocnoindent
-  \coqdockw{Inductive} \coqdocvar{kvl\_sorted} \{\coqdocvar{X}: \coqdockw{Type}\}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X}) \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
-  \coqdocindent{1.00em}
-  \ensuremath{|}
-  \coqdocvar{kvl\_sorted\_0}: \coqdocvar{kvl\_sorted} []\coqdoceol
-  \coqdocindent{1.00em}
-  \ensuremath{|} \coqdocvar{kvl\_sorted\_1}: \coqdockw{\ensuremath{\forall}} (\coqdocvar{n}: \coqdocvar{nat}) (\coqdocvar{x}: \coqdocvar{X}), \coqdoceol
-  \coqdocindent{8.00em}
-  \coqdocvar{kvl\_sorted} [(\coqdocvar{n}, \coqdocvar{x})]\coqdoceol
-  \coqdocindent{1.00em}
-  \ensuremath{|} \coqdocvar{kvl\_sorted\_cons}: \coqdockw{\ensuremath{\forall}} (\coqdocvar{n1} \coqdocvar{n2}: \coqdocvar{nat}) (\coqdocvar{x1} \coqdocvar{x2}: \coqdocvar{X}) (\coqdocvar{lst}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X})), \coqdoceol
-  \coqdocindent{8.00em}
-  \coqdocvar{kvl\_sorted} ((\coqdocvar{n2},\coqdocvar{x2})::\coqdocvar{lst}) \ensuremath{\rightarrow} \coqdoceol
-  \coqdocindent{8.00em}
-  \coqdocvar{blt\_nat} \coqdocvar{n1} \coqdocvar{n2} = \coqdocvar{true} \ensuremath{\rightarrow}\coqdoceol
-  \coqdocindent{8.00em}
-  \coqdocvar{kvl\_sorted} ((\coqdocvar{n1},\coqdocvar{x1})::(\coqdocvar{n2},\coqdocvar{x2})::\coqdocvar{lst}).\coqdoceol
-  \end{coqdoccode}
-  \caption{Our proposition about sorting}
-  \label{fig:kvl_sorted}
-\end{figure}
+A vital aspect of B+ trees is that all of the key-point and key-value lists in nodes and leaves are sorted by the key. As mentioned in Section \ref{sec:Kvl_sorted}, we have introduced the proposition $kvl\_sorted$ which allows us to argue that lists are sorted and continue to be sorted after certain modifications.
 
 \paragraph{}
 Because almost all of our proofs entail manipulating sorted list, we first built up a extensive set of lemmas and theorems detailing how the proposition behaves when the list is changed --- e.g. if you remove the head of a sorted list, the remainder is still sorted. We have reproduced a few of these behaviors in Fig. \ref{fig:key_sorting_lemmas}. The theorem $insert\_preserves\_sort$ has the most direct impact on the rest of the proofs. This theorem allows us to insert new items into a key-value or key-pointer list and know that the list is still sorted. $sort\_ignores\_values$ simply states that sorting is only concerned with the keys in the list. We can swap out one value for another without impacting the validity of the proposition. $list\_tail\_is\_sorted$ is a very useful lemma when dealing with induction over lists, as it allows us to pop the head element of a list, and know that the the tail is still sorted.
