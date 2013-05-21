@@ -10,12 +10,12 @@ Theorem insert_search_works: forall {X: Type} {b: nat} (k: nat) (v: X) (t: bplus
   ~ appears_in_tree k t ->
   search k (insert k v t) = Some (v).
 Proof.
-  intros. remember (insert k v t). symmetry in Heqb0.
-  assert (valid_bplustree b X b0).
-    apply insert_preserves_tree_validity with (k := k) (v := v) in H.
-    rewrite Heqb0 in H. apply H.
-  apply insert_impl_appears in Heqb0; try assumption.
-  apply appears_impl_search_found in Heqb0; assumption. 
+  intros. remember (insert k v t) as t'; symmetry in Heqt'.
+  assert (valid_bplustree b X t').
+    apply insert_preserves_tree_validity with (k := k) (v := v) in H;
+    subst; assumption.
+  apply insert_impl_appears in Heqt'; try assumption.
+  apply appears_impl_search_found in Heqt'; assumption. 
 Qed.
 
 (* This proof was merely conducted to ensure we were on the right track *)

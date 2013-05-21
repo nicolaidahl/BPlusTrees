@@ -163,6 +163,17 @@ Proof.
     omega.
 Qed.
 
+Lemma above__le: forall n k,
+  above n k <-> n <= k.
+Proof.
+  intros.
+  split; intro.
+  Case "->".
+    unfold above in H. apply ble_nat_true in H. omega.
+  Case "<-".
+    unfold above. apply ble_nat_true. omega.
+Qed.
+
 (*
  * Proofs about min_nat
  *)
@@ -287,66 +298,6 @@ Lemma cons_remove : forall (X: Type) (x: X) (l1 l2: list X),
 Proof.
   intros X x. induction l1; intros; split; intros; inversion H; reflexivity.
 Qed.
-
-
-(* Replaced by functionality in SplitCutList    
-Theorem split_list'_preserves_list' : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
-   length l1 = b -> l1 ++ l2 = l -> split_list' b l3 l = ((rev l3) ++ l1, l2).
-Proof. 
-  induction b. 
-  Case "b = 0". intros.
-    simpl. apply length_0_impl_nil in H. subst. simpl. rewrite app_nil_r. 
-    reflexivity.
-  Case "b = S b". intros.
-    destruct l.
-    SCase "l = []".
-      apply app_length_le_l1 in H0. simpl in H0. rewrite H in H0. inversion H0.
-    SCase "l = x::l".
-      simpl. destruct l1. simpl in H. inversion H.
-      rewrite <- app_comm_cons in H0. inversion H0. rewrite H3.
-      simpl. rewrite rev_app_cons. apply IHb.
-      simpl in H. inversion H. reflexivity. apply H3.
-Qed.  
-
-Theorem split_list'_preserves_list : forall (X: Type) (b: nat) (l l1 l2: list X),
-   length l1 = b -> l1 ++ l2 = l -> split_list' b [] l = (l1, l2).
-Proof.
-  intros.
-  replace (l1) with (rev [] ++ l1) by reflexivity.
-  apply split_list'_preserves_list'; assumption.
-Qed.
-
-Theorem split_list_preserves_list : forall (X: Type) (b: nat) (l l1 l2: list X),
-   length l1 = b -> l1 ++ l2 = l -> split_list b l = (l1, l2).
-Proof.
-  intros. unfold split_list. apply split_list'_preserves_list; assumption.
-Qed.
-
-Theorem split_list'_preserves_lists : forall (X: Type) (b: nat) (l l1 l2 l3: list X),
-   split_list' b l3 l = ((rev l3)++l1, l2) -> l = l1 ++ l2 /\ length l1 = b.
-Proof.
-  intros. generalize dependent l3.
-  induction b.
-  Case "b = 0".
-    intros. simpl in H.
-    inversion H. 
-    symmetry in H1. apply app_list_eq_list_list in H1.
-    subst.
-    simpl.
-    split; reflexivity.
-  Case "b = S b".
-    admit.
-Admitted.
-
-Theorem split_list_preserves_lists : forall (X: Type) (b: nat) (l l1 l2: list X),
-   split_list b l = (l1, l2) -> l = l1 ++ l2 /\ length l1 = b.
-Proof.
-  intros.
-  unfold split_list in H. replace (l1) with ((rev [])++l1) in H by reflexivity.
-  apply split_list'_preserves_lists in H. apply H.
-Qed.
-*)
-
 
 Lemma all_keys_elim_cons : forall (X: Type) (k1 k2: nat) (v1 v2: X) (l: list (nat*X)),
   above k1 k2 -> all_keys X (above k1) ((k1, v1) :: l) -> all_keys X (above k1) ((k1, v1) :: (k2, v2) :: l).

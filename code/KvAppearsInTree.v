@@ -224,31 +224,4 @@ Proof.
       omega.
 Qed.
 
-(*
-Lemma key_valid_when_appears_and_between : forall (X: Type) (b k1 k2 sk: nat) (t: bplustree b X), 
-  appears_in_tree sk t ->
-  all_keys X (between k1 k2) (inorder t)
-  -> k1 <= sk < k2.
-Proof.
-  admit.
-Admitted.
-  
-Lemma appears_in_valid_tree_when_appears_in_subtree : forall (X: Type) (b k sk: nat) (t: bplustree b X) (l1 l2: list (nat * bplustree b X)), 
-  valid_bplustree b X (bptNode b X (l1++(k,t)::l2)) ->
-  appears_in_tree sk t ->
-  appears_in_tree sk (bptNode b X (l1++(k,t)::l2)).
-Proof.
-  intros.
-  inversion H.
-  induction l1.
-    simpl in *.
-    inversion H8.
-    apply ait_node_here; try assumption.
-    eapply key_valid_when_appears_and_between.
-      apply H0.
-      apply H11.
-    admit.
-*) 
-
-
   

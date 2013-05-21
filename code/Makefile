@@ -64,7 +64,8 @@ HeightProofs.vo: HeightProofs.v BPlusTree.vo HelperProofs.vo
 	$(COQC) HeightProofs.v
 
 InsertProofs.vo: InsertProofs.v BPlusTree.vo HelperProofs.vo HeightProofs.vo\
-								 SortingProofs.vo AppearsInTree.vo FindSubtreeProofs.vo
+								 SortingProofs.vo AppearsInTree.vo FindSubtreeProofs.vo\
+								 ValidSplitsProofs.vo
 	$(COQC) InsertProofs.v
 
 InsertPreservesProofs.vo: InsertPreservesProofs.v BPlusTree.vo \
@@ -94,6 +95,6 @@ InsertSearchWorksProofs.vo: InsertSearchWorksProofs.v BPlusTree.vo \
 	$(COQC) InsertSearchWorksProofs.v
 
 ValidSplitsProofs.vo: ValidSplitsProofs.v BPlusTree.vo ValidBPlusTree.vo \
-											InductiveDataTypes.vo
+											InductiveDataTypes.vo HelperProofs.vo SortingProofs.vo
 	$(COQC) ValidSplitsProofs.v
 
