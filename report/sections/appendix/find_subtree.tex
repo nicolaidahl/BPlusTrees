@@ -1,6 +1,10 @@
+%!TEX root = ../../BPlusTree-report.tex
+
 \begin{coqdoccode}
 \coqdocnoindent
-\coqdockw{Fixpoint} \coqdocvar{find\_subtree} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{sk}: \coqdocvar{nat}) (\coqdocvar{kpl}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})) : \coqdocvar{option} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) :=\coqdoceol
+\coqdockw{Fixpoint} \coqdocvar{find\_subtree} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{sk}: \coqdocvar{nat})
+\coqdoceol
+(\coqdocvar{kpl}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})) : \coqdocvar{option} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) :=\coqdoceol
 \coqdocindent{1.00em}
 \coqdockw{match} \coqdocvar{kpl} \coqdockw{with}\coqdoceol
 \coqdocindent{2.00em}
