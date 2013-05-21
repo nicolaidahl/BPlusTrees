@@ -3,3 +3,241 @@
 \label{sec:Appendix}
 \section{Running the code}
 The code for this project is hosted on Github at \url{https://github.com/nicolaidahl/BPlusTrees}. The Coq implementation resides in the ./code/ subdirectory. A Makefile is provided that will build the project. It has been tested with Coq 8.3pl5 and later.
+
+\newpage
+
+\section{Search Source}
+\label{sec:SearchSource}
+
+\begin{coqdoccode}
+\coqdockw{Fixpoint} \coqdocvar{search\_leaf} \{\coqdocvar{X}: \coqdockw{Type}\} (\coqdocvar{sk}: \coqdocvar{nat}) (\coqdocvar{kvl}: (\coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X}))) : \coqdocvar{option} \coqdocvar{X} :=\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{match} \coqdocvar{kvl} \coqdockw{with}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} \coqdocvar{nil} \ensuremath{\Rightarrow} \coqdocvar{None}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (\coqdocvar{k}, \coqdocvar{v}) :: \coqdocvar{kvl'} \ensuremath{\Rightarrow} \coqdockw{if} \coqdocvar{beq\_nat} \coqdocvar{k} \coqdocvar{sk} \coqdockw{then} \coqdocvar{Some} \coqdocvar{v} \coqdockw{else} \coqdocvar{search\_leaf} \coqdocvar{sk} \coqdocvar{kvl'}\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{end}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\end{coqdoccode}
+
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Fixpoint} \coqdocvar{find\_subtree} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{sk}: \coqdocvar{nat}) (\coqdocvar{kpl}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})) : \coqdocvar{option} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) :=\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{match} \coqdocvar{kpl} \coqdockw{with}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} [] \ensuremath{\Rightarrow} \coqdocvar{None}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (\coqdocvar{k}, \coqdocvar{last\_tree}) :: [] \ensuremath{\Rightarrow} \coqdockw{if} \coqdocvar{ble\_nat} \coqdocvar{k} \coqdocvar{sk} \coqdockw{then} \coqdocvar{Some} (\coqdocvar{k}, \coqdocvar{last\_tree}) \coqdockw{else} \coqdocvar{None}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (\coqdocvar{k1}, \coqdocvar{subtree}) :: ((\coqdocvar{k2}, \coqdocvar{\_}) :: \coqdocvar{\_}) \coqdockw{as} \coqdocvar{kpl'} \ensuremath{\Rightarrow}
+\coqdoceol
+\coqdocindent{3.00em}
+\coqdockw{if} \coqdocvar{ble\_nat} \coqdocvar{k1} \coqdocvar{sk} \&\& \coqdocvar{blt\_nat} \coqdocvar{sk} \coqdocvar{k2}\coqdoceol
+\coqdocindent{4.0em}
+\coqdockw{then} \coqdocvar{Some} (\coqdocvar{k1}, \coqdocvar{subtree})\coqdoceol
+\coqdocindent{4.0em}
+\coqdockw{else} \coqdocvar{find\_subtree} \coqdocvar{sk} \coqdocvar{kpl'}\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{end}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\end{coqdoccode}
+
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Fixpoint} \coqdocvar{search'} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{counter} \coqdocvar{sk}: \coqdocvar{nat}) (\coqdocvar{tree}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) \{\coqdockw{struct} \coqdocvar{counter}\}: \coqdocvar{option} \coqdocvar{X} :=\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{match} (\coqdocvar{counter}, \coqdocvar{tree}) \coqdockw{with}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (\coqdocvar{\_}, \coqdocvar{bptLeaf} \coqdocvar{kvl}) \ensuremath{\Rightarrow} \coqdocvar{search\_leaf} \coqdocvar{sk} \coqdocvar{kvl}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (0, \coqdocvar{\_}) \ensuremath{\Rightarrow} \coqdocvar{None}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (\coqdocvar{S} \coqdocvar{counter'}, \coqdocvar{bptNode} \coqdocvar{kpl}) \ensuremath{\Rightarrow} \coqdockw{match} \coqdocvar{find\_subtree} \coqdocvar{sk} \coqdocvar{kpl} \coqdockw{with}\coqdoceol
+\coqdocindent{3.00em}
+\ensuremath{|} \coqdocvar{Some} (\coqdocvar{\_}, \coqdocvar{subtree}) \ensuremath{\Rightarrow} \coqdocvar{search'} \coqdocvar{counter'} \coqdocvar{sk} \coqdocvar{subtree}\coqdoceol
+\coqdocindent{3.00em}
+\ensuremath{|} \coqdocvar{None} \ensuremath{\Rightarrow} \coqdocvar{None}\coqdoceol
+\coqdocindent{2.00em}
+\coqdockw{end}\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{end}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\end{coqdoccode}
+
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Definition} \coqdocvar{search} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{sk}: \coqdocvar{nat}) (\coqdocvar{tree}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) : \coqdocvar{option} \coqdocvar{X} := \coqdocvar{search'} (\coqdocvar{height} \coqdocvar{tree}) \coqdocvar{sk} \coqdocvar{tree}.\coqdoceol
+\end{coqdoccode}
+
+\newpage
+
+\section{Insert Source}
+\label{sec:InsertSource}
+
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Fixpoint} \coqdocvar{insert\_into\_list} \{\coqdocvar{X}: \coqdockw{Type}\} (\coqdocvar{k}: \coqdocvar{nat}) (\coqdocvar{v}: \coqdocvar{X}) (\coqdocvar{kvl}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X})) : \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X}) :=\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{match} \coqdocvar{kvl} \coqdockw{with} \coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} \coqdocvar{nil} \ensuremath{\Rightarrow} [(\coqdocvar{k}, \coqdocvar{v})]\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (\coqdocvar{k'}, \coqdocvar{v'}) :: \coqdocvar{kvl'} \ensuremath{\Rightarrow} \coqdockw{if} \coqdocvar{ble\_nat} \coqdocvar{k} \coqdocvar{k'}\coqdoceol
+\coqdocindent{3.00em}
+\coqdockw{then} \coqdockw{if} \coqdocvar{beq\_nat} \coqdocvar{k} \coqdocvar{k'} \coqdoceol
+\coqdocindent{4.00em}
+\coqdockw{then} ((\coqdocvar{k}, \coqdocvar{v}) :: \coqdocvar{kvl'}) \coqdoceol
+\coqdocindent{4.00em}
+\coqdockw{else} ((\coqdocvar{k}, \coqdocvar{v}) :: \coqdocvar{kvl})\coqdoceol
+\coqdocindent{3.00em}
+\coqdockw{else} (\coqdocvar{k'}, \coqdocvar{v'}) :: (\coqdocvar{insert\_into\_list} \coqdocvar{k} \coqdocvar{v} \coqdocvar{kvl'})\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{end}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\end{coqdoccode}
+
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Definition} \coqdocvar{insert\_leaf} \{\coqdocvar{X}: \coqdockw{Type}\} (\coqdocvar{b}: \coqdocvar{nat}) (\coqdocvar{k}: \coqdocvar{nat}) (\coqdocvar{v}: \coqdocvar{X}) (\coqdocvar{kvl}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X})): (\coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X}) \ensuremath{\times} \coqdocvar{option} (\coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X}))) :=\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{let} \coqdocvar{kvl'} := \coqdocvar{insert\_into\_list} \coqdocvar{k} \coqdocvar{v} \coqdocvar{kvl} \coqdoctac{in}\coqdoceol
+\coqdocindent{2.00em}
+\coqdockw{if} \coqdocvar{ble\_nat} (\coqdocvar{length} \coqdocvar{kvl'}) (\coqdocvar{b} \ensuremath{\times} 2)\coqdoceol
+\coqdocindent{3.00em}
+\coqdockw{then} (\coqdocvar{kvl'}, \coqdocvar{None})\coqdoceol
+\coqdocindent{3.00em}
+\coqdockw{else} \coqdockw{let} (\coqdocvar{fst}, \coqdocvar{snd}) := \coqdocvar{split\_list} \coqdocvar{b} \coqdocvar{kvl'} \coqdoctac{in} (\coqdocvar{fst}, \coqdocvar{Some} \coqdocvar{snd}) \coqdoceol
+\coqdocindent{1.00em}
+.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\end{coqdoccode}
+
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Definition} \coqdocvar{split\_if\_necessary} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{tree}: (\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})):
+(\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X} \ensuremath{\times} \coqdocvar{option} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})) := \coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{match} \coqdocvar{tree} \coqdockw{with}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} \coqdocvar{bptLeaf} \coqdocvar{kvl} \ensuremath{\Rightarrow} (\coqdocvar{tree}, \coqdocvar{None})\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} \coqdocvar{bptNode} \coqdocvar{kpl} \ensuremath{\Rightarrow} \coqdockw{if} \coqdocvar{ble\_nat} (\coqdocvar{length} \coqdocvar{kpl}) ((\coqdocvar{b} \ensuremath{\times} 2) + 1)\coqdoceol
+\coqdocindent{3.00em}
+\coqdockw{then} (\coqdocvar{tree}, \coqdocvar{None})\coqdoceol
+\coqdocindent{3.00em}
+\coqdockw{else} \coqdockw{match} (\coqdocvar{split\_list} (\coqdocvar{b} + 1) \coqdocvar{kpl}) \coqdockw{with}\coqdoceol
+\coqdocindent{4.00em}
+\ensuremath{|} (\coqdocvar{fst}, []) \ensuremath{\Rightarrow} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} \coqdocvar{fst}, \coqdocvar{None})\coqdoceol
+\coqdocindent{4.00em}
+\ensuremath{|} (\coqdocvar{fst}, (\coqdocvar{lmk},\coqdocvar{lmt})::\coqdocvar{snd'}) \ensuremath{\Rightarrow}  \coqdoceol
+\coqdocindent{4.00em}
+(\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} \coqdocvar{fst}, \coqdocvar{Some} (\coqdocvar{lmk}, \coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} ((0, \coqdocvar{lmt})::\coqdocvar{snd'})))\coqdoceol
+\coqdocindent{4.00em}
+\coqdockw{end}\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{end}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\end{coqdoccode}
+
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Definition} \coqdocvar{insert\_node} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{insertion\_key}: \coqdocvar{nat}) (\coqdocvar{old\_tree}: (\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})) \coqdoceol
+\coqdocindent{11.50em}
+(\coqdocvar{input}: (\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X} \ensuremath{\times} \coqdocvar{option} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})))\coqdoceol
+\coqdocindent{21.50em}
+: (\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X} \ensuremath{\times} \coqdocvar{option} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})) :=\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{match} \coqdocvar{old\_tree} \coqdockw{with}\coqdoceol
+\coqdocindent{4.00em}
+\ensuremath{|} \coqdocvar{bptLeaf} \coqdocvar{kvl} \ensuremath{\Rightarrow} \coqdocvar{input}\coqdoceol
+\coqdocindent{4.00em}
+\ensuremath{|} \coqdocvar{bptNode} \coqdocvar{kpl} \ensuremath{\Rightarrow}\coqdoceol
+\coqdocindent{5.00em}
+\coqdockw{match} \coqdocvar{input} \coqdockw{with}\coqdoceol
+\coqdocindent{4.00em}
+\ensuremath{|} (\coqdocvar{t}, \coqdocvar{None}) \ensuremath{\Rightarrow} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} (\coqdocvar{insert\_into\_list} \coqdocvar{insertion\_key} \coqdocvar{t} \coqdocvar{kpl}), \coqdocvar{None})\coqdoceol
+\coqdocindent{7.00em}
+\coqdoceol
+\coqdocindent{8.00em}
+\ensuremath{|} (\coqdocvar{t}, \coqdocvar{Some} (\coqdocvar{new\_key}, \coqdocvar{new\_tree})) \ensuremath{\Rightarrow} \coqdocvar{split\_if\_necessary} (\coqdoceol
+\coqdocindent{26.50em}
+\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} (\coqdoceol
+\coqdocindent{27.50em}
+\coqdocvar{insert\_into\_list} \coqdocvar{insertion\_key} \coqdocvar{t} (\coqdoceol
+\coqdocindent{28.50em}
+\coqdocvar{insert\_into\_list} \coqdocvar{new\_key} \coqdocvar{new\_tree} \coqdocvar{kpl})))\coqdoceol
+\coqdocindent{11.00em}
+\coqdoceol
+\coqdocindent{5.00em}
+\coqdockw{end}\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{end}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\end{coqdoccode}
+
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Fixpoint} \coqdocvar{insert'} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{counter} \coqdocvar{k}: \coqdocvar{nat}) (\coqdocvar{v}: \coqdocvar{X}) (\coqdocvar{tree}: (\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}))\coqdoceol
+\coqdocindent{8.00em}
+: (\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X} \ensuremath{\times} \coqdocvar{option} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})) :=\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{match} (\coqdocvar{tree}, \coqdocvar{counter}) \coqdockw{with}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (\coqdocvar{bptLeaf} \coqdocvar{kvl}, \coqdocvar{\_}) \ensuremath{\Rightarrow} \coqdockw{let} (\coqdocvar{fst}, \coqdocvar{snd\_opt}) := \coqdocvar{insert\_leaf} \coqdocvar{b} \coqdocvar{k} \coqdocvar{v} \coqdocvar{kvl} \coqdoctac{in}\coqdoceol
+\coqdocindent{10.50em}
+\coqdockw{match} \coqdocvar{snd\_opt} \coqdockw{with}\coqdoceol
+\coqdocindent{10.50em}
+\ensuremath{|} \coqdocvar{None} \ensuremath{\Rightarrow} (\coqdocvar{bptLeaf} \coqdocvar{b} \coqdocvar{X} \coqdocvar{fst}, \coqdocvar{None})\coqdoceol
+\coqdocindent{10.50em}
+\ensuremath{|} \coqdocvar{Some} \coqdocvar{snd} \ensuremath{\Rightarrow} \coqdoceol
+\coqdocindent{12.50em}
+\coqdockw{match} \coqdocvar{key\_at\_index} 0 \coqdocvar{snd} \coqdockw{with}\coqdoceol
+\coqdocindent{12.50em}
+\ensuremath{|} \coqdocvar{None} \ensuremath{\Rightarrow} (\coqdocvar{bptLeaf} \coqdocvar{b} \coqdocvar{X} \coqdocvar{fst}, \coqdocvar{None})\coqdoceol
+\coqdocindent{12.50em}
+\ensuremath{|} \coqdocvar{Some} \coqdocvar{first\_key} \ensuremath{\Rightarrow} (\coqdocvar{bptLeaf} \coqdocvar{b} \coqdocvar{X} \coqdocvar{fst}, \coqdocvar{Some} (\coqdocvar{first\_key}, \coqdocvar{bptLeaf} \coqdocvar{b} \coqdocvar{X} \coqdocvar{snd}))\coqdoceol
+\coqdocindent{12.50em}
+\coqdockw{end}\coqdoceol
+\coqdocindent{10.50em}
+\coqdockw{end}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (\coqdocvar{\_}, 0) \ensuremath{\Rightarrow} (\coqdocvar{tree}, \coqdocvar{None})\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (\coqdocvar{bptNode} \coqdocvar{kpl}, \coqdocvar{S} \coqdocvar{counter'}) \ensuremath{\Rightarrow} \coqdockw{match} \coqdocvar{find\_subtree} \coqdocvar{k} \coqdocvar{kpl} \coqdockw{with}\coqdoceol
+\coqdocindent{3.00em}
+\ensuremath{|} \coqdocvar{None} \ensuremath{\Rightarrow} (\coqdocvar{tree}, \coqdocvar{None})\coqdoceol
+\coqdocindent{3.00em}
+\ensuremath{|} \coqdocvar{Some} (\coqdocvar{key}, \coqdocvar{subtree}) \ensuremath{\Rightarrow} \coqdocvar{insert\_node} \coqdocvar{key} \coqdocvar{tree} (\coqdocvar{insert'} \coqdocvar{counter'} \coqdocvar{k} \coqdocvar{v} \coqdocvar{subtree})\coqdoceol
+\coqdocindent{2.00em}
+\coqdockw{end}\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{end}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\end{coqdoccode}
+
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Definition} \coqdocvar{insert} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{k}: \coqdocvar{nat}) (\coqdocvar{v}: \coqdocvar{X}) (\coqdocvar{tree}: (\coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}))\coqdoceol
+\coqdocindent{8.00em}
+: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X} :=\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{match} \coqdocvar{insert'} (\coqdocvar{height} \coqdocvar{tree}) \coqdocvar{k} \coqdocvar{v} \coqdocvar{tree} \coqdockw{with}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (\coqdocvar{tree}, \coqdocvar{None}) \ensuremath{\Rightarrow} \coqdocvar{tree}\coqdoceol
+\coqdocindent{2.00em}
+\ensuremath{|} (\coqdoctac{left}, \coqdocvar{Some} (\coqdocvar{key}, \coqdoctac{right})) \ensuremath{\Rightarrow} \coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} [(0, \coqdoctac{left}), (\coqdocvar{key}, \coqdoctac{right})]\coqdoceol
+\coqdocindent{1.00em}
+\coqdockw{end}.\coqdoceol
+\coqdocemptyline
+\end{coqdoccode}

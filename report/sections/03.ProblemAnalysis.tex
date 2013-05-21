@@ -163,7 +163,7 @@ With the $bplustree$ data type we can start implementing the search and insert f
 
 \subsection{Search}
 \label{subsec:search}
-Our implementation of search does not stray far from the prototypical version described in the background (Section \ref{sec:Background}). It is implemented through 3 functions: $search'$, $find\_subtree$, and $search\_leaf$. 
+Our implementation of search does not stray far from the prototypical version described in the background (Section \ref{sec:Background}). It is implemented through 3 functions: $search'$, $find\_subtree$, and $search\_leaf$. See Appendix \ref{sec:SearchSource} for the Gallina source code for the search functions. 
 
 \paragraph{}
 $insert$ and $search$ are both recursive functions, recursing over a decreasing parameter $counter$. The reason for introducing this parameter is to serve as a recursion terminator. Since a key requirement for recursive Coq functions is that they must contain a decreasing argument, we introduced this notion of a counter that will decrease by one every time we descend down a subtree. Because our inductive type for B+ trees consists of a nesting of two inductive data types that are not mutually recursive, Coq is unable to tell that a $bplustree$ is decreasing when it is used as an argument. If the counter ever reaches $0$, the recursion stops. This means that should the counter ever reach $0$ before we have descended all the way down the tree, a wrong result will be given. To ensure this never happens, we always initialize the counter to the height of the tree\todo{Jesper: You must show the code!}.
