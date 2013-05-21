@@ -200,14 +200,17 @@ Lemma all__above_snoc: forall (X: Type) (low k1 k2: nat) (v1 v2: X) (kpl: list (
   
   all (above low) (keys' (kpl ++ [(k1, v1), (k2, v2)])).
 Proof.
-  admit.
-Admitted.
-
-(*
-Lemma all__keys'_impl_all_keys: forall (X: Type) (b k1 k2: nat) (kvl: list (nat * X)),
-  all (between k1 k2) (keys' kvl) -> all_keys X (between k1 k2) kvl.
-Proof.
-  admit. *) (* this lemma is commented out *) (*
-Admitted.
-*)
+  intros.
+  induction kpl.
+  Case "kpl = []".
+    simpl. simpl in H. constructor. inversion H.
+    apply above__le in H4. constructor. apply a_empty.
+    apply above__le. omega. inversion H. apply H4.
+  Case "kpl = a::kpl".
+    destruct a.
+    simpl. simpl in H. 
+    constructor.
+    apply IHkpl. inversion H. apply H3.
+    inversion H. assumption.
+Qed.
 

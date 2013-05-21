@@ -1275,8 +1275,6 @@ Admitted.
 
 Lemma insert'_overflow_impl_greater_key: forall (X: Type) b k k1 k2 v 
                                          (t1 t1' t2: bplustree b X) (kpl: list (nat * bplustree b X)),
-  
-  
   b <> 0 ->
   valid_bplustree b X (bptNode b X kpl) ->
   find_subtree k kpl = Some(k1, t1) ->
