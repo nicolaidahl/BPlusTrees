@@ -28,9 +28,9 @@
 \maketitle
 
 \begin{abstract}
-The B+ tree data structure is a balanced, n-ary tree, used most often in database and file system storage. It is known for its high fanout, thereby minimizing the number of costly I/O operations. Using the Coq interactive proof assistant we define an inductive data type describing a valid B+ tree, used to formally verify properties of the search and insert operations of the data structure. Furthermore, we describe the need for an added level of indirection in the form of an intermediate proposition when proving relations between the insert and search operations.
+The B+ tree data structure is a balanced, n-ary tree, used most often in databases and file systems. It is known for its high fanout, thereby minimizing the number of costly I/O operations. We implement a B+ tree in Gallina, along with insert and search functions. Using the Coq interactive proof assistant we define an inductive data type describing a valid B+ tree, as well as several other propositions. These are used to formally verify properties of the implemented insert and search functions, the last of which is formally proven correct. Furthermore, we state the elements needed for a complete formal proof of the insert function. We prove the most important element of these: that an inserted value can be found again. This is done through an intermediary proposition, letting us reason about insert and search independently.
 
-\keywords{B+ tree, Coq, Gallina}
+\keywords{B+ tree, Coq, Gallina, Formal verification}
 \end{abstract}
 
 \input{sections/01.Introduction.tex}
