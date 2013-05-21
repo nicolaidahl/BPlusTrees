@@ -4,6 +4,7 @@ Require Export HeightProofs.
 Require Export SortingProofs.
 Require Export AppearsInTree.
 Require Export FindSubtreeProofs.
+Require Export ValidSplitsProofs.
 
 (* Proofs about insertion *)
 Lemma insert_new_into_list_length_gt_length : forall (X: Type) (k: nat) (v: X) (l: list (nat*X)),
@@ -1022,8 +1023,260 @@ Proof.
 Qed.   
 *)
 
+Lemma insert'_overflow_impl_greater_key': forall (X: Type) (counter b k k1 k2: nat) (v: X) 
+                                         (t1 t1' t2: bplustree b X) (kpl: list (nat * bplustree b X)),
+  counter = height t1 ->
+  valid_bplustree b X t1 ->
+  find_subtree k kpl = Some(k1, t1) ->
+  insert' counter k v t1 = (t1', Some(k2, t2)) ->
+  kvl_sorted kpl ->
+  valid_splits b X kpl ->
+  k1 < k2.
+Proof.
+  induction counter.
+  Case "counter = 0".
+    intros.
+    assert (k1 <= k).
+      apply find_subtree_returns_a_lesser_key in H1. omega.
+      destruct kpl. simpl in H1. inversion H1.
+      simpl. omega.
+      assumption.
+    assert (all (above k1) (keys t1)).
+      apply find_subtree_impl_kpl_app in H1. do 2 destruct H1.
+      inversion H1. inversion H7. clear H7. rewrite H8 in H6. clear H8.
+      rewrite H6 in H4.
+      apply valid_splits_elim_tail in H4. assumption.
+      do 3 destruct H8. inversion H8. clear H8.
+      rewrite H9 in H6.
+      rewrite H6 in H4.
+      apply valid_splits_elim_middle in H4.
+      apply all__between_impl_all__above in H4.
+      assumption.
+    destruct t1.
+    SCase "t1 is a leaf".
+      simpl in H2.
+      remember (insert_leaf b k v l) as il.
+      destruct il. destruct o.
+      SSCase "leaf overflowed". 
+        destruct l1. inversion H2. destruct p.
+        inversion H2.
+        rewrite H9 in *. clear H8; clear H9; clear H10; clear n.
+        unfold insert_leaf in Heqil.
+        remember (ble_nat (length (insert_into_list k v l)) (b * 2)) as fits_here.
+        destruct fits_here. inversion Heqil.
+        assert (all (above k1) (keys' (insert_into_list k v l))).
+            apply insert_into_list_preserves_all__keys'. unfold keys in H6. apply H6.
+            apply above__le.
+            omega.
+        remember (split_list b (insert_into_list k v l)) as sl.
+        destruct sl. unfold split_list in Heqsl. inversion Heqsl.
+        inversion Heqil.
+        assert (kvl_sorted (insert_into_list k v l)).
+          apply insert_preserves_sort. inversion H0. assumption. 
+        assert (l0++(k2,x)::l1 = insert_into_list k v l).
+          rewrite cut_list_left_right_preserves_list with (b := b) (l := insert_into_list k v l).
+          rewrite H11. rewrite H9.
+          rewrite H12. rewrite H10.
+          reflexivity.
+        assert (length (insert_into_list k v l) >= b).
+          symmetry in Heqfits_here. apply ble_nat_false in Heqfits_here.
+          omega.
+        apply cut_left_length_b in H14.
+        rewrite <- H9 in H14. rewrite <- H11 in H14.
+        destruct l0. simpl in H14. inversion H0. exfalso. omega.
+        destruct p. simpl in H13. rewrite <- H13 in H8. apply kvl_sorted_key_across_app in H8.
+        rewrite <- H13 in H7. inversion H7.
+        apply above__le in H18.
+        omega.
+      SSCase "leaf didn't overflow".
+        inversion H2.
+    SCase "t1 is a node (bogus)".
+      destruct l. inversion H0.
+      simpl in H9. exfalso. omega.
+      simpl in H. destruct p. inversion H.
+  Case "counter = S counter".
+    intros.
+    assert (k1 <= k).
+      apply find_subtree_returns_a_lesser_key in H1. omega.
+      destruct kpl. simpl in H1. inversion H1.
+      simpl. omega.
+      assumption.
+    assert (all (above k1) (keys t1)).
+      apply find_subtree_impl_kpl_app in H1. do 2 destruct H1.
+      inversion H1. inversion H7. clear H7. rewrite H8 in H6. clear H8.
+      rewrite H6 in H4.
+      apply valid_splits_elim_tail in H4. assumption.
+      do 3 destruct H8. inversion H8. clear H8.
+      rewrite H9 in H6.
+      rewrite H6 in H4.
+      apply valid_splits_elim_middle in H4.
+      apply all__between_impl_all__above in H4.
+      assumption.
+      destruct t1.
+    SSCase "t1 is a leaf".
+      simpl in H. inversion H.
+    SSCase "t1 is a node".
+      unfold keys in H2.
+      simpl in H2.
+      remember (find_subtree k l) as fs.
+      destruct fs.
+      SSSCase "find_subtree k l = Some p".
+        destruct p. 
+        assert (valid_bplustree b X b0).
+          eapply child_is_valid_bplustree.
+            apply H0.
+            symmetry in Heqfs. apply Heqfs.
+        assert (counter = height b0).
+          symmetry in Heqfs.
+          apply find_subtree_impl_kpl_app in Heqfs.
+          destruct Heqfs. destruct H8. inversion H8.
+          inversion H0.
+          apply height_of_parent_one_bigger with (k:=n)(v:=b0)(l1:=witness)(l2:=witness0) in H17;
+            try assumption.
+          rewrite <- H17 in H.
+          omega.
+        remember (insert' counter k v b0) as ic.
+        destruct ic. destruct o.
+        SSSSCase "the child overflowed".
+          destruct p.
+          remember (insert_into_list n b1 (insert_into_list n0 b2 l)) as kpl'.
+          remember (ble_nat (length kpl') (b * 2 + 1)) as fits_here.
+          destruct fits_here. inversion H2. 
+          assert (kvl_sorted kpl').
+            rewrite Heqkpl'.
+            do 2 apply insert_preserves_sort.
+            inversion H0.
+            assumption.
+          symmetry in Heqic.
+          symmetry in Heqfs.
+          assert (n < n0).
+            eapply IHcounter with (k1 := n) (k2 := n0).
+              apply H8.
+              assumption.
+              apply Heqfs.
+              apply Heqic.
+              inversion H0. assumption.
+              inversion H0. assumption.
+          assert (find_subtree k l = Some (n, b0)) by assumption.
+          apply find_subtree_impl_kpl_app in H11.
+          do 2 destruct H11. inversion H11; clear H11.
+          inversion H13; clear H13.
+          SSSSSCase "witness0 = []".
+            rewrite H11 in H12; clear H11.
+            rewrite H12 in Heqkpl'.
+            rewrite insert_into_list_last_twice in Heqkpl'; try (inversion H0; subst; assumption).
+            remember (cut_list_right (b + 1) kpl') as right.
+            remember (cut_list_left (b + 1) kpl') as left.
+            destruct right. inversion H2. destruct p.
+            inversion H2. rewrite H14 in *; clear H13; clear H14; clear H15.
+            assert (length kpl' = S b * 2).
+              symmetry in Heqfits_here. apply ble_nat_false in Heqfits_here.
+              rewrite Heqkpl'. rewrite app_length. simpl.
+              rewrite Heqkpl' in Heqfits_here. rewrite app_length in Heqfits_here. simpl in Heqfits_here.
+              rewrite H12 in H0.
+              inversion H0. rewrite app_length in H15. simpl in H15.
+              omega.
+            assert (length (witness) >= b + 1).
+              rewrite Heqkpl' in H11. rewrite app_length in H11.
+              simpl in H11.
+              inversion H0.
+              omega.
+            assert (kpl' = left++(k2, b3)::right).
+              rewrite cut_list_left_right_preserves_list with (l := kpl') (b := b +1).
+              rewrite Heqleft. rewrite Heqright. reflexivity.
+            apply cut_list_right_app with (l2 := [(n, b1), (n0, b2)]) in H13.
+            destruct H13.
+            rewrite <- Heqkpl' in H13.
+            rewrite H13 in Heqright.
+            destruct witness1.
+            SSSSSSCase "witness1 = []".
+              simpl in Heqright.
+              inversion Heqright.
+              rewrite H16 in *; clear H16.
+              rewrite H17 in *; clear H17.
+              rewrite H18 in *. clear H18.
+              assert (k1 <= n).
+                rewrite H12 in H6. unfold keys in H6.
+                apply all_single__keys' with (l2 := []) in H6.
+                apply above__le in H6.
+                omega.
+              assert (left <> []).
+                rewrite Heqleft.
+                apply cut_left_not_nil. omega. omega.
+              destruct left. exfalso. apply H16. reflexivity.
+              destruct p. simpl in H14. rewrite H14 in H9.
+              apply kvl_sorted_key_across_app in H9.
+              assert (k1 <= n2).
+                destruct witness. rewrite H12 in H0. inversion H0. simpl in H19. exfalso. omega.
+                destruct p. simpl in H12.
+                rewrite H12 in H6.
+                apply all_single__keys' with (l1 := []) in H6.
+                apply above__le in H6.
+                rewrite H14 in Heqkpl'. inversion Heqkpl'.
+                omega.
+              omega.
+            SSSSSSCase "witness1 = p::witness".
+              destruct p. simpl in H13. simpl in Heqright.
+              inversion Heqright. clear H14. clear Heqright.
+              rewrite H16 in *; clear H16.
+              rewrite H17 in *; clear H17.
+              assert (k1 <= n).
+                rewrite H12 in H6. unfold keys in H6.
+                apply all_single__keys' with (l2 := []) in H6.
+                apply above__le in H6.
+                omega.
+              assert (all (above k1) (keys' kpl')).
+                rewrite Heqkpl'.
+                rewrite H12 in H6. unfold keys in H6.
+                apply all__above_snoc. 
+                apply all__keys'_ignores_values with (v1 := b0) (v2 := b1) (l2 := []).
+                assumption.
+                assumption.
+              assert (left <> []).
+                rewrite Heqleft.
+                apply cut_left_not_nil. omega. omega.
+              destruct left. exfalso. apply H16. reflexivity.
+              destruct p.
+              destruct witness.
+              rewrite H12 in H0. inversion H0.
+              simpl in H20. exfalso. omega.
+              destruct p. simpl in Heqkpl'.
+              assert (kpl' = (n3,b5)::left++(n2, b4)::right).
+                rewrite cut_list_left_right_preserves_list with (l := kpl') (b := b +1).
+                rewrite <- Heqleft. rewrite H18. rewrite <- H13. reflexivity.
+              rewrite H18 in H17.
+              assert (k1 <= n2). 
+                rewrite H17 in H15.
+                apply all_single__keys' with (l1 := ((n3, b5)::left)) in H15.
+                apply above__le in H15.
+                omega.
+              assert (k1 <= n3).
+                rewrite H17 in H15.
+                apply all_single__keys' with (l1 := []) in H15.
+                apply above__le in H15.
+                omega.
+              assert (n3 < n2). 
+                rewrite H17 in H9.
+                apply kvl_sorted_key_across_app in H9.
+                omega.
+              omega.
+          SSSSSCase "witness0 = p::witness0". 
+            do 3 destruct H11.  inversion H11; clear H11.
+            rewrite H13 in H12; clear H13.
+            rewrite H12 in Heqkpl'.
+            
+            (* rewrite insert_into_list_middle_twice in Heqkpl'; try (inversion H0; subst; assumption); try omega. *)
+            admit.
+        SSSSCase "the child did not overflow".
+          inversion H2.
+      SSSCase "find_subtree k l = None".
+        inversion H2.
+Admitted.
+
 Lemma insert'_overflow_impl_greater_key: forall (X: Type) b k k1 k2 v 
                                          (t1 t1' t2: bplustree b X) (kpl: list (nat * bplustree b X)),
+  
+  
   b <> 0 ->
   valid_bplustree b X (bptNode b X kpl) ->
   find_subtree k kpl = Some(k1, t1) ->
@@ -1032,32 +1285,20 @@ Lemma insert'_overflow_impl_greater_key: forall (X: Type) b k k1 k2 v
 
   k1 < k2.
 Proof. 
-  admit.
-Admitted.
-  (*
   intros.
-  assert (find_subtree k kpl = Some (k1, t1)) by assumption.
-  apply child_is_valid_bplustree in H4.
-  destruct t1.
-  Case "leaf".
-    destruct l. unfold insert' in H2. simpl in H2. unfold insert_leaf in H2. 
-    assert (ble_nat (length (insert_into_list k v [])) (b * 2) = true).
-      simpl. destruct b. exfalso. omega. simpl. reflexivity.
-    rewrite H5 in H2. inversion H2.
-    destruct p.
-    eapply insert'_overflow_leaf_impl_greater_key in H2. apply H2. assumption.
-    reflexivity. apply H4.
+  remember (height t1) as counter.
+  assert (valid_bplustree b X t1).
+    eapply child_is_valid_bplustree.
+      apply H0.
+      apply H1.
+  eapply insert'_overflow_impl_greater_key'.
+    apply Heqcounter.
+    apply H4.
     apply H1.
-    apply find_subtree_leaf_impl_ge_first_key in H1. omega. inversion H0. assumption.
-
-    assumption. assumption.
-  Case "node".
-    apply insert'_overflow_node_impl_greater_key with (k1:=k1)(kpl:=kpl) in H2;
-    try assumption.
-    apply H0.
+    apply H2.
+    apply H3.
+    inversion H0. apply H13.
 Qed.
-*)
-  
   
   
 

@@ -50,11 +50,32 @@ Proof.
       apply H6.
 Qed.
 
-Lemma insert_into_list_preserves_all__keys': forall (X: Type) (k1 k2 k: nat) (v: X) (l: list (nat * X)),
-  all (between k1 k2) (keys' l) ->
-  between k1 k2 k ->
+Lemma valid_splits_elim_last: forall (X: Type) (b k: nat) (kpl: list (nat * bplustree b X)) (t: bplustree b X),
+  valid_splits b X (kpl ++ [(k, t)]) ->
+  all (above k) (keys t).
+Proof.
+  intros.
+  induction kpl.
+  Case "kpl = []".
+    simpl in H. inversion H. assumption.
+  Case "kpl = a::kpl".
+    destruct a. simpl in *.
+    destruct kpl.
+    SCase "kpl = [a]".
+      simpl in *.
+      inversion H. inversion H6.
+      assumption.
+    SCase "kpl = a::p::kpl".
+      destruct p.
+      inversion H.
+      apply IHkpl. assumption.
+Qed.
+
+Lemma insert_into_list_preserves_all__keys': forall (X: Type) (P: nat -> Prop) (k: nat) (v: X) (l: list (nat * X)),
+  all P (keys' l) ->
+  P k ->
   
-  all (between k1 k2) (keys' (insert_into_list k v l)).
+  all P (keys' (insert_into_list k v l)).
 Proof.
   intros.
   induction l.
@@ -143,16 +164,50 @@ Proof.
     assumption.
 Qed.
 
-Lemma all__keys'_ignores_values: forall (X: Type) (low high k: nat) (v1 v2: X) (l1 l2: list (nat * X)),
-  all (between low high) (keys' (l1 ++ (k, v1)::l2)) ->
-  all (between low high) (keys' (l1 ++ (k, v2)::l2)).
+Lemma all__keys'_ignores_values: forall (X: Type) (k: nat) (P: nat -> Prop) (v1 v2: X) (l1 l2: list (nat * X)),
+  all P (keys' (l1 ++ (k, v1)::l2)) ->
+  all P (keys' (l1 ++ (k, v2)::l2)).
+Proof.
+  intros.
+  induction l1.
+  Case "l1 = []".
+    simpl in *. apply H.
+  Case "l1 = a::l1".
+    destruct a.
+    simpl in *.
+    inversion H.
+    constructor.
+    apply IHl1. assumption.
+    assumption.
+Qed.
+
+Lemma all__between_impl_all__above: forall (X: Type) (b low high: nat) (t: bplustree b X),
+  all (between low high) (keys t) ->
+  all (above low) (keys t).
+Proof.
+  intros.
+  induction H.
+  apply a_empty.
+  constructor. apply IHall.
+  apply between__le_and_lt in H0.
+  apply above__le.
+  omega.
+Qed.
+
+Lemma all__above_snoc: forall (X: Type) (low k1 k2: nat) (v1 v2: X) (kpl: list (nat * X)),
+  all (above low) (keys' (kpl ++ [(k1, v1)])) ->
+  k1 < k2 ->
+  
+  all (above low) (keys' (kpl ++ [(k1, v1), (k2, v2)])).
 Proof.
   admit.
 Admitted.
 
+(*
 Lemma all__keys'_impl_all_keys: forall (X: Type) (b k1 k2: nat) (kvl: list (nat * X)),
   all (between k1 k2) (keys' kvl) -> all_keys X (between k1 k2) kvl.
 Proof.
-  admit.
+  admit. *) (* this lemma is commented out *) (*
 Admitted.
+*)
 

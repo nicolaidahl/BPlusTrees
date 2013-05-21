@@ -163,6 +163,17 @@ Proof.
     omega.
 Qed.
 
+Lemma above__le: forall n k,
+  above n k <-> n <= k.
+Proof.
+  intros.
+  split; intro.
+  Case "->".
+    unfold above in H. apply ble_nat_true in H. omega.
+  Case "<-".
+    unfold above. apply ble_nat_true. omega.
+Qed.
+
 (*
  * Proofs about min_nat
  *)
