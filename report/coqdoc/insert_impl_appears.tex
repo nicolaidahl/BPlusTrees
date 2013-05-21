@@ -1,0 +1,13 @@
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Theorem} \coqdocvar{insert\_impl\_appears} : \coqdockw{\ensuremath{\forall}} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{t} \coqdocvar{t1}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) (\coqdocvar{k}: \coqdocvar{nat}) (\coqdocvar{v}: \coqdocvar{X}),\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{\lnot}\coqdocvar{appears\_in\_tree} \coqdocvar{k} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{insert} \coqdocvar{k} \coqdocvar{v} \coqdocvar{t} = \coqdocvar{t1} \ensuremath{\rightarrow} \coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{kv\_appears\_in\_tree} \coqdocvar{k} \coqdocvar{v} \coqdocvar{t1}.\coqdoceol
+\coqdocemptyline
+\end{coqdoccode}

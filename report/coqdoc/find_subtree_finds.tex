@@ -1,0 +1,9 @@
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{find\_subtree\_finds\_a\_subtree} : \coqdockw{\ensuremath{\forall}} (\coqdocvar{X}: \coqdockw{Type}) (\coqdocvar{b} \coqdocvar{sk}: \coqdocvar{nat}) (\coqdocvar{l}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})),\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} \coqdocvar{l}) \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{\ensuremath{\exists}} \coqdocvar{key}, \coqdocvar{\ensuremath{\exists}} \coqdocvar{child}, \coqdocvar{find\_subtree} \coqdocvar{sk} \coqdocvar{l} = \coqdocvar{Some} (\coqdocvar{key}, \coqdocvar{child}).\coqdoceol
+\coqdocemptyline
+\end{coqdoccode}

@@ -1,0 +1,38 @@
+\begin{coqdoccode}
+  \coqdocnoindent
+  \coqdockw{Inductive} \coqdocvar{kv\_appears\_in\_kvl} \{\coqdocvar{X}:\coqdockw{Type}\} (\coqdocvar{sk}: \coqdocvar{nat}) (\coqdocvar{sv}: \coqdocvar{X}) : \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X}) \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{|} \coqdocvar{kv\_aik\_here}: \coqdockw{\ensuremath{\forall}} \coqdocvar{l}, ~~~~~~\coqdocvar{kv\_appears\_in\_kvl} \coqdocvar{sk} \coqdocvar{sv} ((\coqdocvar{sk}, \coqdocvar{sv})::\coqdocvar{l})\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{|} \coqdocvar{kv\_aik\_later}: \coqdockw{\ensuremath{\forall}} \coqdocvar{k} \coqdocvar{v} \coqdocvar{l},	\coqdocvar{kv\_appears\_in\_kvl} \coqdocvar{sk} \coqdocvar{sv} \coqdocvar{l} \ensuremath{\rightarrow} \coqdoceol
+  \coqdocindent{11em} \coqdocvar{kv\_appears\_in\_kvl} \coqdocvar{sk} \coqdocvar{sv} ((\coqdocvar{k}, \coqdocvar{v})::\coqdocvar{l}).\coqdoceol
+  \coqdocemptyline
+  \coqdocnoindent
+  \coqdockw{Inductive} \coqdocvar{kv\_appears\_in\_tree} \{\coqdocvar{X}:\coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{sk}: \coqdocvar{nat}) (\coqdocvar{sv}: \coqdocvar{X}) : \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X} \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{|} \coqdocvar{kv\_ait\_leaf}: \coqdockw{\ensuremath{\forall}} \coqdocvar{l},\coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{kv\_appears\_in\_kvl} \coqdocvar{sk} \coqdocvar{sv} \coqdocvar{l} \ensuremath{\rightarrow} \coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} (\coqdocvar{bptLeaf} \coqdocvar{b} \coqdocvar{X} \coqdocvar{l})\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{|} \coqdocvar{kv\_ait\_node\_last}: \coqdockw{\ensuremath{\forall}} \coqdocvar{k1} \coqdocvar{k2} \coqdocvar{v1} \coqdocvar{v2}, \coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} \coqdocvar{v2} \ensuremath{\rightarrow} \coqdocvar{k2} \ensuremath{\le} \coqdocvar{sk} \ensuremath{\rightarrow}\coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} [(\coqdocvar{k1}, \coqdocvar{v1}), (\coqdocvar{k2}, \coqdocvar{v2})])\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{|} \coqdocvar{kv\_ait\_node\_here}: \coqdockw{\ensuremath{\forall}} \coqdocvar{k1} \coqdocvar{k2} \coqdocvar{v1} \coqdocvar{v2} \coqdocvar{l}, \coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} \coqdocvar{v1} \ensuremath{\rightarrow} \coqdocvar{k1} \ensuremath{\le} \coqdocvar{sk} \ensuremath{\land} \coqdocvar{sk} < \coqdocvar{k2} \ensuremath{\rightarrow}\coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} ((\coqdocvar{k1}, \coqdocvar{v1})::(\coqdocvar{k2}, \coqdocvar{v2})::\coqdocvar{l}))\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{|} \coqdocvar{kv\_ait\_node\_later}: \coqdockw{\ensuremath{\forall}} \coqdocvar{x} \coqdocvar{k1} \coqdocvar{k2} \coqdocvar{v1} \coqdocvar{v2} \coqdocvar{l},\coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} ((\coqdocvar{k1}, \coqdocvar{v1})::(\coqdocvar{k2}, \coqdocvar{v2})::\coqdocvar{l})) \ensuremath{\rightarrow} \coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{k1} \ensuremath{\le} \coqdocvar{sk} \ensuremath{\rightarrow}\coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{kv\_appears\_in\_tree} \coqdocvar{sk} \coqdocvar{sv} (\coqdocvar{bptNode} \coqdocvar{b} \coqdocvar{X} (\coqdocvar{x}::(\coqdocvar{k1}, \coqdocvar{v1})::(\coqdocvar{k2}, \coqdocvar{v2})::\coqdocvar{l})).\coqdoceol
+  \end{coqdoccode}
