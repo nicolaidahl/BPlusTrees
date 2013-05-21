@@ -20,7 +20,7 @@ Because almost all of our proofs entail manipulating sorted lists, we built an e
 
 \begin{figure}
   \input{coqdoc/key_sorted_lemmas}
-  \caption{Key lemmas and theorems on sorting key-value lists}
+  \caption{Key lemmas and theorems on sorting key-value lists.}
   \label{fig:key_sorting_lemmas}
 \end{figure}
 
@@ -41,7 +41,7 @@ To verify that our solution can search and insert into both leaves and entire tr
 
 \begin{figure}
   \input{coqdoc/kv_appears_in_kvl_and_tree}
-  \caption{Inductive propositions for reasoning about contents}
+  \caption{Inductive propositions for reasoning about contents.}
   \label{fig:aik_and_ait}
 \end{figure}
 
@@ -66,7 +66,7 @@ We want to prove that $search$ actually works like we expect it to. If a key is 
 
 \begin{figure}
   \input{coqdoc/search_works.tex}
-  \caption{These theorems states how $search$ must behave}
+  \caption{These theorems state how $search$ must behave.}
   \label{fig:search_works}
 \end{figure}
 
@@ -84,7 +84,7 @@ An important aspect of the recursion over the height of the subtree is that we u
 \begin{figure}
   \input{coqdoc/find_subtree_finds}
   \label{fig:find_must_find}
-  \caption{Lemma stating that $find_subtree$ must always return a subtree}
+  \caption{Lemma stating that $find\_subtree$ must always return a subtree.}
 \end{figure}
 
 \paragraph{}
@@ -96,7 +96,7 @@ In order to use the intermediate proposition in our proofs, we must prove that t
 
 \begin{figure}
   \input{coqdoc/insert_impl_appears}
-  \caption{$insert_impl_appears$ states that insertion implies appearance}
+  \caption{$Insert\_impl\_appears$ states that insertion implies appearance.}
   \label{fig:insert_impl_appears}
 \end{figure}
 
@@ -135,7 +135,7 @@ With the knowledge that $insert$ will give us the property $kv\_appears\_in\_tre
 
 \begin{figure}
   \input{coqdoc/insert_search_works}
-  \caption{Final theorem to prove that you can find an item after insertion}
+  \caption{Final theorem to prove that you can find an item after insertion.}
   \label{fig:insert_works}
 \end{figure}
 
