@@ -91,6 +91,36 @@ Before explaining this inductive data type we will first cover another inductive
 \label{fig:inductive_valid_bplustree}
 \end{figure}
 
+\subsubsection{Sorting the Individual Lists}
+\label{sec:Kvl_sorted}
+While $valid\_splits$ argue about the overall sorting of the tree, we need to reason about the individual sorting of the key-pointer and key-value pairs within the nodes and leafs. For this reason we have introduced the inductive proposition $kvl\_sorted$. 
+
+\begin{figure}
+  \begin{coqdoccode}
+  \coqdocnoindent
+  \coqdockw{Inductive} \coqdocvar{kvl\_sorted} \{\coqdocvar{X}: \coqdockw{Type}\}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X}) \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{|}
+  \coqdocvar{kvl\_sorted\_0}: \coqdocvar{kvl\_sorted} []\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{|} \coqdocvar{kvl\_sorted\_1}: \coqdockw{\ensuremath{\forall}} (\coqdocvar{n}: \coqdocvar{nat}) (\coqdocvar{x}: \coqdocvar{X}), \coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{kvl\_sorted} [(\coqdocvar{n}, \coqdocvar{x})]\coqdoceol
+  \coqdocindent{1.00em}
+  \ensuremath{|} \coqdocvar{kvl\_sorted\_cons}: \coqdockw{\ensuremath{\forall}} (\coqdocvar{n1} \coqdocvar{n2}: \coqdocvar{nat}) (\coqdocvar{x1} \coqdocvar{x2}: \coqdocvar{X}) (\coqdocvar{lst}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X})), \coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{kvl\_sorted} ((\coqdocvar{n2},\coqdocvar{x2})::\coqdocvar{lst}) \ensuremath{\rightarrow} \coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{blt\_nat} \coqdocvar{n1} \coqdocvar{n2} = \coqdocvar{true} \ensuremath{\rightarrow}\coqdoceol
+  \coqdocindent{8.00em}
+  \coqdocvar{kvl\_sorted} ((\coqdocvar{n1},\coqdocvar{x1})::(\coqdocvar{n2},\coqdocvar{x2})::\coqdocvar{lst}).\coqdoceol
+  \end{coqdoccode}
+  \caption{The $kvl\_sorted$ proposition we use to argue about the sorting of lists.}
+  \label{fig:kvl_sorted}
+\end{figure}
+
+The rules about sorting is very straight forward: A empty list and the list containing exactly one element is always sorted. If you have a sorted list, you can add a smaller element to the beginning of it, and it will remain sorted.
+
 \subsubsection{The Main Proposition}
 This proposition is only valid when examining the root of a tree, as there are different constraints for subtrees (See Section \ref{subsec:Background_Bplus_tree}). $valid\_bplustree$ has two cases, the first holds when the root of the B+ tree is a leaf, and the second holds when the root is a node. The various properties that must hold are explained below.
 
@@ -134,7 +164,6 @@ With the $bplustree$ data type we can start implementing the search and insert f
 \subsection{Search}
 \label{subsec:search}
 Our implementation of search does not stray far from the prototypical version described in the background (Section \ref{sec:Background}). It is implemented through 3 functions: $search'$, $find\_subtree$, and $search\_leaf$. 
-\todo{Write about sorted}
 
 \paragraph{}
 $insert$ and $search$ are both recursive functions, recursing over a decreasing parameter $counter$. The reason for introducing this parameter is to serve as a recursion terminator. Since a key requirement for recursive Coq functions is that they must contain a decreasing argument, we introduced this notion of a counter that will decrease by one every time we descend down a subtree. Because our inductive type for B+ trees consists of a nesting of two inductive data types that are not mutually recursive, Coq is unable to tell that a $bplustree$ is decreasing when it is used as an argument. If the counter ever reaches $0$, the recursion stops. This means that should the counter ever reach $0$ before we have descended all the way down the tree, a wrong result will be given. To ensure this never happens, we always initialize the counter to the height of the tree\todo{Jesper: You must show the code!}.
