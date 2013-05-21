@@ -158,6 +158,7 @@ The $insert$ function calls the $insert'$ function to insert into a tree. First 
 Out of the three central $insert$, $insert'$ and $insert\_leaf$ functions, the most significant is $insert'$. It uses $find\_subtree$ to figure out which subtree it should recurse into and $insert\_node$ to handle overflowing subtrees. Where $insert'$ handles overflowing leaves, $insert\_node$ takes care of overflowing (non-root) nodes.
 
 \subsection{Elements of a Complete Proof of Correctness}
+\label{sec:ElementsOfACompleteProof}
 For insertion and search, a formal verification of the implementations would\todo{Jesper: Would? Don't you do it?} entail a combination of three different (but related) main proofs.
 
 \subsubsection{Insert Search Works}
