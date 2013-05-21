@@ -1,0 +1,19 @@
+
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Inductive} \coqdocvar{valid\_splits} (\coqdocvar{b}: \coqdocvar{nat}) (\coqdocvar{X}: \coqdockw{Type}) : \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) \ensuremath{\rightarrow} \coqdockw{Prop} :=\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{valid\_p}  : \coqdockw{\ensuremath{\forall}} (\coqdocvar{t1} \coqdocvar{t2}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) (\coqdocvar{n1} \coqdocvar{n2}: \coqdocvar{nat}) (\coqdocvar{l}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X})),\coqdoceol
+\coqdocindent{10.00em}
+\coqdocvar{all} (\coqdocvar{between} \coqdocvar{n1} \coqdocvar{n2}) (\coqdocvar{keys} \coqdocvar{t1}) \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{10.00em}
+\coqdocvar{valid\_splits} \coqdocvar{b} \coqdocvar{X} ((\coqdocvar{n2}, \coqdocvar{t2})::\coqdocvar{l}) \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{10.00em}
+\coqdocvar{valid\_splits} \coqdocvar{b} \coqdocvar{X} ((\coqdocvar{n1}, \coqdocvar{t1})::(\coqdocvar{n2}, \coqdocvar{t2})::\coqdocvar{l})\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{|} \coqdocvar{valid\_ep} : \coqdockw{\ensuremath{\forall}} (\coqdocvar{t}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) (\coqdocvar{n}: \coqdocvar{nat}),\coqdoceol
+\coqdocindent{10.00em}
+\coqdocvar{all} (\coqdocvar{above} \coqdocvar{n}) (\coqdocvar{keys} \coqdocvar{t}) \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{10.00em}
+\coqdocvar{valid\_splits} \coqdocvar{b} \coqdocvar{X} ([(\coqdocvar{n}, \coqdocvar{t})]).\coqdoceol
+\end{coqdoccode}
