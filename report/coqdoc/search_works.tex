@@ -1,0 +1,20 @@
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Theorem} \coqdocvar{appears\_impl\_search\_found} : \coqdockw{\ensuremath{\forall}} (\coqdocvar{b}: \coqdocvar{nat}) (\coqdocvar{X}: \coqdockw{Type}) (\coqdocvar{v}: \coqdocvar{X}) (\coqdocvar{t}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) (\coqdocvar{k}: \coqdocvar{nat}),\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{kv\_appears\_in\_tree} \coqdocvar{k} \coqdocvar{v} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{search} \coqdocvar{k} \coqdocvar{t} = \coqdocvar{Some}(\coqdocvar{v}).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Theorem} \coqdocvar{not\_appears\_impl\_search\_not\_found}: \coqdockw{\ensuremath{\forall}} (\coqdocvar{b}: \coqdocvar{nat}) (\coqdocvar{X}: \coqdockw{Type}) (\coqdocvar{t}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}) (\coqdocvar{k}: \coqdocvar{nat}),\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{\lnot} \coqdocvar{appears\_in\_tree} \coqdocvar{k} \coqdocvar{t} \ensuremath{\rightarrow} \coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{search} \coqdocvar{k} \coqdocvar{t} = \coqdocvar{None}.\coqdoceol
+\coqdocemptyline
+\end{coqdoccode}

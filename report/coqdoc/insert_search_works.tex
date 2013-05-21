@@ -1,0 +1,26 @@
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Theorem} \coqdocvar{insert\_search\_works}: \coqdockw{\ensuremath{\forall}} \{\coqdocvar{X}: \coqdockw{Type}\} \{\coqdocvar{b}: \coqdocvar{nat}\} (\coqdocvar{k}: \coqdocvar{nat}) (\coqdocvar{v}: \coqdocvar{X}) (\coqdocvar{t}: \coqdocvar{bplustree} \coqdocvar{b} \coqdocvar{X}),\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} \coqdocvar{t} \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{1.00em}
+\ensuremath{\lnot} \coqdocvar{appears\_in\_tree} \coqdocvar{k} \coqdocvar{t} \ensuremath{\rightarrow}\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{search} \coqdocvar{k} (\coqdocvar{insert} \coqdocvar{k} \coqdocvar{v} \coqdocvar{t}) = \coqdocvar{Some} (\coqdocvar{v}).\coqdoceol
+\coqdocnoindent
+\coqdockw{Proof}.\coqdoceol
+\coqdocindent{1.00em}
+\coqdoctac{intros}. \coqdocvar{remember} (\coqdocvar{insert} \coqdocvar{k} \coqdocvar{v} \coqdocvar{t}) \coqdockw{as} \coqdocvar{t'}; \coqdoctac{symmetry} \coqdoctac{in} \coqdocvar{Heqt'}.\coqdoceol
+\coqdocindent{1.00em}
+\coqdoctac{assert} (\coqdocvar{valid\_bplustree} \coqdocvar{b} \coqdocvar{X} \coqdocvar{t'}).\coqdoceol
+\coqdocindent{2.00em}
+\coqdoctac{apply} \coqdocvar{insert\_preserves\_tree\_validity} \coqdockw{with} (\coqdocvar{k} := \coqdocvar{k}) (\coqdocvar{v} := \coqdocvar{v}) \coqdoctac{in} \coqdocvar{H};\coqdoceol
+\coqdocindent{2.00em}
+\coqdoctac{subst}; \coqdoctac{assumption}.\coqdoceol
+\coqdocindent{1.00em}
+\coqdoctac{apply} \coqdocvar{insert\_impl\_appears} \coqdoctac{in} \coqdocvar{Heqt'}; \coqdoctac{try} \coqdoctac{assumption}.\coqdoceol
+\coqdocindent{1.00em}
+\coqdoctac{apply} \coqdocvar{appears\_impl\_search\_found} \coqdoctac{in} \coqdocvar{Heqt'}; \coqdoctac{assumption}.\coqdoceol
+\coqdocnoindent
+\coqdockw{Qed}.\coqdoceol
+\end{coqdoccode}

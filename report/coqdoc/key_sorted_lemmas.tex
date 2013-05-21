@@ -1,0 +1,22 @@
+\begin{coqdoccode}
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{sort\_ignores\_value} : \coqdockw{\ensuremath{\forall}} (\coqdocvar{X}: \coqdockw{Type}) (\coqdocvar{k}: \coqdocvar{nat}) (\coqdocvar{v1} \coqdocvar{v2}: \coqdocvar{X}) (\coqdocvar{l}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X})),\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{kvl\_sorted} ((\coqdocvar{k},\coqdocvar{v1})::\coqdocvar{l}) \ensuremath{\rightarrow} \coqdocvar{kvl\_sorted}((\coqdocvar{k}, \coqdocvar{v2})::\coqdocvar{l}).\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{list\_tail\_is\_sorted} : \coqdockw{\ensuremath{\forall}} (\coqdocvar{X}: \coqdockw{Type}) (\coqdocvar{l}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X})) (\coqdocvar{k}: \coqdocvar{nat}) (\coqdocvar{v}: \coqdocvar{X}),\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{kvl\_sorted} ((\coqdocvar{k},\coqdocvar{v})::\coqdocvar{l}) \ensuremath{\rightarrow} \coqdocvar{kvl\_sorted} \coqdocvar{l}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Lemma} \coqdocvar{kvl\_sorted\_key\_across\_app} : \coqdockw{\ensuremath{\forall}} (\coqdocvar{X}: \coqdockw{Type}) (\coqdocvar{l1} \coqdocvar{l2}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X})) (\coqdocvar{k1} \coqdocvar{k2}: \coqdocvar{nat}) (\coqdocvar{v1} \coqdocvar{v2}: \coqdocvar{X}),\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{kvl\_sorted}((\coqdocvar{k1}, \coqdocvar{v1})::\coqdocvar{l1} ++ (\coqdocvar{k2}, \coqdocvar{v2})::\coqdocvar{l2}) \ensuremath{\rightarrow} \coqdocvar{k1} < \coqdocvar{k2}.\coqdoceol
+\coqdocemptyline
+\coqdocnoindent
+\coqdockw{Theorem} \coqdocvar{insert\_preserves\_sort} : \coqdockw{\ensuremath{\forall}} (\coqdocvar{X}: \coqdockw{Type}) (\coqdocvar{l}: \coqdocvar{list} (\coqdocvar{nat} \ensuremath{\times} \coqdocvar{X})) (\coqdocvar{k}: \coqdocvar{nat}) (\coqdocvar{v}: \coqdocvar{X}),\coqdoceol
+\coqdocindent{1.00em}
+\coqdocvar{kvl\_sorted} \coqdocvar{l} \ensuremath{\rightarrow} \coqdocvar{kvl\_sorted} (\coqdocvar{insert\_into\_list} \coqdocvar{k} \coqdocvar{v} \coqdocvar{l}).\coqdoceol
+\coqdocemptyline
+\end{coqdoccode}
