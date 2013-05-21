@@ -434,6 +434,102 @@ Proof.
 Qed.
 
 
+Lemma inorder_first_key_node: forall (X: Type) b k2 v (kvl: list(nat * X)) (l: list(nat* bplustree b X)),
+  kvl = inorder (bptNode b X ((k2, v) :: l)) ->
+  exists l1, exists v, kvl = (k2, v) :: l1.
+Proof. Admitted.
+
+Lemma all_keys_above_first_above: forall (X: Type) k1 k2 v (l: list (nat *X)),
+  all_keys X (above k1) ((k2, v) :: l) ->
+  k1 <= k2.
+Proof.
+  intros. remember ((k2, v) :: l). destruct H.
+  inversion Heql0. unfold above in H0. inversion Heql0. subst.
+  apply ble_nat_true in H0. omega.
+Qed.
+
+Lemma all_keys_between_first_above: forall (X: Type) k1 k2 k3 v (l: list (nat *X)),
+  all_keys X (between k1 k3) ((k2, v) :: l) ->
+  k1 <= k2 < k3.
+Proof.
+  intros. remember ((k2, v) :: l). destruct H.
+  inversion Heql0. unfold between in H0. inversion Heql0. subst.
+  remember (ble_nat k1 k2). destruct b.
+  remember (blt_nat k2 k3). destruct b.
+  symmetry in Heqb. apply ble_nat_true in Heqb. symmetry in Heqb0. apply blt_nat_true in Heqb0.
+  omega.
+  inversion H0.
+  simpl in H0. inversion H0.
+Qed.
+
+Lemma find_subtree_found_leaf_first_elem_key: forall (X: Type) b k k2 k1 (kpl: list (nat *bplustree b X))
+                                              (l: list (nat *X)) v,
+  find_subtree k kpl = Some (k1, bptLeaf b X ((k2, v) :: l)) ->
+  k1 = k2.
+Proof.
+Admitted.
+
+Lemma find_subtree_leaf_impl_ge_first_key: forall (X: Type) b k k1 k2 v (l: list (nat* X))
+                                          (kpl: list (nat * bplustree b X)),
+  key_at_index 0 kpl = Some 0 ->
+  kvl_sorted kpl ->
+  find_subtree k kpl = Some (k1, bptLeaf b X ((k2, v) :: l)) ->
+  k2 <= k.
+Proof. 
+  intros.
+  assert (find_subtree k kpl = Some (k1, bptLeaf b X ((k2, v) :: l))) by assumption.
+  apply find_subtree_found_leaf_first_elem_key in H1. subst.
+  apply find_subtree_returns_a_lesser_key in H2. omega.
+  destruct kpl. simpl in H. inversion H.
+  simpl. omega. assumption.
+Qed.
+    
+
+
+Lemma find_subtree_node_impl_ge_first_key: forall (X: Type) b k k1 k2 v (kpl l: list (nat* bplustree b X)),
+  valid_splits b X kpl ->
+  find_subtree k kpl = Some (k1, bptNode b X ((k2, v) :: l)) ->
+  k1 <= k2.
+Proof.
+  intros. induction kpl. 
+  Case "kpl = []".
+    simpl in H. inversion H.
+  Case "kpl = a :: kpl".
+    destruct a. destruct kpl.
+    SCase "kpl = []".
+      simpl in H0. remember (ble_nat n k). destruct b1.
+      inversion H0. subst.
+      inversion H. remember (inorder (bptNode b X ((k2, v) :: l))).
+      apply inorder_first_key_node in Heql0. destruct Heql0. destruct H4. subst.
+      apply all_keys_above_first_above in H2. omega. 
+      inversion H0.
+    SCase "kpl = p :: kpl".
+      destruct p.
+      simpl in H.
+      remember (ble_nat n k). destruct b2.
+      SSCase "n <= k".
+        remember (blt_nat k n0). destruct b2.
+        SSSCase "k <= n0".
+          simpl in H0.
+          rewrite <- Heqb2 in H0. rewrite <- Heqb0 in H0. simpl in H0. inversion H0. subst.
+          inversion H. 
+          remember (inorder (bptNode b X ((k2, v) :: l))). 
+          apply inorder_first_key_node in Heql1. destruct Heql1. destruct H8. subst.
+          apply all_keys_between_first_above in H3. omega.
+        SSSCase "n0 < k".
+          simpl in H. apply IHkpl. 
+          apply valid_splits_cons_remove in H.
+          assumption.
+          simpl in H0. rewrite <- Heqb2 in H0. rewrite <- Heqb0 in H0.
+          simpl in H0. apply H0.
+      SSCase "k < n".
+        simpl in H. apply IHkpl. 
+        apply valid_splits_cons_remove in H.
+        assumption.
+        simpl in H0. rewrite <- Heqb2 in H0.
+        simpl in H0. apply H0.
+Qed.
+
 
 
 

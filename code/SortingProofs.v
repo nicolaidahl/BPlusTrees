@@ -1,6 +1,6 @@
-Require Import BPlusTree.
-Require Import HelperProofs.
-Require Import ValidBPlusTree.
+Require Export BPlusTree.
+Require Export HelperProofs.
+Require Export ValidBPlusTree.
 
 Example kvl_sorted_empty : @kvl_sorted nat [].
 Proof. apply kvl_sorted_0. Qed.
@@ -289,6 +289,19 @@ Proof.
   apply split_preserves_sort with (l := l); assumption.
 Qed.
 
+Lemma split_list_after_two_appears_later: forall (X: Type) b k1 k2 v1 v2 (l l1 l2: list (nat * X)),
+  kvl_sorted ((k1, v1) :: l) ->
+  (l1, (k2, v2) :: l2) = split_list (S b) ((k1, v1) :: l) ->
+  k1 < k2.
+Proof. Admitted.
+
+Lemma split_list_overflow_key_le_first: forall (X: Type) b k1  k n x 
+                               (kpl: list (nat * bplustree b X)) (l: list (nat * X)),
+   find_subtree k kpl = Some (k1, bptLeaf b X ((n, x) :: l)) ->
+   k1 <= n.
+Proof.
+Admitted.
+
 Lemma app_list_eq_list_list : forall (X: Type) (l1 l2: list X),
   l1 ++ l2 = l1 -> l2 = [].
 Proof.
@@ -349,5 +362,35 @@ Proof.
   apply kvl_sorted_cons.
     assumption.
     rewrite blt_nat_true. rewrite blt_nat_true in H4. omega.
+Qed.
+
+Lemma cut_list_right_above : forall (X: Type) (b k: nat) (v: X) (l1 l2 l3: list (nat*X)),
+  kvl_sorted(l1++(k,v)::l2) ->
+  length l1 <= b ->
+  cut_list_right b (l1++(k,v)::l2) = l3 ->
+  all_keys X (above k) (l3).
+Proof.
+  induction b.
+  Case "b = 0".
+    intros.
+    apply length_gt_0_impl_nil in H0. subst.
+    simpl in *.
+    apply sorted_all_keys_above_cons. assumption.
+  Case "b = S b".
+    intros.
+    destruct l1.
+    SCase "l1 = []".
+      simpl in *. apply sorted_all_keys_above_cons in H.
+      inversion H.
+      subst.
+      apply cut_right_preserves_all_keys.
+      apply H4.
+    SCase "l1 = p::l1".
+      destruct p. rewrite <- app_comm_cons in *.
+      simpl in H1.
+      eapply IHb.
+        apply list_tail_is_sorted in H. apply H.
+        simpl in H0. omega.
+        apply H1.
 Qed.
 
