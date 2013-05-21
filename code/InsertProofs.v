@@ -869,7 +869,7 @@ Proof.
         assumption.
 Qed.  
 
-
+(*
 Lemma insert'_overflow_node_impl_greater_key: forall (X: Type) b k k1 k2 v
                                          (t1' t2: bplustree b X) (kpl kpl': list (nat * bplustree b X)),
   b <> 0 ->
@@ -1020,7 +1020,7 @@ Proof.
         rewrite <- Heqb2 in H7. simpl in H7. simpl in H1. rewrite H1 in H7. inversion H7.
         assumption.
 Qed.   
-
+*)
 
 Lemma insert'_overflow_impl_greater_key: forall (X: Type) b k k1 k2 v 
                                          (t1 t1' t2: bplustree b X) (kpl: list (nat * bplustree b X)),
@@ -1032,6 +1032,9 @@ Lemma insert'_overflow_impl_greater_key: forall (X: Type) b k k1 k2 v
 
   k1 < k2.
 Proof. 
+  admit.
+Admitted.
+  (*
   intros.
   assert (find_subtree k kpl = Some (k1, t1)) by assumption.
   apply child_is_valid_bplustree in H4.
@@ -1053,7 +1056,7 @@ Proof.
     try assumption.
     apply H0.
 Qed.
-
+*)
   
   
   

@@ -448,26 +448,84 @@ Proof.
     simpl in H3.
     remember (insert_leaf b k v l) as il.
     destruct il. destruct o.
-    unfold insert_leaf in Heqil.
-    remember (ble_nat (length (insert_into_list k v l)) (b * 2)) as fits_here.
-    destruct fits_here. inversion Heqil.
-    remember (split_list b (insert_into_list k v l)) as sl.
-    destruct sl as [left right]. inversion Heqil.
-    rewrite H8 in *. rewrite H9 in *. clear H8. clear H9. clear Heqil.
-    assert (right <> []).
-      assert (length (insert_into_list k v l) > b).
-        symmetry in Heqfits_here. apply ble_nat_false in Heqfits_here.
+    SCase "o = Some l3".
+      unfold insert_leaf in Heqil.
+      remember (ble_nat (length (insert_into_list k v l)) (b * 2)) as fits_here.
+      destruct fits_here. inversion Heqil.
+      remember (split_list b (insert_into_list k v l)) as sl.
+      destruct sl as [left right]. inversion Heqil.
+      rewrite H8 in *. rewrite H9 in *. clear H8. clear H9. clear Heqil.
+      assert (right <> []).
+        assert (length (insert_into_list k v l) > b).
+          symmetry in Heqfits_here. apply ble_nat_false in Heqfits_here.
+          omega.
+        apply cut_right_not_nil in H7.
+        unfold split_list in Heqsl.
+        inversion Heqsl. assumption.
+      destruct right. exfalso. apply H7. reflexivity. 
+      destruct p.
+      inversion H3. rewrite H10 in *. clear H9. clear H10. clear H11.
+      clear H3.
+      unfold keys in H1.
+      assert (all (between k1 k3) (keys' (insert_into_list k v l))).
+        apply insert_into_list_preserves_all__keys'. apply H1.
+        apply between__le_and_lt.
         omega.
-      apply cut_right_not_nil in H7.
-      unfold split_list in Heqsl.
-      inversion Heqsl. assumption.
-    destruct right. exfalso. apply H7. reflexivity. 
+      assert (left++(k2,x)::right = insert_into_list k v l).
+        rewrite cut_list_left_right_preserves_list with (b := b) (l := insert_into_list k v l).
+        unfold split_list in Heqsl.
+        inversion Heqsl.
+        reflexivity.
+        rewrite <- H8 in H3.
+      apply all_single__keys' in H3.
+      apply between__le_and_lt in H3.
+      omega.
+    SCase "o = None".
+      inversion H3.
+  Case "t1 is a node".
+    unfold keys in H1.
+    simpl in H3. destruct l.
+    inversion H. simpl in H9. exfalso. omega.
     destruct p.
-    inversion H3. rewrite H10 in *. clear H9. clear H10. clear H11.
-    clear H3.
-    admit.
-    inversion H3.
-    admit.
+    
+    
+    remember (height b0) as hb0.
+    unfold insert' in H3.   
+    remember (find_subtree k ((n, b0) :: l)) as fsc.
+    destruct fsc.
+    SCase "find_subtree = Some p".
+      destruct p.
+      
+      destruct hb0.
+      SSCase "child was a leaf".
+        destruct b1.
+        remember (insert_leaf b k v l0) as il.
+        destruct il. destruct o.
+        SSSCase "child overflowed".
+          remember (key_at_index 0 l4) as kai0.
+          destruct kai0.
+          unfold insert_node in H3. 
+          remember ((insert_into_list n0 (bptLeaf b X l3)
+               (insert_into_list n1 (bptLeaf b X l4) ((n, b0) :: l)))) as l'.
+          unfold split_if_necessary in H3.
+          remember (ble_nat (length l') (b * 2 + 1)) as fits_here.
+          destruct fits_here. inversion H3.
+          remember (split_list (b + 1) l') as sl. destruct sl.
+          destruct l6.
+            admit. (* nuke with knowing that l' is longer than b+1 *)
+          destruct p.
+          inversion H3. rewrite H9 in *. clear H3. clear H8. clear H9. clear H10.
+          rewrite Heql' in Heqsl.
+          admit.
+          admit.
+        SSSCase "child didn't overflow".
+          inversion H3.
+          inversion H3.
+      SSCase "child was a node".
+        admit.
+    SCase "find_subtree = None".
+      apply find_subtree_finds_a_subtree with (sk := k) in H.
+      do 2 destruct H. rewrite H in Heqfsc. inversion Heqfsc.
 Admitted.
 
 Lemma insert'_impl_appears_normal : forall (X: Type) (b k n: nat) (v: X) (t1 t2: bplustree b X) (kpl: list (nat * bplustree b X)),

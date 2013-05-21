@@ -3,7 +3,7 @@ Require Export HelperFunctions.
 Require Export SplitCutList.
 Require Export ValidBPlusTree.
 Require Export InductiveDataTypes.
-
+Require Export BPlusTree.
 
 (* 
  * Proofs about blt_nat
@@ -142,6 +142,25 @@ Proof.
   intros. unfold andb in H. remember (ble_nat n k). destruct b. symmetry in Heqb.
   apply ble_nat_true in Heqb. apply blt_nat_false in H. right. omega. 
   symmetry in Heqb. apply ble_nat_false in Heqb. left. omega.
+Qed.
+
+Lemma between__le_and_lt: forall n m k,
+  between n m k <-> n <= k < m.
+Proof.
+  intros.
+  split; intro.
+  Case "->".
+    unfold between in H.
+    rewrite andb_true_iff in H.
+    rewrite ble_nat_true in H.
+    rewrite blt_nat_true in H.
+    omega.
+  Case "<-".
+    unfold between.
+    rewrite andb_true_iff.
+    rewrite ble_nat_true.
+    rewrite blt_nat_true.
+    omega.
 Qed.
 
 (*
@@ -351,6 +370,34 @@ Proof.
     apply IHl1.
       apply H2.
 Qed.
+
+Lemma all_single : forall (X: Type) (P: nat -> Prop) (n: nat) (l1 l2: list nat),
+  all P (l1 ++ n :: l2) -> P n.
+Proof.
+  intros.
+  induction l1.
+  Case "l1 = []".
+    simpl in H. inversion H. apply H3.
+  Case "l1 = a::l1".
+    rewrite <- app_comm_cons in H. inversion H. 
+    apply IHl1.
+      apply H2.
+Qed.
+
+Lemma all_single__keys' : forall (X: Type) (P: nat -> Prop) (n: nat) (x: X) (l1 l2: list (nat * X)),
+  all P (keys' (l1 ++ (n, x) :: l2)) -> P n.
+Proof.
+  intros.
+  induction l1.
+  Case "l1 = []".
+    simpl in H. inversion H. apply H3.
+  Case "l1 = a::l1".
+    destruct a.
+    rewrite <- app_comm_cons in H. inversion H. 
+    apply IHl1.
+      apply H2.
+Qed.
+
 
 (**
   key_at_index proofs

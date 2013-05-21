@@ -485,7 +485,7 @@ Proof.
 Qed.
     
 
-
+(*
 Lemma find_subtree_node_impl_ge_first_key: forall (X: Type) b k k1 k2 v (kpl l: list (nat* bplustree b X)),
   valid_splits b X kpl ->
   find_subtree k kpl = Some (k1, bptNode b X ((k2, v) :: l)) ->
@@ -529,7 +529,7 @@ Proof.
         simpl in H0. rewrite <- Heqb2 in H0.
         simpl in H0. apply H0.
 Qed.
-
+*)
 
 
 
