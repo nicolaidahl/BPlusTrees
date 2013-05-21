@@ -75,7 +75,7 @@ InsertImplAppears.vo: InsertImplAppears.v SplitCutList.vo HelperFunctions.vo \
 											BPlusTree.vo ValidBPlusTree.vo ElementAtIndexProofs.vo \
 											SortingProofs.vo HelperProofs.vo FindSubtreeProofs.vo \
 											AppearsInTree.vo AppearsInKVL.vo InsertProofs.vo \
-											HeightProofs.vo KvAppearsInTree.vo
+											HeightProofs.vo KvAppearsInTree.vo ValidSplitsProofs.vo
 	$(COQC) InsertImplAppears.v
 
 AppearsImplSearchFound.vo: AppearsImplSearchFound.v BPlusTree.vo ValidBPlusTree.vo \
@@ -91,3 +91,8 @@ NotAppearsImplNotSearchFound.vo: NotAppearsImplNotSearchFound.v BPlusTree.vo Val
 InsertSearchWorksProofs.vo: InsertSearchWorksProofs.v BPlusTree.vo \
 	SortingProofs.vo ValidBPlusTree.vo InsertImplAppears.vo InsertPreservesProofs.vo AppearsImplSearchFound.vo
 	$(COQC) InsertSearchWorksProofs.v
+
+ValidSplitsProofs.vo: ValidSplitsProofs.v BPlusTree.vo ValidBPlusTree.vo \
+											InductiveDataTypes.vo
+	$(COQC) ValidSplitsProofs.v
+

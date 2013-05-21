@@ -18,6 +18,18 @@ Fixpoint leftmost_key_deep {X: Type} {b: nat} (tree: bplustree b X) : nat :=
   | _ => 0
   end.
 
+Fixpoint keys' {X: Type} (l: list (nat * X)) : list nat :=
+  match l with
+  | [] => []
+  | (k, _)::l' => k::(keys' l')
+  end.
+
+Definition keys {X: Type} {b: nat} (tree: bplustree b X): list nat :=
+  match tree with
+  | bptLeaf kvl => keys' kvl
+  | bptNode kpl => keys' kpl
+  end.
+
 Definition left := bptLeaf 1 nat [(5, 55)].
 Definition centre := bptLeaf 1 nat [(7, 77)].
 Definition right := bptLeaf 1 nat [(9, 99)].

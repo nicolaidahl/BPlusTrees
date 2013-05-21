@@ -74,6 +74,10 @@ Inductive all_keys (X : Type) (P : nat -> Prop) : list (nat * X) -> Prop :=
   | ak_empty : all_keys X P []
   | ak_next : forall (x:X) (n: nat) (l: list (nat * X)), all_keys X P l -> P n -> all_keys X P ((n,x)::l)
 .
+Inductive all (P : nat -> Prop) : list nat -> Prop :=
+  | a_empty : all P []
+  | a_next : forall (n: nat) (l: list nat), all P l -> P n -> all P (n::l)
+.
 
 Inductive all_values_eq_prop (X: Type)(P: X -> X -> Prop) : list (nat * X) -> Prop :=
   | alep_0    : all_values_eq_prop X P []

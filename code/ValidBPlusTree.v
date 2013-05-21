@@ -8,13 +8,14 @@ Definition equal_height {X: Type} {b: nat}: bplustree b X -> bplustree b X -> Pr
 
 (* Prop for determining if the splitting points indicated actually are splits *)
 Inductive valid_splits (b: nat) (X: Type) : list (nat * bplustree b X) -> Prop :=
-  | valid_p : forall (t1 t2: bplustree b X) (n1 n2: nat) (l: list (nat * bplustree b X)),
-              all_keys X (between n1 n2) (inorder t1) ->
-              valid_splits b X ((n2, t2)::l) ->
-              valid_splits b X ((n1, t1)::(n2, t2)::l)
+  | valid_p  : forall (t1 t2: bplustree b X) (n1 n2: nat) (l: list (nat * bplustree b X)),
+                    all (between n1 n2) (keys t1) ->
+                    valid_splits b X ((n2, t2)::l) ->
+                    valid_splits b X ((n1, t1)::(n2, t2)::l)
   | valid_ep : forall (t: bplustree b X) (n: nat),
-               all_keys X (above n) (inorder t) ->
-               valid_splits b X ((n, t)::[]).
+                    all (above n) (keys t) ->
+                    valid_splits b X ([(n, t)]).
+
 
 (* Prop for determining if a subtree is a valid subtree *)
 Inductive valid_sub_bplustree (b: nat) (X: Type) : bplustree b X -> Prop :=
@@ -79,9 +80,9 @@ Proof. compute. apply valid_root_node.
   Case "valid sorting". 
     apply kvl_sorted_cons. apply kvl_sorted_cons. apply kvl_sorted_1. reflexivity. reflexivity.
   Case "valid splits". 
-  apply valid_p. apply ak_next. apply ak_empty. reflexivity.
-  apply valid_p. apply ak_next. apply ak_empty. reflexivity.
-  apply valid_ep. apply ak_next. apply ak_empty. reflexivity.
+  apply valid_p. apply a_next. apply a_empty. reflexivity.
+  apply valid_p. apply a_next. apply a_empty. reflexivity.
+  apply valid_ep. apply a_next. apply a_empty. reflexivity.
 Qed.
 Example valid_small_tree' : valid_bplustree 1 nat root.
 Proof. compute.

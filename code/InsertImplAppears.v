@@ -10,7 +10,7 @@ Require Export SplitCutList.
 Require Export FindSubtreeProofs.
 Require Export InsertProofs.
 Require Export KvAppearsInTree.
-  
+Require Export ValidSplitsProofs.
 
 
 Theorem insert_leaf_impl_appears_split_right : forall {X: Type} {b: nat} (leaf left kvl: list (nat * X)) (k kb: nat) (v vb: X),
@@ -617,13 +617,54 @@ Qed.
 
 
 Lemma insert'_overflow_impl_lesser_than_next: forall (X: Type) (b k k1 k2 k3: nat) (v: X) (t1 t1' t2 t3: bplustree b X) (l1 l2: list (nat * bplustree b X)),
+  valid_bplustree b X t1 ->
+  kvl_sorted (l1++(k1,t1)::(k3,t3)::l2) ->
+  valid_splits b X (l1++(k1,t1)::(k3,t3)::l2) ->
   find_subtree k (l1++(k1,t1)::(k3,t3)::l2) = Some(k1, t1) ->
   insert' (height t1) k v t1 = (t1', Some(k2, t2)) ->
-  kvl_sorted (l1++(k1,t1)::(k3,t3)::l2) ->
 
   k2 < k3.
 Proof.
-  admit.
+  intros.
+  apply valid_splits_elim_middle in H1.
+  assert (k1 <= k).
+    apply find_subtree_returns_a_lesser_key in H2. omega.
+    rewrite app_length. simpl. omega. apply H0.
+  assert (k < k3).
+    apply find_subtree_impl_kpl_app in H2. do 2 destruct H2.
+    inversion H2.
+    apply kvl_sorted_elim_common_head in H5.
+    inversion H6; rewrite <- H5 in H7. inversion H7.
+    do 3 destruct H7. inversion H7. inversion H8.
+    omega.
+    apply H0. rewrite H5 in H0. apply H0.
+  assert (k1 <= k < k3) by omega.
+
+  destruct t1. 
+  Case "t1 is a leaf".
+    simpl in H3.
+    remember (insert_leaf b k v l) as il.
+    destruct il. destruct o.
+    unfold insert_leaf in Heqil.
+    remember (ble_nat (length (insert_into_list k v l)) (b * 2)) as fits_here.
+    destruct fits_here. inversion Heqil.
+    remember (split_list b (insert_into_list k v l)) as sl.
+    destruct sl as [left right]. inversion Heqil.
+    rewrite H8 in *. rewrite H9 in *. clear H8. clear H9. clear Heqil.
+    assert (right <> []).
+      assert (length (insert_into_list k v l) > b).
+        symmetry in Heqfits_here. apply ble_nat_false in Heqfits_here.
+        omega.
+      apply cut_right_not_nil in H7.
+      unfold split_list in Heqsl.
+      inversion Heqsl. assumption.
+    destruct right. exfalso. apply H7. reflexivity. 
+    destruct p.
+    inversion H3. rewrite H10 in *. clear H9. clear H10. clear H11.
+    clear H3.
+    admit.
+    inversion H3.
+    admit.
 Admitted.
 
 Lemma insert'_impl_appears_normal : forall (X: Type) (b k n: nat) (v: X) (t1 t2: bplustree b X) (kpl: list (nat * bplustree b X)),
