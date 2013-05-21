@@ -23,4 +23,4 @@ Within our implementation we rely heavily on the use of $bool$ when comparing na
 
 As mentioned in Section \ref{sec:ElementsOfACompleteProof}, we have limited the scope of this assignment to only cover the main theorem $insert\_search\_works$. This means that the two other theorems ($insert\allowbreak{}\_preserves\allowbreak{}\_elements$ and $insert\allowbreak{}\_preserves\allowbreak{}\_tree\allowbreak{}\_validity$) are completely unverified.
 
-Because $insert\_search\_works$ relies on $insert\_preserves\_tree\_validity$ for it's final step, we can not claim to have completely verified this theorem. We have however individually verified the two theorems around our intermediate proposition.
+Because $insert\_search\_works$ relies on $insert\_preserves\_tree\_validity$ for it's final step, we can not claim to have completely verified this theorem. We have however individually verified the two theorems around our intermediate proposition. Additionally, one of the lemmas used by $insert'\_implies\_appears$, $insert'\_overflow\_impl\_greater\_key'$ has a single admitted case. While this lemma appears solvable, it was not completely proven, due to time constraints.
