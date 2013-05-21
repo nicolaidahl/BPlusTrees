@@ -10,7 +10,7 @@
 %   - mutually recursive
 %   - Kopitiam cannot handle large proof assumptions
 %   -counter
-In this section we will examine how the proof of InsertSearchWorks has been realized. Firstly, we give an overview of the supporting inductive data types as well as the overall strategy we have used to approach this proof obligation. Secondly, we break the problem down into the proof obligations related to $search$ and $insert$, respectively. 
+In this section we will examine how the proof of $insert\_search\_works$ has been realized. Firstly, we give an overview of the supporting inductive data types as well as the overall strategy we have used to approach this proof obligation. Secondly, we break the problem down into the proof obligations related to $search$ and $insert$, respectively. 
 
 \subsection{Proofs about sorting}
 A vital aspect of B+ trees is that all of the key-pointer and key-value lists in nodes and leaves are sorted by their keys. As mentioned in Section \ref{sec:Kvl_sorted}, we have introduced the proposition $kvl\_sorted$ which allows us to argue that lists are sorted, and continue to be sorted after certain modifications.

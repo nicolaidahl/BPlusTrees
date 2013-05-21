@@ -1,7 +1,7 @@
 %!TEX root = ../BPlusTree-report.tex
 \section{Evaluation}
 \label{sec:Evaluation}
-Formally verifying a non-trivial data type like B+ trees has proven to be a difficult task. In this section we evaluate four central points regarding our work process and our InsertSearchWorks proof.
+Formally verifying a non-trivial data type like B+ trees has proven to be a difficult task. In this section we evaluate four central points regarding our work process and our $insert\_search\_works$ proof.
 
 \subsubsection{Insert Into Leaf}
 Our strategy for proving the $insert\_impl\_appears$ proof was to prove the base case separately. The base case is inserting into a tree with $height = 0$, or in other words a leaf. So the initial lemma we set out to prove was $insert\_leaf\_impl\_appears$. But because we had not attempted to verify the behaviors of insertion in nodes, we had some incorrect assumptions about what we should prove. One problem was that we did not make the goal very strong, so when we later had to apply the lemma in $insert\_impl\_appears$ we had to establish a great deal in our context before we could apply the lemma. When we later set out to verify $insert'$, we improved this aspect and verified a much stronger statement.
