@@ -94,6 +94,6 @@ InsertSearchWorksProofs.vo: InsertSearchWorksProofs.v BPlusTree.vo \
 	$(COQC) InsertSearchWorksProofs.v
 
 ValidSplitsProofs.vo: ValidSplitsProofs.v BPlusTree.vo ValidBPlusTree.vo \
-											InductiveDataTypes.vo
+											InductiveDataTypes.vo HelperProofs.vo SortingProofs.vo
 	$(COQC) ValidSplitsProofs.v
 

@@ -1,7 +1,8 @@
 Require Export BPlusTree.
 Require Export InductiveDataTypes.
 Require Export ValidBPlusTree.
-
+Require Export HelperProofs.
+Require Export SortingProofs.
 
 Lemma valid_splits_elim_tail: forall (X: Type) (b k: nat) (kpl': list (nat * bplustree b X)) (subtree: bplustree b X),  
   valid_splits b X (kpl' ++ [(k, subtree)]) ->
@@ -113,6 +114,41 @@ Proof.
           simpl in H. inversion H. assumption.
           simpl in H. inversion H. assumption.
 Qed.
+
+Lemma all__keys'_sorted_app_holds: forall (X: Type) (low high k1 k2 k3: nat) (v1 v2 v3: X) (l1 l2: list (nat * X)),
+  all (between low high) (keys' (l1 ++ (k1, v1)::(k3, v3)::l2)) ->
+  kvl_sorted (l1++(k1,v1)::(k2, v2)::(k3, v3)::l2) ->
+  
+  all (between low high) (keys' (l1 ++ (k1,v1)::(k2,v2)::(k3,v3)::l2)).
+Proof.
+  intros.
+  induction l1.
+  Case "l1 = []".
+    simpl in *.
+    inversion H0. apply blt_nat_true in H7.
+    inversion H3. apply blt_nat_true in H14.
+    inversion H. inversion H17.
+    constructor. constructor.
+    apply H17.
+    apply between__le_and_lt in H18.
+    apply between__le_and_lt in H22.
+    apply between__le_and_lt. omega.
+    assumption.
+  Case "l1 = a::l1".
+    destruct a. simpl.
+    simpl in H.
+    inversion H.
+    simpl in H0. apply list_tail_is_sorted in H0.
+    constructor. apply IHl1; assumption. 
+    assumption.
+Qed.
+
+Lemma all__keys'_ignores_values: forall (X: Type) (low high k: nat) (v1 v2: X) (l1 l2: list (nat * X)),
+  all (between low high) (keys' (l1 ++ (k, v1)::l2)) ->
+  all (between low high) (keys' (l1 ++ (k, v2)::l2)).
+Proof.
+  admit.
+Admitted.
 
 Lemma all__keys'_impl_all_keys: forall (X: Type) (b k1 k2: nat) (kvl: list (nat * X)),
   all (between k1 k2) (keys' kvl) -> all_keys X (between k1 k2) kvl.
