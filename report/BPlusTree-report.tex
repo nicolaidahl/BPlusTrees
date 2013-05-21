@@ -28,7 +28,9 @@
 \maketitle
 
 \begin{abstract}
-Abstract
+The B+ tree data structure is a perfectly balanced n-ary tree specialized in database and file system storage. It is known for its high fanout and thereby minimizing the number of costly I/O operations. Using the Coq interactive proof assistant we define an inductive data type describing a valid B+ tree, to formally verify properties of the insert, search and height operations of the data structure. Furthermore, we describe the need for an added level of indirection in the form of an intermediate proposition when proving relations between the insert and search operations.
+
+\keywords{B+ tree, Coq, Gallina}
 \end{abstract}
 
 \input{sections/01.Introduction.tex}
