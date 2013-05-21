@@ -70,9 +70,15 @@ Apart from still not being an optimal solution, this implementation would add a 
 
 \subsection{Valid B+ tree}
 \label{subsec:Valid_bplustree}
-Although the inductive data type can represent a B+ tree, it says nothing about the validity of a tree. It is entirely possible to build B+ trees that break the constraints mentioned in the B+ trees background (Section \ref{subsec:Background_Bplus_tree}) using the $bplustree$ data type. To make statements about a B+ tree's validity, and to be sure that the trees we are working with are valid, we need a proposition that states what must hold for a B+ tree to be valid. This proposition is called $valid\_bplustree$, and can be seen in Fig. \ref{fig:inductive_valid_bplustree}. The proposition is inspired by Ramez et al. and altered to meet the implementation specific changes that we introduced in Section \ref{sec:ProblemAnalysis}\,\cite[pp. 652]{Elmasri1999}. Before explaining this inductive data type we will first cover another inductive data type that $valid\_bplustree$ makes use of. This inductive data type is called $valid\_splits$ and ensures the overall sorting
+Although the inductive data type can represent a B+ tree, it says nothing about the validity of a tree. It is entirely possible to build B+ trees that break the constraints mentioned in the B+ trees background (Section \ref{subsec:Background_Bplus_tree}) using the $bplustree$ data type. To make statements about a B+ tree's validity, and to be sure that the trees we are working with are valid, we need a proposition that states what must hold for a B+ tree to be valid. This proposition is called $valid\_bplustree$, and can be seen in Fig. \ref{fig:inductive_valid_bplustree}. The proposition is inspired by Ramez et al. and altered to meet the implementation specific changes that we introduced in Section \ref{sec:ProblemAnalysis}\,\cite[pp. 652]{Elmasri1999}. 
+\subsubsection{Valid Splits}
+Before explaining this inductive data type we will first cover another inductive data type that $valid\_bplustree$ makes use of. This inductive data type is called $valid\_splits$ and guards the overall sorting of the B+ tree by ensuring that all keys of a sub tree are supposed to be in that sub tree.
+\begin{itemize}
+	\item The $valid_p$ proposition says that if the sub tree is between two keys $n1$ and $n2$ in the key-pointer list, then all keys of this sub tree must satisfy $n1 <= key < n2$. 
+	\item In addition $valid_ep$ states that if the subtree is the last in the key-pointer list after key $n$ then all keys in the subtree must satisfy $n <= key$
+\end{itemize} 
 
-\todo{Insert valid splits inductive data type}
+
 
 \begin{figure}
 \centering
@@ -113,7 +119,7 @@ Although the inductive data type can represent a B+ tree, it says nothing about 
 \label{fig:inductive_valid_bplustree}
 \end{figure}
 
-\paragraph{}
+\subsubsection{The Main Proposition}
 This proposition is only valid when examining the root of a tree, as there are different constraints for subtrees (See Section \ref{subsec:Background_Bplus_tree}). $valid\_bplustree$ has two cases, the first holds when the root of the B+ tree is a leaf, and the second holds when the root is a node. The various properties that must hold are explained below.
 
 \paragraph{Root is a leaf}
