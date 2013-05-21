@@ -35,7 +35,7 @@ To implement B+ trees in Gallina, several different components have to be implem
 \end{figure}
 
 \paragraph{}
-This data type says that a $bplustree$ is parameterized by $b$, the order, and $X$, the type of the values in the tree. Further, a tree can be either a leaf or a node. A leaf is a list of key-value pairs of the types $nat$ and $X$, while a node is a list of key-pointer pairs with the types $nat$ and $bplustree$. Note that we use the term pointer in this report only for easy distinction between the two types of lists. There are, in fact, no pointers between trees in the internal Gallina representation. The ``pointers'' contained in nodes are actual values, just like the values in leaves, except the values in nodes can only be of the type $bplustree~bX$, i.e. a subtree with the same order and type as the parent tree.
+This data type says that a $bplustree$ is parameterized by $b$, the order, and $X$, the type of the values in the tree. Further, a tree can be either a leaf or a node. A leaf is a list of key-value pairs of the types $nat$ and $X$, while a node is a list of key-pointer pairs with the types $nat$ and $bplustree$. Note that we use the term pointer in this report only for easy distinction between the two types of lists. There are, in fact, no pointers between trees in the internal Gallina representation. The ``pointers'' contained in nodes are actual values, just like the values in leaves, except the values in nodes can only be of the type $bplustree~b~X$. That is, a subtree with the same order and type as the parent tree.
 
 \begin{figure}
  \centering
@@ -45,37 +45,37 @@ This data type says that a $bplustree$ is parameterized by $b$, the order, and $
 \end{figure}
 
 \paragraph{}
-Figure \ref{fig:bplustree} shows that for each node with $n$ keys there are $n+1$ pointers to sub trees. As it can be seen from both Fig. \ref{fig:inductive_data_type} and \ref{fig:bplustreeImpl} we have chosen to deal with this asymmetry by always having an explicit $0$ key in the beginning of each key-pointer list, such that a node with $n$ keys has $n$ pointers. This affects the order $b$ of the $bptNode$, as there can now be $b+1$ keys in each node before an overflow has to happen. Leaves are, of course, not affected and still can still only contain $b$ key-value pairs before it overflows.
+Fig. \ref{fig:bplustree} shows that for each node with $n$ keys, there are $n+1$ pointers to subtrees. As can be seen from both Fig. \ref{fig:inductive_data_type} and \ref{fig:bplustreeImpl}, we have chosen to deal with this asymmetry by always having an explicit $0$ key in the beginning of each key-pointer list, such that a node with $n$ pointers has $n$ keys. This affects the order $b$ of the $bptNode$, as there can now be $2b+1$ keys in each node before an overflow has to happen. Leaves are, of course, not affected and can still only contain $2b$ key-value pairs before it overflows.
 \paragraph{}
-A similar but trickier way to represent a node would be to have $n$ key-pointer pairs as well as a start pointer of the type $bplustree~b~X$. That would, however, give us unnecessary complexity both when writing our primary functions but also when proving theorems about these functions. Even though it is more strongly typed with such a definition we would always have to take care of a start pointer corner case when proving anything about our B+ trees. With our current solution we add a couple of assumptions to our notion of what a valid B+ tree is, to ensure the start pointer is properly handled. This will be explained in Section \ref{subsec:Valid_bplustree}.
+A similar but more problematic way to represent a node would be to have $n$ key-pointer pairs as well as a start pointer of the type $bplustree~b~X$. That would, however, give us unnecessary complexity, both when writing our primary functions, but also when proving theorems about these functions. Even though it is more strongly typed with such a definition, we would have to take care of a start pointer corner case when proving anything about our B+ trees. With our current solution we add a couple of assumptions to our notion of what a valid B+ tree is, to ensure the start pointer is properly handled. This will be explained in Section \ref{subsec:Valid_bplustree}.
 
 \subsection{Time Complexity}
-Even with an explicit start pointer, this functional implementation of B+ trees, which is an inherently imperative data structure, does have a short-coming when it comes to the asymptotic running time. A popular implementation of nodes and leaves entails representing the key-pointer and key-value pairs as an array, as it enables the fast binary search in the keys of a node. This implementation runs in $O(log(b))$ and makes the overall asymptotic complexity of B+ trees of $O(log(b)*h)$ possible for both Search and Insert operations. Using our data structure the running times of the these functions are limited to $O(h*b)$ as linear search of $b*2$ elements has to be performed in key lists for exactly $h$ nodes. 
+Even with an explicit start pointer, this functional implementation of B+ trees does have a short-coming, when it comes to the asymptotic running time. A popular implementation of nodes and leaves entails representing the key-pointer and key-value pairs as arrays, as it enables binary search in the keys of a node. This array implementation runs in $O(log(b))$ and makes the overall asymptotic complexity of B+ trees of $O(h~log(b))$ possible for both Search and Insert operations. Using our data structure, the running times of the these functions are limited to $O(h\times b)$ as linear search of $2b$ elements has to be performed in key lists for exactly $h$ nodes. 
 \paragraph{}
-Even though Gallina does not support arrays (as it is a pure functional language), there are a couple of ways to achieve a running time of $O(log(b))$ for the search through keys in nodes and leaves. The most obvious one is to represent the keys as a tree. This internal tree also has to be balanced and thus adds a lot extra complexity to the implementation. Implementing this internal tree structure was deemed out of scope. 
+Even though Gallina does not support arrays (as it is pure), there are a couple of ways to achieve a running time of $O(log(b))$ for the search through keys in nodes and leaves. The most obvious one is to represent the keys as a tree. This internal tree also has to be balanced and thus adds extra complexity to the implementation. Implementing this internal tree structure has been deemed out of scope. 
 \paragraph{}
-Another solution would be to use the Coq standard library map implementation, which has a concrete implementation that uses AVL trees\,\cite{fmapavl}. Using maps would require the emulation of arrays. In a node with $k$ keys there would be a mapping from a set of $k$ zero-indexed array keys to $k$ original keys. This is seen in Figure \ref{fig:bplustreeAVLImpl}, which is a representation of our example B+ tree with an AVL tree inside each node. A search for key 20 would do a search in the root's internal AVL tree, find a pointer to the right B+ tree node, do a search in the right B+ node's AVL tree to find that key 2 in the AVL tree has an end pointer to the leaf with value 20. 
-\paragraph{}
-Searching would be achievable in $O(log(b)*h)$ as search in the inner tree would have the asymptotic complexity of $O(log(b))$ as with binary search in an array. Insertion would have a less than optimal running time, as overflows in the tree would require the AVL tree to be traversed for two new half-trees to be constructed. Building these AVL trees would take $O(b*log(b))$ reducing the overall running time of insertion to $O(b*log(b)*h)$, which is worse than our current implementation.
+To somehow emulate arrays in Coq, another solution would be to use the Coq standard library map, which has a concrete implementation that uses AVL trees for fast search\,\cite{fmapavl}. This would require significantly changing the representation of a node, as the representations we have describe so far has no notion of a keys index in the list. In a node with $k$ original key-value or key-pointer pairs, we would create a mapping from a set of $k$ zero-indexed index keys to the $k$ original pairs. This is seen in Fig. \ref{fig:bplustreeAVLImpl}, which is a representation of our example B+ tree with an AVL tree inside each node. A search for key 20 would do a search in the root's internal AVL tree, find a pointer to the right B+ tree node, do a search in the right B+ node's AVL tree to find that key 2 in the AVL tree has an end pointer to the leaf with value 20. 
 
 \begin{figure}
  \centering
    \includegraphics[width=90mm]{diagrams/BPlusTreeMapImpl.pdf}
- \caption{The same B+ tree as in Figure \ref{fig:bplustree} and \ref{fig:bplustreeImpl} but with an inner AVL tree to represent the node lists. Note that leaves are also represented as AVL trees even though it is not depicted here.}
+ \caption{The same B+ tree as in Fig. \ref{fig:bplustree} and \ref{fig:bplustreeImpl} but with an inner AVL tree to represent the node lists. Note that leaves are also represented as AVL trees even though it is not depicted here.}
  \label{fig:bplustreeAVLImpl}
 \end{figure}
 
-Apart from still not being an optimal solution, this implementation would add a large degree of complexity to our proofs, and since running time is not an objective of this project, it has been deemed out of scope to pursue such a B+ tree representation.
+Searching would be achievable in $O(h~log(b))$ as search in the inner tree would have the asymptotic complexity of $O(log(b))$ as with binary search in an array. Insertion would have a less than optimal running time, as overflows in the tree would require the AVL tree to be traversed for two new half-trees, one of them containing the inserted element, to be constructed. Building these AVL trees would take $O(b~log(b))$ reducing the overall running time of insertion to $O(b~h~log(b))$, which is worse than our current implementation.
+\paragraph{}
+This implementation would add a large degree of complexity to our proofs, while still not being an optimal solution. Since an optimal time complexity is not an objective of this project, it has been deemed out of scope to pursue such a B+ tree representation.
 
 
 \subsection{Valid B+ tree}
 \label{subsec:Valid_bplustree}
-Although the inductive data type can represent a B+ tree, it says nothing about the validity of a tree. It is entirely possible to build B+ trees that break the constraints mentioned in the B+ trees background (Section \ref{subsec:Background_Bplus_tree}) using the $bplustree$ data type. To make statements about a B+ tree's validity, and to be sure that the trees we are working with are valid, we need a proposition that states what must hold for a B+ tree to be valid. This proposition is called $valid\_bplustree$, and can be seen in Fig. \ref{fig:inductive_valid_bplustree}. The proposition is inspired by Ramez et al. and altered to meet the implementation specific changes that we introduced in Section \ref{sec:ProblemAnalysis}\,\cite[pp. 652]{Elmasri1999}. 
+Although the inductive data type can represent a B+ tree, it says nothing about the validity of a tree. It is entirely possible to build B+ trees that break the constraints mentioned in the B+ trees background (Section \ref{subsec:Background_Bplus_tree}) using the $bplustree$ data type. To make statements about a B+ tree's validity, and to be sure that the trees we are working with are valid, we need a proposition that states what must hold for a B+ tree to be valid. This proposition is called $valid\_bplustree$, and can be seen in Fig. \ref{fig:inductive_valid_bplustree}. The proposition is inspired by Ramez et al. and altered to meet the implementation specific changes that we introduced in the beginning of this problem analysis\,\cite[pp. 652]{Elmasri1999}. 
 \subsubsection{Valid Splits}
-Before explaining this inductive data type we will first cover another inductive data type that $valid\_bplustree$ makes use of. This inductive data type is called $valid\_splits$ and guards the overall sorting of the B+ tree by ensuring that all keys of a sub tree are supposed to be in that sub tree.
+Before explaining the main inductive data type of B+ trees, we will first cover another inductive data type that $valid\_bplustree$ makes use of. This inductive data type is called $valid\_splits$ and guards the overall sorting of the B+ tree by ensuring that all keys of a subtree are supposed to be in that subtree. The $valid\_splits$ inductive data type can be seen in Fig. \ref{fig:inductive_valid_splits}.
 \begin{itemize}
-	\item The $valid_p$ proposition says that if the sub tree is between two keys $n1$ and $n2$ in the key-pointer list, then all keys of this sub tree must satisfy $n1 <= key < n2$. 
-	\item In addition $valid_ep$ states that if the subtree is the last in the key-pointer list after key $n$ then all keys in the subtree must satisfy $n <= key$
+	\item The $valid\_p$ constructor says that if the subtree is between two keys $n1$ and $n2$ in the key-pointer list, then all keys of this sub tree must satisfy $n1 \leq key < n2$. 
+	\item In addition $valid\_ep$ states that if the subtree is the last in the key-pointer list after key $n$ then all keys in the subtree must satisfy $n \leq key$
 \end{itemize} 
 
 \begin{figure}
@@ -93,7 +93,7 @@ Before explaining this inductive data type we will first cover another inductive
 
 \subsubsection{Sorting the Individual Lists}
 \label{sec:Kvl_sorted}
-While $valid\_splits$ argue about the overall sorting of the tree, we need to reason about the individual sorting of the key-pointer and key-value pairs within the nodes and leafs. For this reason we have introduced the inductive proposition $kvl\_sorted$, which we have reproduced in Fig. \ref{fig:kvl_sorted}.
+While $valid\_splits$ argues about the overall sorting of the tree, we also need to reason about the sorting of individual key-pointer and key-value pairs within the nodes and leaves. For this reason we have introduced the inductive proposition $kvl\_sorted$, which is depicted in Fig. \ref{fig:kvl_sorted}.
 
 \begin{figure}
   \begin{coqdoccode}
@@ -119,10 +119,10 @@ While $valid\_splits$ argue about the overall sorting of the tree, we need to re
   \label{fig:kvl_sorted}
 \end{figure}
 
-The rules about sorting is very straight forward: A empty list and the list containing exactly one element is always sorted. If you have a sorted list, you can add a smaller element to the beginning of it, and it will remain sorted.
+The rules about sorting are very straight forward: An empty list and the list containing exactly one element are always sorted. Adding a smaller element to the beginning of a sorted list preserves its sorting.
 
 \subsubsection{The Main Proposition}
-This proposition is only valid when examining the root of a tree, as there are different constraints for subtrees (See Section \ref{subsec:Background_Bplus_tree}). $valid\_bplustree$ has two cases, the first holds when the root of the B+ tree is a leaf, and the second holds when the root is a node. The various properties that must hold are explained below.
+This proposition is only valid when examining the root of a tree, as there are different constraints for subtrees (see Section \ref{subsec:Background_Bplus_tree}). $valid\_bplustree$ has two cases, the first holds when the root of the B+ tree is a leaf, and the second holds when the root is a node. The various properties that must hold are explained below.
 
 \paragraph{Root is a leaf}
 The following must hold for a root leaf to be a valid B+ tree:
@@ -130,7 +130,7 @@ The following must hold for a root leaf to be a valid B+ tree:
 \begin{itemize}
 \item $b \neq 0$ --- The order must not be 0. Since we are working with natural numbers, this means $b > 0$.
 \item $length\ kvl \leq b \times 2 $ --- The leaf must have at most $2b$ elements.
-\item $kvl\_sorted\ kvl$ --- The keys in the leaf must be sorted.
+\item $kvl\_sorted\ kvl$ --- The key-value pairs in the leaf must be sorted by key.
 \end{itemize}
 
 \paragraph{Root is a node}
@@ -142,11 +142,11 @@ The following must hold for a root node to be a valid B+ tree:
 \item $key\_at\_index\ 0\ kpl = Some\ 0$ --- As mentioned above, we must know that the first key is always 0. This assures that this is the case.
 \item $all\_values (bplustree\ b\ X)\ (valid\_sub\_bplustree\ b\ X)\ kpl$ --- All the values stored in the node (the pointers) must be valid subtrees. As mentioned in Section \ref{subsec:Background_Bplus_tree}, the constraints for the root are slightly different. The constraints for internal leaves and nodes will be covered below.
 \item $all\_values\_eq\_prop (bplustree\ b\ X)\ equal\_height\ kpl$ --- All subtrees must have the same height.
-\item $kvl\_sorted\ kpl$ --- The keys in the node must be sorted.
+\item $kvl\_sorted\ kpl$ --- The key-pointer pairs in the leaf must be sorted by key.
 \item $valid\_splits\ b \ X\ kpl$ --- See Valid Splits section above.
 \end{itemize}
 
-Since $valid\_bplustree$ only holds for the root leaf or node, a different proposition is needed for non-root leaves and nodes, or subtrees. This is implemented in the $valid\_sub\_bplustree$ proposition.\todo{Insert in appendix and insert a reference here} In the interest of brevity, only the differences will be listed here:
+Since $valid\_bplustree$ only holds for the root leaf or node, a different proposition is needed for non-root leaves and nodes, or subtrees. This is implemented in the $valid\_sub\_bplustree$ proposition. In the interest of brevity, only the differences will be listed here, but the data type can be seen in its full form in Appendix \ref{app:valid_sub_bplustree}.
 
 \paragraph{Non-root leaf}
 \begin{itemize}
